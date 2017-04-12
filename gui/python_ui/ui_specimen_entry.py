@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'U:\Programmation\HydroHackOp\gui\pyqt_ui\om\specimen_entry.ui'
+# Form implementation generated from reading ui file 'U:\Programmation\ogc_om_interface\gui\pyqt_ui\specimen_entry.ui'
 #
 # Created by: PyQt4 UI code generator 4.11.4
 #

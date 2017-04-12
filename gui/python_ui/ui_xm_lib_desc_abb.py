@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'U:\Programmation\HydroHackOp\gui\pyqt_ui\om\xm_lib_desc_abb.ui'
+# Form implementation generated from reading ui file 'U:\Programmation\ogc_om_interface\gui\pyqt_ui\xm_lib_desc_abb.ui'
 #
 # Created by: PyQt4 UI code generator 4.11.4
 #

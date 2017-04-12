@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'U:\Programmation\HydroHackOp\gui\pyqt_ui\om\spatial_sampling_feature.ui'
+# Form implementation generated from reading ui file 'U:\Programmation\ogc_om_interface\gui\pyqt_ui\spatial_sampling_feature.ui'
 #
 # Created by: PyQt4 UI code generator 4.11.4
 #

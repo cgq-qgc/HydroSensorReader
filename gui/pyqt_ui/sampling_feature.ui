@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>424</width>
-    <height>365</height>
+    <height>515</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>275</width>
-    <height>365</height>
+    <height>515</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -25,7 +25,7 @@
      <property name="minimumSize">
       <size>
        <width>264</width>
-       <height>354</height>
+       <height>360</height>
       </size>
      </property>
      <property name="title">
@@ -57,7 +57,7 @@
        </widget>
       </item>
       <item row="1" column="0" colspan="2">
-       <widget class="QGroupBox" name="groupBox">
+       <widget class="QGroupBox" name="gb_ref">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -104,7 +104,7 @@
        </widget>
       </item>
       <item row="2" column="0" colspan="2">
-       <widget class="QGroupBox" name="groupBox_3">
+       <widget class="QGroupBox" name="gb_id_bd_extern">
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -217,6 +217,81 @@
        </widget>
       </item>
       <item row="7" column="0" colspan="2">
+       <widget class="QGroupBox" name="gb_process">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>160</height>
+         </size>
+        </property>
+        <property name="title">
+         <string>Méthode utilisée pour créer l'élément</string>
+        </property>
+        <layout class="QFormLayout" name="formLayout_4">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Type de méthode</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QComboBox" name="CB_process_type">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_8">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+           <property name="text">
+            <string>Méthode disponibles</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QComboBox" name="CB_process">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>20</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0" colspan="2">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>Description de la méthode</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0" colspan="2">
+          <widget class="QLabel" name="label_proces_desc">
+           <property name="text">
+            <string>TextLabel</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item row="8" column="0">
        <widget class="QLabel" name="label_7">
         <property name="minimumSize">
          <size>
@@ -225,17 +300,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Méthode utilisée pour créer l'élément</string>
-        </property>
-       </widget>
-      </item>
-      <item row="8" column="0" colspan="2">
-       <widget class="QComboBox" name="CB_process">
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>20</height>
-         </size>
+         <string/>
         </property>
        </widget>
       </item>

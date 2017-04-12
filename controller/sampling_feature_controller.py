@@ -6,8 +6,9 @@ __description__ = " "
 __version__ = '1.0'
 
 
-from om_observation_data_transfert.domain_element.sampling_feature import *
-from database.db_acces_layer.sampling_feature_db_controller import SamplingFeaturesSingleton as SF_db_access
+from domain_element.sampling_feature import *
+from database.db_acces_layer.sampling_feature_access import SamplingFeaturesSingleton as SF_db_access
+from database.db_acces_layer.main_access import MainControllerSingleton
 
 class Sampling_features_controller_Singleton(object):
     _instances = None
@@ -21,6 +22,9 @@ class Sampling_features_controller_Singleton(object):
 class _Sampling_features_controller(object):
     def __init__(self):
         self._sampling_feature_dict = {}
+
+    def get_references_for_user(self) ->list:
+        return MainControllerSingleton().get_references_for_user().fetchall()
     
     def get_sampling_context_relation_type_for_specimen(self):
         return SF_db_access().get_sampling_context_relation_type_for_specimen()
@@ -35,7 +39,7 @@ class _Sampling_features_controller(object):
         new_specimen = Specimen()
         new_specimen.update_unique_id(SF_db_access())
         self._sampling_feature_dict[new_specimen.foi_id] = new_specimen
-        return
+        return new_specimen.foi_id
 
     def get_sampling_feature_by_foi_id(self, foi_id) -> SamplingFeature:
         if foi_id in self._sampling_feature_dict.keys():
@@ -72,6 +76,9 @@ class _Sampling_features_controller(object):
         sampling_feature = self.get_sampling_feature_by_foi_id(p_foi_id)
         sampling_feature.sampling_context.insert_in_database(SF_db_access())
 
+
+    def get_sample_interet(self):
+        return SF_db_access().get_sample_interet()
 
 if __name__ == '__main__':
     control = Sampling_features_controller_Singleton()

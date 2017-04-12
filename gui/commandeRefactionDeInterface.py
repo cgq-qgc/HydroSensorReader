@@ -21,20 +21,13 @@ def translate_ui(path, uiName, python_ui_name=None,is_om = False):
         python_ui_name = 'ui_' + uiName.replace('ui', 'py')
     else:
         assert '.py' in python_ui_name
-    if is_om == False:
-        os.system('pyuic4 -o'
-                  ' {path}\\gui\\python_ui\\old_widget'
-                  '\\{python_ui_name} -x'
-                  ' {path}\\gui\\yqt_ui\\old_widget'
-                  '\\{uiName}'
-                  .format(path=path, uiName=uiName, python_ui_name=python_ui_name))
-    else:
-        os.system('pyuic4 -o'
-                  ' {path}\\gui\\python_ui\\om'
-                  '\\{python_ui_name} -x'
-                  ' {path}\\gui\\pyqt_ui\\om'
-                  '\\{uiName}'
-                  .format(path=path, uiName=uiName, python_ui_name=python_ui_name))
+
+    os.system('pyuic4 -o'
+              ' {path}\\gui\\python_ui'
+              '\\{python_ui_name} -x'
+              ' {path}\\gui\\pyqt_ui'
+              '\\{uiName}'
+              .format(path=path, uiName=uiName, python_ui_name=python_ui_name))
     
     print('{} refait'.format(python_ui_name.replace('.py', '')))
 
@@ -46,11 +39,9 @@ def refaire(path,is_om=False):
     print("_" * 30)
     print("En cours")
     try:
-        if is_om ==False:
-            list_of_window = get_list_of_element()
-        else:
-            list_of_window = get_list_of_om_window(path)
-            
+
+        list_of_window = get_list_of_om_window(path)
+        print(list_of_window)
         for window in list_of_window:
             translate_ui(path=path, uiName=window, is_om=is_om)
 
@@ -60,7 +51,7 @@ def refaire(path,is_om=False):
         print(e)
         
 def get_list_of_om_window(path):
-    return os.listdir(os.path.join(path,'gui','pyqt_ui','om'))
+    return os.listdir(os.path.join(path,'gui','pyqt_ui'))
 
 
 if __name__ == '__main__':
