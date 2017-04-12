@@ -9,7 +9,7 @@ __version__ = '1.0'
 from domain_element.sampling_feature import *
 from database.db_acces_layer.sampling_feature_access import SamplingFeaturesSingleton as SF_db_access
 from database.db_acces_layer.main_access import MainControllerSingleton
-
+from database.db_acces_layer.process_access import ProcessSingleton
 class Sampling_features_controller_Singleton(object):
     _instances = None
 
@@ -79,6 +79,12 @@ class _Sampling_features_controller(object):
 
     def get_sample_interet(self):
         return SF_db_access().get_sample_interet()
+
+    def get_process_type(self):
+        return ProcessSingleton().get_process_for_display()
+
+    def get_process_by_categorie(self, categorie):
+        return ProcessSingleton().get_process_description_by_categorie(categorie)
 
 if __name__ == '__main__':
     control = Sampling_features_controller_Singleton()
