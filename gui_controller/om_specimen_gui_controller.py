@@ -7,7 +7,7 @@ import datetime
 import re
 
 from PyQt4 import QtCore, QtGui
-from gui.python_ui.om.ui_specimen import Ui_Form
+from gui.python_ui.ui_specimen import Ui_Form
 from gui_controller.abstract_pyqt_controller import AbstractPyQTController
 
 

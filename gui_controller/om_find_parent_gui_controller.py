@@ -6,8 +6,8 @@ __version__ = '0.0.1'
 
 from PyQt4 import QtCore
 
-from elem_controller.sampling_feature_controller import Sampling_features_controller_Singleton as SF_control
-from gui.python_ui.om.ui_find_parent import Ui_Form
+from controller.sampling_feature_controller import Sampling_features_controller_Singleton as SF_control
+from gui.python_ui.ui_find_parent import Ui_Form
 from gui_controller.abstract_pyqt_controller import AbstractPyQTController
 
 

@@ -8,10 +8,10 @@ import re
 
 from PyQt4 import QtCore, QtGui
 
-from gui.python_ui.om.ui_sampling_feature import Ui_Form
+from gui.python_ui.ui_sampling_feature import Ui_Form
 from gui_controller.abstract_pyqt_controller import AbstractPyQTController
 from database.db_acces_layer.main_access import MainControllerSingleton as MainControl
-from om_observation_data_transfert.controller.sampling_feature_db_controller  import SamplingFeaturesSingleton as SF_Control
+from database.db_acces_layer.sampling_feature_db_controller  import SamplingFeaturesSingleton as SF_Control
 
 class Om_sampling_feature_gui_controller(AbstractPyQTController, Ui_Form):
     def __init__(self, parent=None):

@@ -7,14 +7,13 @@ import datetime
 import re
 
 from PyQt4 import QtCore, QtGui
-from gui.python_ui.om.ui_specimen_entry import Ui_Form
+from gui.python_ui.ui_specimen_entry import Ui_Form
 from gui_controller.abstract_pyqt_controller import AbstractPyQTController
 
-from gui_controller.om.om_sampling_feature_gui_controller import Om_sampling_feature_gui_controller
-from gui_controller.om.om_specimen_controller import Om_specimen_gui_controller
-
-from om_observation_data_transfert.controller.sampling_feature_controller import SamplingFeaturesSingleton as SF_control
-from gui_controller.om.om_find_parent_gui_controller import Om_find_parent_gui_controller
+from gui_controller.om_sampling_feature_gui_controller import Om_sampling_feature_gui_controller
+from gui_controller.om_specimen_gui_controller import Om_specimen_gui_controller
+from controller.sampling_feature_controller import Sampling_features_controller_Singleton as SF_controller
+from gui_controller.om_find_parent_gui_controller import Om_find_parent_gui_controller
 
 class Om_specimen_entry_gui_controller(AbstractPyQTController, Ui_Form):
     def __init__(self, parent=None):
@@ -25,21 +24,26 @@ class Om_specimen_entry_gui_controller(AbstractPyQTController, Ui_Form):
         self.sample_type_id = None
         self.connect_element()
     def connect_element(self):
-        self.btn_add_spec.clicked.connect(self.make_new_specimen_entry)
+        self.btn_add_spec.clicked.connect(self.create_new_specimen)
 
     def validateEntry(self):
         pass
 
-    def get_sample_type(self) -> int:
+    def get_sample_type(self):
         try:
+            print("in get_sample_type")
             dial = dialog_get_sample_type(self)
-            dial.exec_()
-            self.sample_type = dial.texte[1]
-            self.sample_type_id = dial.texte[0]
-            return True
-        except:
+            if dial.exec_():
+                self.sample_type = dial.texte[1]
+                self.sample_type_id = dial.texte[0]
+                print('True')
+                return True
+        except Exception as e:
+            print('except')
+            print(e)
+            self.sample_type = None
+            self.sample_type_id = None
             return False
-
     def make_new_specimen_entry(self):
 
         # create elements
@@ -55,12 +59,14 @@ class Om_specimen_entry_gui_controller(AbstractPyQTController, Ui_Form):
             if new_sampling_feat.CB_interet.currentText().split(" - ")[0] == '11':
                 new_sampling_feat.CB_interet.setEnabled(False)
                 break
+        self.stackWidget_specimens.addTab(frame,'teste')
 
 
     def create_new_specimen(self):
-        if self.get_sample_type():
-
+        make_entry = self.get_sample_type()
+        if make_entry:
             self.make_new_specimen_entry()
+            self.get_parent(self.sample_type_id)
 
 
     def get_parent(self,sample_type):
@@ -79,12 +85,12 @@ class Om_specimen_entry_gui_controller(AbstractPyQTController, Ui_Form):
 
 
 class dialog_get_sample_type(QtGui.QDialog):
-    def __init__(self,parent):
+    def __init__(self,parent=None):
         super(dialog_get_sample_type, self).__init__(parent)
         self.texte = ""
         self.radio_list = []
         layout = QtGui.QVBoxLayout(self)
-        for p_type,desc,abb in SF_control().get_sampling_context_relation_type_for_specimen():
+        for p_type,desc,abb in SF_controller().get_sampling_context_relation_type_for_specimen():
             btn = QtGui.QRadioButton("{} - {}".format(p_type,desc))
             self.radio_list.append(btn)
 
@@ -98,7 +104,7 @@ class dialog_get_sample_type(QtGui.QDialog):
         for radio in self.radio_list:
             if radio.isChecked() == True:
                 self.texte = radio.text().split(" - ")
-                self.close()
+                self.accept()
 
 if __name__ == '__main__':
     
