@@ -71,6 +71,7 @@ class Om_sampling_feature_gui_controller(AbstractPyQTController, Ui_Form):
         self.update_process_desc()
 
     def update_process_desc(self):
+        self.label_proces_desc.setWordWrap(True)
         process_type = self.process_type
         if process_type != " -- ":
             try:
@@ -83,14 +84,12 @@ class Om_sampling_feature_gui_controller(AbstractPyQTController, Ui_Form):
             for process in SF_Control().get_process_by_categorie(process_type):
                 self.process_description = "{} - {}".format(process[0], process[1].split("\\n")[0])
             self.CB_process.currentIndexChanged.connect(self.update_process_label)
-            self.update_process_label()
+        self.update_process_label()
 
     def update_process_label(self):
-        print(self.process_description.split(" - ")[0])
-        if self.process_description != " -- ":
+        if self.process_description != " -- " and self.process_description != '':
             process_desc = SF_Control().get_process_description_by_process_id_and_category(self.process_type,
-                                                                                           self.process_description.split(" - ")[0])
-
+                                                                                           self.get_process_id())
             self.label_proces_desc.setText(process_desc.replace("\\n","\n"))
         else:
             self.label_proces_desc.setText("")
@@ -102,6 +101,16 @@ class Om_sampling_feature_gui_controller(AbstractPyQTController, Ui_Form):
 
     def get_sampling_name(self):
         return self.LE_sampling_name.text()
+
+    def get_process_id(self):
+        if self.process_description != " -- " and self.process_description != '':
+            return int(self.process_description.split(" - ")[0])
+        else:
+            return None
+
+    def update_sampling_feature(self):
+        if self.validateEntry() == True:
+            pass
 
     @property
     def process_type(self):
