@@ -128,8 +128,13 @@ class Ui_Form(object):
         self.label_9.setObjectName(_fromUtf8("label_9"))
         self.formLayout_4.setWidget(2, QtGui.QFormLayout.SpanningRole, self.label_9)
         self.label_proces_desc = QtGui.QLabel(self.gb_process)
+        self.label_proces_desc.setScaledContents(True)
+        self.label_proces_desc.setWordWrap(True)
         self.label_proces_desc.setObjectName(_fromUtf8("label_proces_desc"))
         self.formLayout_4.setWidget(3, QtGui.QFormLayout.SpanningRole, self.label_proces_desc)
+        self.btn_create_methode = QtGui.QPushButton(self.gb_process)
+        self.btn_create_methode.setObjectName(_fromUtf8("btn_create_methode"))
+        self.formLayout_4.setWidget(4, QtGui.QFormLayout.FieldRole, self.btn_create_methode)
         self.formLayout_2.setWidget(7, QtGui.QFormLayout.SpanningRole, self.gb_process)
         self.label_7 = QtGui.QLabel(self.groupbox_sampling_feature)
         self.label_7.setMinimumSize(QtCore.QSize(0, 20))
@@ -157,6 +162,7 @@ class Ui_Form(object):
         self.label_8.setText(_translate("Form", "Méthode disponibles", None))
         self.label_9.setText(_translate("Form", "Description de la méthode", None))
         self.label_proces_desc.setText(_translate("Form", "TextLabel", None))
+        self.btn_create_methode.setText(_translate("Form", "Méthode introuvable", None))
 
 
 if __name__ == "__main__":
