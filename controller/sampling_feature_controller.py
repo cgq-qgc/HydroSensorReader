@@ -84,7 +84,10 @@ class _Sampling_features_controller(object):
         return ProcessSingleton().get_process_for_display()
 
     def get_process_by_categorie(self, categorie):
-        return ProcessSingleton().get_process_description_by_categorie(categorie)
+        return ProcessSingleton().get_process_description(categorie)
+
+    def get_process_description_by_process_id_and_category(self,categorie,process_id):
+        return ProcessSingleton().get_process_description_by_process_id_and_category(categorie,process_id)
 
 if __name__ == '__main__':
     control = Sampling_features_controller_Singleton()

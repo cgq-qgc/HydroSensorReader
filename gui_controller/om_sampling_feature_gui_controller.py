@@ -68,11 +68,32 @@ class Om_sampling_feature_gui_controller(AbstractPyQTController, Ui_Form):
             self.process_type = process
 
         self.CB_process_type.currentIndexChanged.connect(self.update_process_desc)
+        self.update_process_desc()
 
     def update_process_desc(self):
         process_type = self.process_type
-        print(process_type)
+        if process_type != " -- ":
+            try:
+                self.CB_process.currentIndexChanged.disconnect(self.update_process_label)
+            except:
+                pass
+            self.CB_process.clear()
+            self.process_description = " -- "
+            print(process_type)
+            for process in SF_Control().get_process_by_categorie(process_type):
+                self.process_description = "{} - {}".format(process[0], process[1].split("\\n")[0])
+            self.CB_process.currentIndexChanged.connect(self.update_process_label)
+            self.update_process_label()
 
+    def update_process_label(self):
+        print(self.process_description.split(" - ")[0])
+        if self.process_description != " -- ":
+            process_desc = SF_Control().get_process_description_by_process_id_and_category(self.process_type,
+                                                                                           self.process_description.split(" - ")[0])
+
+            self.label_proces_desc.setText(process_desc.replace("\\n","\n"))
+        else:
+            self.label_proces_desc.setText("")
     def set_date(self):
         self.DTE_sampling_date.setDateTime(datetime.datetime.now())
 
