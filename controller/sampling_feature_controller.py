@@ -9,7 +9,7 @@ from database.db_acces_layer.main_access import MainControllerSingleton
 from database.db_acces_layer.process_access import ProcessSingleton
 from database.db_acces_layer.sampling_feature_access import SamplingFeaturesSingleton as SF_db_access
 from interface.sampling_features_interfaces import *
-
+from typing import Union
 
 class Sampling_features_controller_Singleton(object):
     _instances = None
@@ -41,7 +41,7 @@ class _Sampling_features_controller(object):
         self._sampling_feature_dict[new_specimen.sampling_feature.foi_id] = new_specimen
         return new_specimen.sampling_feature.foi_id
 
-    def get_sampling_feature_by_foi_id(self, foi_id: int) -> OM_SamplingFeatureInterface:
+    def get_sampling_feature_by_foi_id(self, foi_id: int) -> Union[OM_SamplingFeatureInterface, OM_SpecimenInterface,OM_SpatialSamplingFeatureInterface]:
         if foi_id in self._sampling_feature_dict.keys():
             return self._sampling_feature_dict[foi_id]
         else:
