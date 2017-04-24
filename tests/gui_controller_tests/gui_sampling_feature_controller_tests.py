@@ -3,10 +3,11 @@ import unittest
 
 from PyQt4 import QtGui
 
-from database.database_tester.database_content_tester import dataBaseTester
+from database.database_tester.database_content_tester import DataBaseTesterSingleton
 from gui_controller.om_sampling_feature_gui_controller import Om_sampling_feature_gui_controller
 import datetime
 app = QtGui.QApplication(sys.argv)
+DataBaseTesterSingleton()
 
 
 class Gui_SF_Controller_Test(unittest.TestCase):
@@ -17,7 +18,6 @@ class Gui_SF_Controller_Test(unittest.TestCase):
         self.view.gb_id_bd_extern.setChecked(True)
 
     def setup_combo(self):
-        dataBaseTester()
         self.view.fill_sample_feature_type()
         self.view.fill_reference()
 

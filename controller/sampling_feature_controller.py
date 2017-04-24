@@ -41,7 +41,7 @@ class _Sampling_features_controller(object):
         self._sampling_feature_dict[new_specimen.sampling_feature.foi_id] = new_specimen
         return new_specimen.sampling_feature.foi_id
 
-    def get_sampling_feature_by_foi_id(self, foi_id) -> [OM_SpecimenInterface, OM_SpecimenInterface, OM_SpatialSamplingFeatureInterface]:
+    def get_sampling_feature_by_foi_id(self, foi_id: int) -> OM_SamplingFeatureInterface:
         if foi_id in self._sampling_feature_dict.keys():
             return self._sampling_feature_dict[foi_id]
         else:

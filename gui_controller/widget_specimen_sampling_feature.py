@@ -15,7 +15,7 @@ from gui_controller.om_specimen_gui_controller import Om_specimen_gui_controller
 class WidgetSpecimenAndSamplingFeature(QtGui.QWidget):
     def __init__(self, parent=None):
         super(WidgetSpecimenAndSamplingFeature, self).__init__(parent)
-        self.specimen = None
+        self.specimen_interface = None
 
         self.associate_specimen()
         self.setup_UI()
@@ -25,9 +25,8 @@ class WidgetSpecimenAndSamplingFeature(QtGui.QWidget):
 
     def associate_specimen(self):
         foi_id = Sampling_features_controller_Singleton().create_specimen()
-        self.specimen = Sampling_features_controller_Singleton().get_sampling_feature_by_foi_id(foi_id)
-
-        print(self.specimen)
+        self.specimen_interface = Sampling_features_controller_Singleton().get_sampling_feature_by_foi_id(foi_id)
+        self.specimen_interface.get_next_foi_id()
 
     def setup_UI(self):
         hbox = QtGui.QHBoxLayout()
@@ -39,7 +38,7 @@ class WidgetSpecimenAndSamplingFeature(QtGui.QWidget):
         self.gui_sampling_feature.setMaximumWidth(self.width() / 2)
 
         self.gui_sampling_feature.label_foi_id.setText(
-                self.gui_sampling_feature.label_foi_id.text() + str(self.specimen.foi_id))
+                self.gui_sampling_feature.label_foi_id.text() + str(self.specimen_interface.sampling_feature.foi_id))
         self.setLayout(hbox)
 
 
@@ -49,9 +48,8 @@ class WidgetSpecimenAndSamplingFeature(QtGui.QWidget):
 if __name__ == '__main__':
     import sys
     from PyQt4 import QtGui
-    from database.database_tester.database_content_tester import dataBaseTester
-
-    dataBaseTester()
+    from database.database_tester.database_content_tester import DataBaseTesterSingleton
+    DataBaseTesterSingleton()
 
     app = QtGui.QApplication(sys.argv)
 
