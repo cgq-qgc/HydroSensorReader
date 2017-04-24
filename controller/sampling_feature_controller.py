@@ -48,7 +48,7 @@ class _Sampling_features_controller(object):
         else:
             raise Exception("aucun sampling feature avec ce foi_id")
 
-    def get_specimen_by_foi_id(self,foi_id) -> Specimen:
+    def get_specimen_by_foi_id(self, foi_id) -> Specimen:
         try:
             if isinstance(self.get_sampling_feature_by_foi_id(foi_id), Specimen):
                 return self._sampling_feature_dict[foi_id]
@@ -57,7 +57,7 @@ class _Sampling_features_controller(object):
         except Exception as e:
             raise e
 
-    def get_spatial_sampling_feature_by_foi_id(self,foi_id) -> SpatialSamplingFeature:
+    def get_spatial_sampling_feature_by_foi_id(self, foi_id) -> SpatialSamplingFeature:
         try:
             if isinstance(self.get_sampling_feature_by_foi_id(foi_id), SpatialSamplingFeature):
                 return self._sampling_feature_dict[foi_id]
@@ -107,15 +107,15 @@ class _Sampling_features_controller(object):
     def get_process_description_by_process_id_and_category(self, categorie, process_id):
         return ProcessSingleton().get_process_description_by_process_id_and_category(categorie, process_id)
 
-    def update_sampling_feature(self, foi_id:int,
-                                process :int =None,
-                                name:str =None ,
-                                date:str =None ,
-                                note:str =None,
-                                ref_id:int =None,
-                                id_bd_extern:str =None,
-                                interet:int =None,
-                                metadata:int =None) -> None:
+    def update_sampling_feature(self, foi_id: int,
+                                process: int = None,
+                                name: str = None,
+                                date: str = None,
+                                note: str = None,
+                                ref_id: int = None,
+                                id_bd_extern: str = None,
+                                interet: int = None,
+                                metadata: int = None) -> None:
         """
         permet d'updater un sampling feature à partir de données
         :param foi_id: identifiant du sampling feature
@@ -138,8 +138,6 @@ class _Sampling_features_controller(object):
         sampling_feature.id_bd_extern = id_bd_extern
         sampling_feature.interet = interet
         sampling_feature.metadata = metadata
-
-
 
 
 if __name__ == '__main__':
