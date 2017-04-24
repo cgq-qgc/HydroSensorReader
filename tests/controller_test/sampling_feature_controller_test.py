@@ -4,7 +4,8 @@ DataBaseTesterSingleton()
 
 from controller.sampling_feature_controller import Sampling_features_controller_Singleton as SF_control
 
-from domain_element.sampling_feature import *
+from interface.sampling_features_interfaces import *
+
 class SamplingFeatureControllerTest(unittest.TestCase):
     def setUp(self):
         self.controller = SF_control()
@@ -12,21 +13,22 @@ class SamplingFeatureControllerTest(unittest.TestCase):
 
     def test_create_specimen(self):
         foi_id = self.controller.create_specimen()
-        self.assertIsInstance(self.controller.get_sampling_feature_by_foi_id(foi_id),SamplingFeature)
-        self.assertIsInstance(self.controller.get_sampling_feature_by_foi_id(foi_id), Specimen)
+        self.assertIsInstance(self.controller.get_sampling_feature_by_foi_id(foi_id),OM_SamplingFeatureInterface)
+        self.assertIsInstance(self.controller.get_sampling_feature_by_foi_id(foi_id), OM_SpecimenInterface)
 
-        self.assertTrue(self.controller.get_sampling_feature_by_foi_id(foi_id).sampling_name is None,
+        self.assertTrue(self.controller.get_sampling_feature_by_foi_id(foi_id).sampling_feature.sampling_name is None,
                         "Le sampling feature ne devrait pas avoir de nom")
-        self.assertTrue(self.controller.get_sampling_feature_by_foi_id(foi_id).ref_id is None)
+        self.assertTrue(self.controller.get_sampling_feature_by_foi_id(foi_id).sampling_feature.ref_id is None)
 
     def test_update_specimen(self):
         foi_id = self.controller.create_specimen()
 
+        interface = self.controller.get_sampling_feature_by_foi_id(foi_id)
         self.controller.update_sampling_feature(foi_id,name='teste')
-        self.assertTrue(self.controller.get_sampling_feature_by_foi_id(foi_id).sampling_name == 'teste')
+        self.assertTrue(interface.sampling_feature.sampling_name == 'teste')
 
-        self.controller.get_specimen_by_foi_id(foi_id).sample_type = 5
-        self.assertTrue(self.controller.get_sampling_feature_by_foi_id(foi_id).sample_type == 5)
+        interface.specimen.sample_type = 5
+        self.assertTrue(interface.specimen.sample_type == 5)
 
 
 

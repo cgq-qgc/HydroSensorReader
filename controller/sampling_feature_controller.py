@@ -8,7 +8,7 @@ __version__ = '1.0'
 from database.db_acces_layer.main_access import MainControllerSingleton
 from database.db_acces_layer.process_access import ProcessSingleton
 from database.db_acces_layer.sampling_feature_access import SamplingFeaturesSingleton as SF_db_access
-from domain_element.sampling_feature import *
+from interface.sampling_features_interfaces import *
 
 
 class Sampling_features_controller_Singleton(object):
@@ -31,49 +31,47 @@ class _Sampling_features_controller(object):
         return SF_db_access().get_sampling_context_relation_type_for_specimen()
 
     def create_spatial_sampling_feature(self) -> int:
-        new_spatial_samp_feat = SpatialSamplingFeature()
-        new_spatial_samp_feat.update_unique_id(SF_db_access())
-        self._sampling_feature_dict[new_spatial_samp_feat.foi_id] = new_spatial_samp_feat
-        return new_spatial_samp_feat.foi_id
+        new_spatial_samp_feat = OM_SpatialSamplingFeatureInterface()
+        self._sampling_feature_dict[new_spatial_samp_feat.get_next_foi_id()] = new_spatial_samp_feat
+        return new_spatial_samp_feat.sampling_feature.foi_id
 
     def create_specimen(self):
-        new_specimen = Specimen()
-        new_specimen.update_unique_id(SF_db_access())
-        self._sampling_feature_dict[new_specimen.foi_id] = new_specimen
-        return new_specimen.foi_id
+        new_specimen = OM_SpecimenInterface()
 
-    def get_sampling_feature_by_foi_id(self, foi_id) -> SamplingFeature:
+        self._sampling_feature_dict[new_specimen.sampling_feature.foi_id] = new_specimen
+        return new_specimen.sampling_feature.foi_id
+
+    def get_sampling_feature_by_foi_id(self, foi_id) -> [OM_SpecimenInterface, OM_SpecimenInterface, OM_SpatialSamplingFeatureInterface]:
         if foi_id in self._sampling_feature_dict.keys():
             return self._sampling_feature_dict[foi_id]
         else:
             raise Exception("aucun sampling feature avec ce foi_id")
 
-    def get_specimen_by_foi_id(self, foi_id) -> Specimen:
+    def get_specimen_by_foi_id(self, foi_id) -> OM_SpecimenInterface:
         try:
-            if isinstance(self.get_sampling_feature_by_foi_id(foi_id), Specimen):
+            if isinstance(self.get_sampling_feature_by_foi_id(foi_id), OM_SpecimenInterface):
                 return self._sampling_feature_dict[foi_id]
             else:
                 raise Exception("Ce n'est pas un specimen")
         except Exception as e:
             raise e
 
-    def get_spatial_sampling_feature_by_foi_id(self, foi_id) -> SpatialSamplingFeature:
+    def get_spatial_sampling_feature_by_foi_id(self, foi_id) -> OM_SpatialSamplingFeatureInterface:
         try:
-            if isinstance(self.get_sampling_feature_by_foi_id(foi_id), SpatialSamplingFeature):
+            if isinstance(self.get_sampling_feature_by_foi_id(foi_id), OM_SpatialSamplingFeatureInterface):
                 return self._sampling_feature_dict[foi_id]
             else:
                 raise Exception("Ce n'est pas un spatial_sampling_feature")
         except Exception as e:
             raise e
 
-    def set_sampling_feature_by_foi_id(self, sampling_feature):
+    def set_sampling_feature_by_foi_id(self, interface:OM_SamplingFeatureInterface):
         """
         
         :param sampling_feature: 
-        :type sampling_feature: SamplingFeature
         :return: 
         """
-        self._sampling_feature_dict[sampling_feature.foi_id] = sampling_feature
+        self._sampling_feature_dict[interface.sampling_feature.foi_id] = interface
 
     def get_foi_id_list_of_controller(self) -> list:
         return list(self._sampling_feature_dict.keys())
@@ -84,16 +82,13 @@ class _Sampling_features_controller(object):
     def insert_all_sampling_feature(self):
         for foi_id in list(self._sampling_feature_dict.keys()):
             self.insert_specific_sampling_feature(foi_id)
-        for child_foi_id in list(self._sampling_feature_dict.keys()):
-            self.insert_specific_sampling_context(child_foi_id)
+
+
 
     def insert_specific_sampling_feature(self, p_foi_id):
         sampling_feature = self.get_sampling_feature_by_foi_id(p_foi_id)
-        sampling_feature.insert_in_database(SF_db_access())
+        sampling_feature.insert_sampling_feature()
 
-    def insert_specific_sampling_context(self, p_foi_id):
-        sampling_feature = self.get_sampling_feature_by_foi_id(p_foi_id)
-        sampling_feature.sampling_context.insert_in_database(SF_db_access())
 
     def get_sample_interet(self):
         return SF_db_access().get_sample_interet()
@@ -129,15 +124,15 @@ class _Sampling_features_controller(object):
         :param metadata: s'il y a d'autres métadonnées associées au sampling feature
         :return: 
         """
-        sampling_feature = self.get_sampling_feature_by_foi_id(foi_id)
-        sampling_feature.process_id = process
-        sampling_feature.sampling_name = name
-        sampling_feature.sampling_date = date
-        sampling_feature.sampling_note = note
-        sampling_feature.ref_id = ref_id
-        sampling_feature.id_bd_extern = id_bd_extern
-        sampling_feature.interet = interet
-        sampling_feature.metadata = metadata
+        interface = self.get_sampling_feature_by_foi_id(foi_id)
+        interface.sampling_feature.process_id = process
+        interface.sampling_feature.sampling_name = name
+        interface.sampling_feature.sampling_date = date
+        interface.sampling_feature.sampling_note = note
+        interface.sampling_feature.ref_id = ref_id
+        interface.sampling_feature.id_bd_extern = id_bd_extern
+        interface.sampling_feature.interet = interet
+        interface.sampling_feature.metadata = metadata
 
 
 if __name__ == '__main__':
