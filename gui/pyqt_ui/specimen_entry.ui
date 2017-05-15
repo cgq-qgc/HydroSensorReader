@@ -21,7 +21,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QTabWidget" name="stackWidget_specimens">
+    <widget class="QToolBox" name="stackWidget_specimens">
      <property name="minimumSize">
       <size>
        <width>588</width>
@@ -38,9 +38,6 @@
       <cursorShape>ArrowCursor</cursorShape>
      </property>
      <property name="autoFillBackground">
-      <bool>false</bool>
-     </property>
-     <property name="movable">
       <bool>true</bool>
      </property>
     </widget>
