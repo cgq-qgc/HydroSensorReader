@@ -10,6 +10,7 @@ from abc import abstractmethod
 class AbstractPyQTController(QtGui.QWidget):
     def __init__(self, parent):
         super(AbstractPyQTController, self).__init__(parent)
+        self.connect_element()
     @abstractmethod
     def connect_element(self):
         pass

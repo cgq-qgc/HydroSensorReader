@@ -99,9 +99,9 @@ class Om_find_parent_gui_controller(AbstractPyQTController, Ui_Form):
 if __name__ == '__main__':
     import sys
     from PyQt4 import QtGui
-    from database.database_tester.database_content_tester import dataBaseTester
+    from database.database_tester.database_content_tester import DataBaseTesterSingleton
 
-    dataBaseTester()
+    DataBaseTesterSingleton()
 
     app = QtGui.QApplication(sys.argv)
 

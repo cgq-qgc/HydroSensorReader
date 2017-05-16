@@ -41,7 +41,7 @@ class _Sampling_features_controller(object):
         self._sampling_feature_dict[new_specimen.sampling_feature.foi_id] = new_specimen
         return new_specimen.sampling_feature.foi_id
 
-    def get_sampling_feature_by_foi_id(self, foi_id: int) -> Union[OM_SamplingFeatureInterface, OM_SpecimenInterface,OM_SpatialSamplingFeatureInterface]:
+    def get_sampling_feature_by_foi_id(self, foi_id: int) -> Union[OM_SamplingFeatureInterface, OM_SpecimenInterface]:
         if foi_id in self._sampling_feature_dict.keys():
             return self._sampling_feature_dict[foi_id]
         else:
@@ -56,6 +56,7 @@ class _Sampling_features_controller(object):
         except Exception as e:
             raise e
 
+    @DeprecationWarning
     def get_spatial_sampling_feature_by_foi_id(self, foi_id) -> OM_SpatialSamplingFeatureInterface:
         try:
             if isinstance(self.get_sampling_feature_by_foi_id(foi_id), OM_SpatialSamplingFeatureInterface):
@@ -134,6 +135,8 @@ class _Sampling_features_controller(object):
         interface.sampling_feature.interet = interet
         interface.sampling_feature.metadata = metadata
 
+    def get_sampling_feature_by_name(self, sampling_name: str):
+        return SF_Control().find_sampling_feature_by_name(sampling_name)
 
 if __name__ == '__main__':
     control = Sampling_features_controller_Singleton()
