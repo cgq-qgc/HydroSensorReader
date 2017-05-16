@@ -50,3 +50,4 @@ gui/__pycache__/
 gui/python_ui/__pycache__/
 gui_controller/__pycache__/
 gui_controller/databaseLog.txt
+databaseLog.txt
