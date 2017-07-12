@@ -7,8 +7,7 @@
 # Original author: xmalet
 # 
 #######################################################
-from sensor_file.file_reader.FileReader import SensorFileReader
+from sensor_file.file_reader.abstract_file_reader import AbstractFileReader
 
-class CR800File(SensorFileReader):
-    def read_file():
-        pass
+class CR800File(AbstractFileReader):
+    pass

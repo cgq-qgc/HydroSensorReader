@@ -39,7 +39,7 @@ class SolinstXLE_Reader(FileReader):
             self._file_name = old_file_name
 
     def _validate_file_type(self) -> bool:
-        return re.search(r".*(\.xle)$", self._file_name) is not None
+        return re.search(r".*xle$", self._file_name) is not None
 
     def read_file_data_header(self):
         super().read_file_data_header()
@@ -221,8 +221,8 @@ class SolinstLEV_Reader(FileReader):
 
 
 if __name__ == '__main__':
-    file_example = "U:\\Programmation\\scientific_file_reader\\file_example\\"
-    teste_all = False
+    file_example = "C:\\Users\\laptop\\Documents\\Programmation\\scientific_file_reader\\file_example\\"
+    teste_all = True
 
     if teste_all:
         file_location = file_example + "2029499_F7_NordChamp_PL20150925_2015_09_25.xle"
@@ -231,13 +231,14 @@ if __name__ == '__main__':
         print(xle_reader.start_time)
         print(xle_reader.stop_time)
         print(xle_reader.sampling_rate_in_minutes)
-        file_location = file_example + "2026236_F4_20160222_2016_06_24.xle"
-        xle_reader.reload(file_location)
-        print("-" * 15)
-        print(xle_reader.location)
-        print(xle_reader.start_time)
-        print(xle_reader.stop_time)
-        print(xle_reader.sampling_rate_in_minutes)
+        print(xle_reader.file_data_header)
+        # file_location = file_example + "2026236_F4_20160222_2016_06_24.xle"
+        # xle_reader.reload(file_location)
+        # print("-" * 15)
+        # print(xle_reader.location)
+        # print(xle_reader.start_time)
+        # print(xle_reader.stop_time)
+        # print(xle_reader.sampling_rate_in_minutes)
     else:
 
         file_location = file_example + "F2_20160223.lev"

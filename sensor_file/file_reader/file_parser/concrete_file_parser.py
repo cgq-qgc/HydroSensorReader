@@ -71,7 +71,7 @@ class TXTFileParser(AbstractFileParser):
 class EXCELFileParser(AbstractFileParser):
     def __init__(self, file_path: str = None, header_length: int = None):
         super().__init__(file_path, header_length)
-        self._file_content = defaultdict(list)
+        self._file_content = {}
         self._file_header_content = {}
         self.nb_sheets = 0
     def read_file(self):
@@ -87,33 +87,64 @@ class EXCELFileParser(AbstractFileParser):
             warnings.warn("Error: Bad file extension. This is not an Excel file")
         except TypeError as t:
             warnings.warn("Error occured when trying to read the current file {}".format(self._file))
-
-    def _get_file_content_by_sheet_name(self, sheet_name):
-        return self._file_content[sheet_name]
+            print(t)
 
     def __read_xls_file(self):
-
+        """
+        method that read an xls file and create an entry in the file content dictionnary
+        having the sheet name as a key
+        example: self._file_content['Sheet1'] = [ [row1],[row2],...] ]
+        each row is a list of cell values as follow : row1 = [cell1.value, cell2.value,...]
+        NOTE: during the xls data parsing:
+        -   cells that contains date are transformed as datetime.datetime
+        -   blank or empty cells or replaced by None
+        :return: None
+        """
         file = xlrd.open_workbook(self._file)
-        for sheets in file.sheet_names():
+
+        for sheet in file.sheet_names():
             self.nb_sheets += 1
-            current_sheet = file.sheet_by_name(sheets)
+            current_sheet = file.sheet_by_name(sheet)
             sheet_content = []
             for row in range(current_sheet.nrows):
                 current_row = []
+                # transform the cells value to the appropriate type
                 for cells in current_sheet.row(row):
+                    # convert blank and empty cells to None
                     if cells.ctype in (xlrd.XL_CELL_EMPTY, xlrd.XL_CELL_BLANK):
-                        current_row.append('')
+                        current_row.append(None)
+                    # convert xldate cells to datetime.datetime.
+                    elif cells.ctype == xlrd.XL_CELL_DATE:
+                        current_row.append(xlrd.xldate.xldate_as_datetime(cells.value,file.datemode))
                     else:
-                        current_row.append(cells)
+                        current_row.append(cells.value)
                 sheet_content.append(current_row)
-            self._file_content[sheets] = sheet_content
-            setattr(EXCELFileParser, 'sheet{}'.format(self.nb_sheets), self._get_file_content_by_sheet_name(sheets))
+            self._file_content[sheet] = sheet_content
+            #
+            setattr(EXCELFileParser, 'sheet{}'.format(self.nb_sheets), self._file_content[sheet])
 
 
     def __read_xlsx_file(self):
-        print("read xlsx file")
-        file = openpyxl.load_workbook(filename= self._file)
-
+        """
+        method that read an xlsx file and create an entry in the file content dictionnary
+        having the sheet name as a key
+        example: self._file_content['Sheet1'] = [ [row1],[row2],...] ]
+        each row is a list of cell values as follow : row1 = [cell1.value, cell2.value,...]
+        NOTE: during the xlsx data parsing, cells that contains date are transformed as datetime.datetime
+        :return: None
+        """
+        excel_file = openpyxl.load_workbook(filename= self._file)
+        for sheet in excel_file.sheetnames:
+            self.nb_sheets += 1
+            current_sheet = excel_file[sheet]
+            sheet_content = []
+            for row in current_sheet.rows:
+                current_row = []
+                for cell in row:
+                    current_row.append(cell.value)
+                sheet_content.append(current_row)
+            self._file_content[sheet] = sheet_content
+            setattr(EXCELFileParser, 'sheet{}'.format(self.nb_sheets), self._file_content[sheet])
 
     def read_file_header(self):
         super().read_file_header()
@@ -134,16 +165,30 @@ if __name__ == '__main__':
     # print(cs_file.get_file_content)
 
     # EXEMPLE AVEC UN TXT FILE
-    # txt_file = TXTFileParser(path.join(exemple_file_path,"F2_20160223.lev"))
-    # print(txt_file.get_file_header)
-    # txt_file.read_file()
-    # for row in txt_file.get_file_content:
-    #     print(row)
-
-    # EXEMPLE AVEC UN XLS et XLSX FILE
-    file_name = "B653824V1-R2016-08-18_16-31-39_N001.xls"
-    xls_file = EXCELFileParser(path.join(exemple_file_path,file_name))
-    xls_file.read_file()
-    print(xls_file.nb_sheets)
-    for row in xls_file.sheet1:
+    txt_file = TXTFileParser(path.join(exemple_file_path,"F2_20160223.lev"))
+    txt_file.read_file()
+    # print(txt_file.get_file_content)
+    for row in txt_file.get_file_content:
         print(row)
+
+    # EXEMPLE AVEC UN XLS
+    # xls_file_name = "B653824V1-R2016-08-18_16-31-39_N001.xls"
+    # xls_file = EXCELFileParser(path.join(exemple_file_path, xls_file_name))
+    # xls_file.read_file()
+    # i = 0
+    # for row in xls_file.sheet1:
+    #     print(row)
+    #     i+=1
+    #     if i > 10:
+    #         break
+    # EXEMPLE AVEC UN FICHIER XLSX
+    # xlsx_file_name = "maxxam_sheet.xlsx"
+    # xlsx_file = EXCELFileParser(path.join(exemple_file_path,xlsx_file_name))
+    # xlsx_file.read_file()
+    # j=0
+    # for row in xlsx_file.sheet1:
+    #     j+=1
+    #     print(row)
+    #     if j>10:
+    #         break
+
