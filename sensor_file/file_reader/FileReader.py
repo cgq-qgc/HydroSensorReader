@@ -24,7 +24,7 @@ class Recording(object):
         self.date = date
         self.data_list = data_list
 
-class SensorFileReader(object):
+class FileReader(object):
     """Interface permettant de lire un fichier provenant d'un datalogger quelconque
     """
     def __init__(self, file_name):
