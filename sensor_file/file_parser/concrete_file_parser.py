@@ -6,13 +6,14 @@ __description__ = " "
 __version__ = '1.0'
 
 
-from sensor_file.file_reader.file_parser.abstract_file_parser import AbstractFileParser
 import csv
-import xlrd
-import openpyxl
-import warnings
 import re
-from collections import defaultdict
+import warnings
+
+import openpyxl
+import xlrd
+
+from sensor_file.file_parser import AbstractFileParser
 
 
 class CSVFileParser(AbstractFileParser):

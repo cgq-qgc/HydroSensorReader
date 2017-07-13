@@ -8,23 +8,14 @@
 # 
 #######################################################
 from abc import abstractmethod
-import sensor_file.file_reader.file_parser.concrete_file_parser as file_parser
 from datetime import datetime
+
+import sensor_file.file_parser.concrete_file_parser as file_parser
 
 PARAMETER = 'parameter'
 DATA_ACCES = 'data'
 
 
-class Parameter(object):
-    def __init__(self, param_name, unit):
-        self.parameter = param_name
-        self.unit = unit
-
-
-class Recording(object):
-    def __init__(self, date: str = None, data_list: list = None):
-        self.date = date
-        self.data_list = data_list
 
 
 class AbstractFileReader(object):
