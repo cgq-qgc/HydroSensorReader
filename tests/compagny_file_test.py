@@ -8,6 +8,7 @@ import unittest
 
 class CompagnyFileTest(unittest.TestCase):
     def setUp(self):
+        super(CompagnyFileTest, self).setUp()
         self.cmp_file = None
 
 

@@ -11,11 +11,12 @@ from abc import abstractmethod
 from datetime import datetime
 
 import sensor_file.file_parser.concrete_file_parser as file_parser
+from sensor_file.domain.records import Record
+from sensor_file.domain.site import Site
 
-PARAMETER = 'parameter'
-DATA_ACCES = 'data'
-
-
+TXT_FILE_TYPES = ('dat', 'lev', 'xle')
+XLS_FILES_TYPES = ('xls', 'xlsx')
+CSV_FILES_TYPES = ('csv')
 
 
 class AbstractFileReader(object):
@@ -26,16 +27,11 @@ class AbstractFileReader(object):
     - Entete d'information sur les colonnes de données
     - Les colonnes de données
     """
-    FILE_HEADER = 'file_header'             #   information about the file (compagny, site, setup date,...)
-    FILE_DATA_HEADER = 'file_data_header'   #   information about the data (unit, parameters, ...)
-    DATA_ACCES = 'data'                     #   records of the current file
 
     def __init__(self, file_name: str = None, header_length: int = 10):
         self._file = file_name
         self._header_length = header_length
-        self.__file_internal_data = {self.FILE_HEADER: {},
-                                     self.FILE_DATA_HEADER: {},
-                                     self.DATA_ACCES: None}
+        self._site_of_interest = None
         self.file_reader = None
         self._set_file_reader()
 
@@ -44,14 +40,15 @@ class AbstractFileReader(object):
         set the good file parser to open and read the provided file
         :return:
         """
-        file_ext = self.get_file_extension()
-        if file_ext in ('dat', 'lev', 'xle'):
+        file_ext = self.get_file_extension
+        if file_ext in TXT_FILE_TYPES:
             self.file_reader = file_parser.TXTFileParser(self._file, self._header_length)
-        elif file_ext in ('xls', 'xlsx'):
+        elif file_ext in XLS_FILES_TYPES:
             self.file_reader = file_parser.EXCELFileParser(self._file, self._header_length)
-        elif file_ext == 'csv':
+        elif file_ext in CSV_FILES_TYPES:
             self.file_reader = file_parser.CSVFileParser(self._file, self._header_length)
 
+    @property
     def get_file_extension(self):
         file_list = self._file.split(".")
         if len(file_list) == 1:
@@ -61,64 +58,12 @@ class AbstractFileReader(object):
         else:
             return file_list[-1].lower()
 
-    @property
-    def data(self):
-        return self.__file_internal_data[DATA_ACCES]
+    def _make_site(self):
+        self.read_file_header()
+        self.read_file_data_header()
 
-    @property
-    def parameters(self) -> dict:
-        return self.__file_internal_data[self.PARAMETER]
-
-    def get_data_at_time(self, at_date: datetime) -> list(Recording):
-        """
-        method that return a list of an unique Recording if the date match the
-        Recording date or a list of all the Recording for the givent date
-        :param at_date: datetime object corresponding to the needed Recording"""
-        pass
-
-    def get_data_between(self, first_date: datetime, last_date: datetime) -> list(Recording):
-        """
-        method that return a list of all the Recording for the given date interval
-        :param first_date: start datetime object corresponding to the needed Recording
-        :param last_date: end datetime object corresponding to the needed Recording
-        :return: list
-        """
-        pass
-
-    def get_data_list(self):
-        pass
-
-    @property
-    def get_date_list(self):
-        return list(self.__file_internal_data.keys())
-
-    @property
-    def end_date(self):
-        return self.get_date_list[-1]
-
-    @property
-    def get_header(self):
-        return self.__file_internal_data[self.FILE_DATA_HEADER]
-
-    @property
-    def start_date(self):
-        return self.get_date_list[0]
-
-    @abstractmethod
-    def read_file(self):
-        pass
-
-    def _validate_file(self) -> bool:
-        """
-        Methode pemettant de valider un fichier.
-        Celui-ci ne doit pas être NONE et doit contenir l'extension désirée
-        :return:
-        """
-        return self._file is not None and self._validate_file_type
-
-    @abstractmethod
-    def _validate_file_type(self) -> bool:
-        pass
+    def _make_data(self):
+        self.read_file_data()
 
     @abstractmethod
     def read_file_header(self):
@@ -131,7 +76,7 @@ class AbstractFileReader(object):
     @abstractmethod
     def read_file_data_header(self):
         """
-        Methode permettant de lire l'entete des colonnes de donnees
+        Methode permettant de lire l'entete des colonnes de donnees (information sur ce qui est enregistré/mesuré)
         :return:
         """
         pass
@@ -139,7 +84,7 @@ class AbstractFileReader(object):
     @abstractmethod
     def read_file_data(self):
         """
-        Methode pour ne recupérer que les donnees du fichier
+        Methode pour ne recupérer que les données du fichier
         :return:
         """
         pass
