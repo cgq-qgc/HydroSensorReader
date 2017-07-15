@@ -40,7 +40,7 @@ class AbstractFileReader(object):
         set the good file parser to open and read the provided file
         :return:
         """
-        file_ext = self.get_file_extension
+        file_ext = self.file_extension
         if file_ext in TXT_FILE_TYPES:
             self.file_reader = file_parser.TXTFileParser(self._file, self._header_length)
         elif file_ext in XLS_FILES_TYPES:
@@ -48,8 +48,12 @@ class AbstractFileReader(object):
         elif file_ext in CSV_FILES_TYPES:
             self.file_reader = file_parser.CSVFileParser(self._file, self._header_length)
 
+    def read_file(self):
+        self._make_site()
+        self._make_data()
+
     @property
-    def get_file_extension(self):
+    def file_extension(self):
         file_list = self._file.split(".")
         if len(file_list) == 1:
             raise ValueError("The path given doesn't point to a file name")
@@ -59,14 +63,14 @@ class AbstractFileReader(object):
             return file_list[-1].lower()
 
     def _make_site(self):
-        self.read_file_header()
-        self.read_file_data_header()
+        self._read_file_header()
+        self._read_file_data_header()
 
     def _make_data(self):
-        self.read_file_data()
+        self._read_file_data()
 
     @abstractmethod
-    def read_file_header(self):
+    def _read_file_header(self):
         """
         Methode permettant de lire l'entete du fichier
         :return:
@@ -74,7 +78,7 @@ class AbstractFileReader(object):
         pass
 
     @abstractmethod
-    def read_file_data_header(self):
+    def _read_file_data_header(self):
         """
         Methode permettant de lire l'entete des colonnes de donnees (information sur ce qui est enregistré/mesuré)
         :return:
@@ -82,7 +86,7 @@ class AbstractFileReader(object):
         pass
 
     @abstractmethod
-    def read_file_data(self):
+    def _read_file_data(self):
         """
         Methode pour ne recupérer que les données du fichier
         :return:
