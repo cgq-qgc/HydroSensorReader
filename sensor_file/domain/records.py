@@ -169,12 +169,12 @@ class ChemistryRecord(Record):
         # transform trace, not detected, nd, n.d, ...
         # by dividing the detection limit by 2
         # if there is no detection limit, the result is NaN
-        if re.search(r"^tr.*|n.d.*|nan",self.value.lower()):
+        if re.search(r"^tr.*|n(.{0,1}|(ot).*)d.*|nan",self.value.lower()):
             if self.lower_detection_limit is not None:
                 normal_value =  float(self.lower_detection_limit)/2.0
         # transform values like <0.5 to 0.25 by divinding the result by two
         elif re.search(r".*<.*",self.value):
-            normal_value = float(self.value.replace("<",''))
+            normal_value = float(re.sub(r"[< ]",'',self.value))/2.0
         # the result is just a result
         elif not re.search(r"^tr.*|n.d.*|.*<.*", self.value):
             normal_value = float(self.value)
