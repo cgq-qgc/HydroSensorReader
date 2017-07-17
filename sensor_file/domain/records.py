@@ -144,7 +144,8 @@ class ChemistryRecord(Record):
                  parameter_unit: str = None,
                  value: str = None,
                  detection_limit: str = None,
-                 report_date: datetime.datetime = None):
+                 report_date: datetime.datetime = None,
+                 analysis_type:str = None):
         """
 
         :param sampling_date: date when the sample have been taken
@@ -157,6 +158,14 @@ class ChemistryRecord(Record):
         super().__init__(sampling_date, parameter, parameter_unit, value)
         self.lower_detection_limit = detection_limit
         self.report_date = report_date
+        self.analysis_type = analysis_type
+
+    @property
+    def sampling_date(self):
+        return self.record_date
+
+    def __str__(self) -> str:
+        return "({}) -- {} : {} {}".format(self.sampling_date, self.parameter,self.value,self.parameter_unit)
 
     @property
     def normalized_value(self) -> float:

@@ -6,6 +6,8 @@ __description__ = " "
 __version__ = '1.0'
 
 import datetime
+from sensor_file.domain.records import TimeSeriesRecords
+from sensor_file.domain.records import ChemistryRecord
 
 class Site(object):
     """
@@ -34,6 +36,7 @@ class SensorPlateform(Site):
         super().__init__(site_name, visit_date, project_name)
         self.instrument_serial_number = instrument_serial_number
         self.last_recording = last_recording
+        self.records = TimeSeriesRecords()
 
 class Sample(Site):
     """
@@ -48,3 +51,12 @@ class Sample(Site):
         super().__init__(site_name, visit_date,project_name)
         self.lab_sample_name = lab_sample_name
         self.sample_type = sample_type
+        self.records = []
+
+    def create_new_record(self) -> ChemistryRecord:
+        new_rec = ChemistryRecord()
+        self.records.append(new_rec)
+        return self.records[-1]
+
+
+

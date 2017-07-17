@@ -12,8 +12,8 @@ import warnings
 
 import openpyxl
 import xlrd
-
-from sensor_file.file_parser import AbstractFileParser
+from collections import OrderedDict
+from sensor_file.file_parser.abstract_file_parser import AbstractFileParser
 
 
 class CSVFileParser(AbstractFileParser):
@@ -21,7 +21,6 @@ class CSVFileParser(AbstractFileParser):
     def __init__(self, file_path: str = None, header_length:int = 10):
         super().__init__(file_path, header_length)
 
-        self.read_file_header()
 
     def read_file(self):
         with open(self._file, 'r') as csvfile:
@@ -50,7 +49,6 @@ class CSVFileParser(AbstractFileParser):
 class TXTFileParser(AbstractFileParser):
     def __init__(self, file_path: str = None, header_length: int = 20):
         super().__init__(file_path, header_length)
-        self.read_file_header()
 
 
     def read_file(self):
@@ -72,7 +70,7 @@ class TXTFileParser(AbstractFileParser):
 class EXCELFileParser(AbstractFileParser):
     def __init__(self, file_path: str = None, header_length: int = None):
         super().__init__(file_path, header_length)
-        self._file_content = {}
+        self._file_content = OrderedDict()
         self._file_header_content = {}
         self.nb_sheets = 0
     def read_file(self):
@@ -147,8 +145,12 @@ class EXCELFileParser(AbstractFileParser):
             self._file_content[sheet] = sheet_content
             setattr(EXCELFileParser, 'sheet{}'.format(self.nb_sheets), self._file_content[sheet])
 
-    def read_file_header(self):
-        super().read_file_header()
+    def read_file_header(self, sheet_name) -> list:
+        assert sheet_name in list(self._file_content.keys())
+        header = []
+        for i, row in zip(range(self._header_length), self._file_content[sheet_name]):
+            header.append(row)
+        return header
 
     @property
     def get_file_content(self):
@@ -166,22 +168,22 @@ if __name__ == '__main__':
     # print(cs_file.get_file_content)
 
     # EXEMPLE AVEC UN TXT FILE
-    txt_file = TXTFileParser(path.join(exemple_file_path,"F2_20160223.lev"))
-    txt_file.read_file()
+    # txt_file = TXTFileParser(path.join(exemple_file_path,"F2_20160223.lev"))
+    # txt_file.read_file()
     # print(txt_file.get_file_content)
-    for row in txt_file.get_file_content:
-        print(row)
+    # for row in txt_file.get_file_content:
+    #     print(row)
 
     # EXEMPLE AVEC UN XLS
-    # xls_file_name = "B653824V1-R2016-08-18_16-31-39_N001.xls"
-    # xls_file = EXCELFileParser(path.join(exemple_file_path, xls_file_name))
-    # xls_file.read_file()
-    # i = 0
-    # for row in xls_file.sheet1:
-    #     print(row)
-    #     i+=1
-    #     if i > 10:
-    #         break
+    xls_file_name = "B653824V1-R2016-08-18_16-31-39_N001.xls"
+    xls_file = EXCELFileParser(path.join(exemple_file_path, xls_file_name),header_length=11)
+    xls_file.read_file()
+
+    i = 0
+    sheet_name = list(xls_file.get_file_content.keys())[0]
+    for row in xls_file.read_file_header(sheet_name):
+        print(row)
+
     # EXEMPLE AVEC UN FICHIER XLSX
     # xlsx_file_name = "maxxam_sheet.xlsx"
     # xlsx_file = EXCELFileParser(path.join(exemple_file_path,xlsx_file_name))

@@ -5,7 +5,7 @@ __date__ = '2016-04-25'
 __description__ = " "
 __version__ = '1.0'
 
-from abstract_file_reader import FileReader
+from deprec_abstract_file_reader import FileReader
 import datetime
 import re
 
