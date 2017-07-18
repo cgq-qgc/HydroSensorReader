@@ -11,7 +11,7 @@ from abc import abstractmethod
 from datetime import datetime
 
 import sensor_file.file_parser.concrete_file_parser as file_parser
-from typing import List
+from typing import List, Dict
 import datetime
 from sensor_file.domain.site import Sample
 from sensor_file.domain.site import SensorPlateform
@@ -121,17 +121,17 @@ class PlateformReaderFile(AbstractFileReader):
 
 
 class GeochemistryFileReader(AbstractFileReader):
-    def __init__(self, file_name: str = None, header_length: int = 10, _sites:List[Sample] = list()):
+    def __init__(self, file_name: str = None, header_length: int = 10, _sites:Dict[str,Sample] = list()):
         super().__init__(file_name, header_length)
         self._site_of_interest = _sites  # dict of Samples
         self.project = None
         self.report_date = None
         self.analysis_methode = None
 
-    def create_sample(self):
-        sample = Sample()
-        self._site_of_interest.append(sample)
-        yield self._site_of_interest[-1]
+    def create_sample(self, sample_name:str):
+        sample = Sample(site_name=sample_name)
+        self._site_of_interest[sample_name] = sample
+        yield self._site_of_interest[sample_name]
 
     def create_complete_sample(self, site_name: str = None,
                                visit_date: datetime.datetime = None,

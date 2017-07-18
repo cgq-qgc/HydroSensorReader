@@ -47,11 +47,13 @@ class Sample(Site):
                  visit_date: datetime.datetime = None,
                  lab_sample_name:str = None,
                  sample_type:str = None,
+                 analysis_type:str = None,
                  project_name: str = None):
         super().__init__(site_name, visit_date,project_name)
         self.lab_sample_name = lab_sample_name
         self.sample_type = sample_type
         self.records = []
+        self.analysis_type = analysis_type
 
     def create_new_record(self) -> ChemistryRecord:
         new_rec = ChemistryRecord()

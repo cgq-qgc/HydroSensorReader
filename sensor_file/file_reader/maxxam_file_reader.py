@@ -23,6 +23,8 @@ class XSLMaxxamFileReader(GeochemistryFileReader):
         assert self.file_extension in self.XLS_FILES_TYPES, "Bad file type"
         self._unit_column_index = 1
         self._first_sample_column_index = 2
+        self._sample_name_row_index = 0
+        self.analysis_methode = []
 
     def _read_file_header(self):
         """
@@ -49,7 +51,6 @@ class XSLMaxxamFileReader(GeochemistryFileReader):
         with open('maxxam_analysis_type.txt', 'r+', encoding='utf-8') as _file:
             in_file = False
             for line in _file:
-
                 if analysis_type in line:
                     in_file = True
                     break
@@ -57,11 +58,22 @@ class XSLMaxxamFileReader(GeochemistryFileReader):
                 _file.writelines(analysis_type + "\n")
 
     def get_analysis_type(self):
-        for result_sheets in max_file.get_results_sheet():
-            for row in max_file.file_content[result_sheets][11:]:
+        for result_sheets in self.get_results_sheet():
+            for row in self.file_content[result_sheets][11:]:
                 if type(row[0]) == str and \
                                 row[1:] == [None for i in range(len(row) - 1)]:
                     self._add_analysis_type_in_txt_database(row[0])
+                    if row[0] not in self.IGNORE_CONTENT and row[0] not in self.analysis_methode:
+                        self.analysis_methode.append(row[0])
+        self._update_sample_name_row_index('Result (1)')
+        return self.analysis_methode
+
+    def _update_sample_name_row_index(self, sheet_name):
+        assert sheet_name in self.file_content
+        for id,row in enumerate(self.file_content[sheet_name][0:11]):
+            print("{} {}".format(id,row))
+            if type(row[1]) == str and re.search(r"unit.*",str(row[1]).lower()):
+                self._sample_name_row_index = id
 
 
 if __name__ == '__main__':
@@ -72,7 +84,7 @@ if __name__ == '__main__':
 
     max_file = XSLMaxxamFileReader(file_name=os.path.join(file_loc, file_name))
     print(max_file.file_content)
-    max_file.get_analysis_type()
+    print(max_file.get_analysis_type())
     # for result_sheets in max_file.get_results_sheet():
     #     for row in max_file.file_reader.read_file_header(result_sheets):
     #         print([None for i in range(len(row)-1)])
