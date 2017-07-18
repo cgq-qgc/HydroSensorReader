@@ -7,14 +7,16 @@
 # Original author: Laptop
 # 
 #######################################################
+import datetime
 from abc import abstractmethod
 from datetime import datetime
+from collections import defaultdict
+
+from typing import Dict
 
 import sensor_file.file_parser.concrete_file_parser as file_parser
-from typing import List, Dict
-import datetime
-from sensor_file.domain.site import Sample
-from sensor_file.domain.site import SensorPlateform
+from sensor_file.domain.site import Sample, SensorPlateform
+
 
 class AbstractFileReader(object):
     """Interface permettant de lire un fichier provenant d'un datalogger quelconque
@@ -112,23 +114,27 @@ class AbstractFileReader(object):
         pass
 
 
-
 class PlateformReaderFile(AbstractFileReader):
     def __init__(self, file_name: str = None, header_length: int = 10):
         super().__init__(file_name, header_length)
         self._site_of_interest = SensorPlateform()
 
 
+sample_ana_type = Dict[str, Sample]
+sample_dict = Dict[str, sample_ana_type]
+
 
 class GeochemistryFileReader(AbstractFileReader):
-    def __init__(self, file_name: str = None, header_length: int = 10, _sites:Dict[str,Sample] = list()):
+    def __init__(self, file_name: str = None,
+                 header_length: int = 10,
+                 _sites: sample_dict = None ):
         super().__init__(file_name, header_length)
-        self._site_of_interest = _sites  # dict of Samples
+        self._site_of_interest = defaultdict(dict)  # dict of Samples
         self.project = None
         self.report_date = None
         self.analysis_methode = None
 
-    def create_sample(self, sample_name:str):
+    def create_sample(self, sample_name: str):
         sample = Sample(site_name=sample_name)
         self._site_of_interest[sample_name] = sample
         yield self._site_of_interest[sample_name]

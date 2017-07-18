@@ -5,11 +5,12 @@ __date__ = '2017-07-12$'
 __description__ = " "
 __version__ = '1.0'
 
-from abc import abstractmethod
 import datetime
-from typing import Dict, List
-from collections import OrderedDict
 import re
+from collections import OrderedDict
+
+from typing import Dict, List
+
 
 class Parameter(object):
     """
@@ -189,6 +190,22 @@ class ChemistryRecord(Record):
             normal_value = float(self.value)
         # todo : what to do with values above higher detection limit
         return normal_value
+
+class MaxxamChemistryRecord(ChemistryRecord):
+    def __init__(self,
+                 sampling_date: datetime.datetime = None,
+                 parameter: str = None,
+                 parameter_unit: str = None,
+                 value: str = None,
+                 detection_limit: str = None,
+                 report_date: datetime.datetime = None,
+                 analysis_type: str = None,
+                 lot_cq_name:str = None):
+        super().__init__(sampling_date, parameter,
+                         parameter_unit, value,
+                         detection_limit, report_date,
+                         analysis_type)
+        self.lot_cq_name = lot_cq_name
 
 
 if __name__ == '__main__':

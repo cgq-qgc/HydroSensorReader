@@ -6,7 +6,6 @@ __description__ = " "
 __version__ = '1.0'
 
 from sensor_file.file_reader.abstract_file_reader import GeochemistryFileReader
-
 import re
 
 
@@ -78,8 +77,8 @@ class XSLMaxxamFileReader(GeochemistryFileReader):
 
 if __name__ == '__main__':
     import os
-
-    file_loc = "C:\\Users\\laptop\\Documents\\Programmation\\scientific_file_reader\\file_example"
+    file_loc = os.path.join(os.path.split(os.path.split(os.getcwd())[0])[0],'file_example')
+    print(file_loc)
     file_name = "B656097V1-R2016-08-31_16-20-01_N001.xls"
 
     max_file = XSLMaxxamFileReader(file_name=os.path.join(file_loc, file_name))
