@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://U:\Programmation\django_teste\.idea\django_teste.iml" filepath="U:\Programmation\django_teste\.idea\django_teste.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/scientific_file_reader.iml" filepath="$PROJECT_DIR$/.idea/scientific_file_reader.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/ogc_om_interface.iml" filepath="$PROJECT_DIR$/.idea/ogc_om_interface.iml" />
     </modules>
   </component>
 </project>
