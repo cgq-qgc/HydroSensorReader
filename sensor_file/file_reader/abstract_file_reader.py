@@ -9,7 +9,6 @@
 #######################################################
 import datetime
 from abc import abstractmethod
-from datetime import datetime
 from collections import defaultdict
 
 from typing import Dict
@@ -36,6 +35,10 @@ class AbstractFileReader(object):
         self._site_of_interest = None
         self.file_reader = None
         self._set_file_reader()
+
+    @property
+    def sites(self):
+        return self._site_of_interest
 
     def _set_file_reader(self):
         """
@@ -145,8 +148,8 @@ class GeochemistryFileReader(AbstractFileReader):
                                sample_type: str = None,
                                project_name: str = None):
         sample = Sample(site_name, visit_date, lab_sample_name, sample_type, project_name)
-        self._site_of_interest.append(sample)
-        yield self._site_of_interest[-1]
+        self._site_of_interest[site_name] = sample
+
 
     def get_sample_by_name(self, sample_name):
         """
