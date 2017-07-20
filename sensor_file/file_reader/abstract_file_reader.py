@@ -151,14 +151,4 @@ class GeochemistryFileReader(AbstractFileReader):
         self._site_of_interest[site_name] = sample
 
 
-    def get_sample_by_name(self, sample_name):
-        """
-        method that return a sample in the _site_of_interest by
-        comparing its name with the given name. the names must match
-        perfectly
-        :param sample_name:
-        :return:
-        """
-        for samples in self._site_of_interest:
-            if samples.site_name == sample_name:
-                return samples
+

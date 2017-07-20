@@ -60,6 +60,16 @@ class Sample(Site):
         self.records.append(new_rec)
         return self.records[-1]
 
+    def create_complete_record(self,samp_date,param,param_unit,value,detect_lim,report_date,ana_type):
+        new_rec = ChemistryRecord(sampling_date=samp_date,
+                                  parameter=param,
+                                  parameter_unit=param_unit,
+                                  value=value,
+                                  detection_limit=detect_lim,
+                                  report_date=report_date,
+                                  analysis_type=ana_type)
+        self.records.append(new_rec)
+
 
 
 
