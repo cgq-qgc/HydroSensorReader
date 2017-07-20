@@ -194,8 +194,11 @@ class XSLMaxxamFileReader(GeochemistryFileReader):
 if __name__ == '__main__':
     import os
 
-    file_loc = os.path.join(os.path.split(os.path.split(os.getcwd())[0])[0], 'file_example')
-    print(file_loc)
+    path = os.getcwd()
+    while os.path.split(path)[1] != "scientific_file_reader":
+        path = os.path.split(path)[0]
+    file_loc = os.path.join(path, 'file_example')
+
     # file_name = "B656097V1-R2016-08-31_16-20-01_N001.xls"
     file_name = "B653824V1-R2016-08-18_16-31-39_N001.xls"
 

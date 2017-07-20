@@ -25,9 +25,10 @@ class AbstractFileReader(object):
     - Entete d'information sur les colonnes de données
     - Les colonnes de données
     """
-    TXT_FILE_TYPES = ['dat', 'lev', 'xle']
+    TXT_FILE_TYPES = ['dat', 'lev']
     XLS_FILES_TYPES = ['xls', 'xlsx']
     CSV_FILES_TYPES = ['csv']
+    XML_FILES_TYPES = ['xle']
 
     def __init__(self, file_name: str = None, header_length: int = 10):
         self._file = file_name
@@ -52,6 +53,8 @@ class AbstractFileReader(object):
             self.file_reader = file_parser.EXCELFileParser(self._file, self._header_length)
         elif file_ext in self.CSV_FILES_TYPES:
             self.file_reader = file_parser.CSVFileParser(self._file, self._header_length)
+        elif file_ext in self.XML_FILES_TYPES:
+            self.file_reader = file_parser.XMLFileParser(self._file)
 
         self.file_reader.read_file()
 

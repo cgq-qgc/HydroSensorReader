@@ -28,15 +28,33 @@ class SensorPlateform(Site):
     Definition of a Sensor plateform site. A plateform is an object that can take measurement as
     a standalone object.
     """
+
     def __init__(self, site_name: str = None,
                  visit_date: datetime.datetime = None,
                  instrument_serial_number:str = None,
-                 last_recording:datetime.datetime = None,
                  project_name:str = None):
+        """
+        initialization of a sensor plateform
+        :param site_name: site name or location name of the sensor
+        :param visit_date: usually, when the file have been created
+        :param instrument_serial_number: serial number of the sensor
+        :param project_name: project name
+        """
         super().__init__(site_name, visit_date, project_name)
         self.instrument_serial_number = instrument_serial_number
-        self.last_recording = last_recording
-        self.records = TimeSeriesRecords()
+        self.records = [] # list(TimeSeriesRecords())
+        self.batterie_level = None
+        self.model_number = None
+
+    def create_time_serie(self,parameter,unit,dates,values):
+        time_serie = TimeSeriesRecords()
+        time_serie.parameter = parameter
+        time_serie.parameter_unit = unit
+        time_serie.set_time_serie_values(dates,values)
+        self.records.append(time_serie)
+
+
+
 
 class Sample(Site):
     """
@@ -44,15 +62,24 @@ class Sample(Site):
     given to/by the lab.
     """
     def __init__(self, site_name: str = None,
-                 visit_date: datetime.datetime = None,
+                 visit_date: datetime.datetime = None,  # sampling date
                  lab_sample_name:str = None,
                  sample_type:str = None,
                  analysis_type:str = None,
                  project_name: str = None):
+        """
+        initialization of a sample
+        :param site_name: site name
+        :param visit_date: sampling date
+        :param lab_sample_name: laboratory name
+        :param sample_type: sample type (blank, sample, duplicate,...)
+        :param analysis_type: analysis type
+        :param project_name: project name
+        """
         super().__init__(site_name, visit_date,project_name)
         self.lab_sample_name = lab_sample_name
         self.sample_type = sample_type
-        self.records = []
+        self.records = []   #list(ChemistryRecord)
         self.analysis_type = analysis_type
 
     def create_new_record(self) -> ChemistryRecord:

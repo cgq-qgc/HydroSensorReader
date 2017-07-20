@@ -221,11 +221,16 @@ class SolinstLEV_Reader(FileReader):
 
 
 if __name__ == '__main__':
-    file_example = "C:\\Users\\laptop\\Documents\\Programmation\\scientific_file_reader\\file_example\\"
+    import os
+    path = os.getcwd()
+    while os.path.split(path)[1] != "scientific_file_reader":
+        path = os.path.split(path)[0]
+    file_loc = os.path.join(path, 'file_example')
+
     teste_all = True
 
     if teste_all:
-        file_location = file_example + "2029499_F7_NordChamp_PL20150925_2015_09_25.xle"
+        file_location = os.path.join(file_loc,"2029499_F7_NordChamp_PL20150925_2015_09_25.xle")
         xle_reader = SolinstXLE_Reader(file_name=file_location)
         print(xle_reader.location)
         print(xle_reader.start_time)
@@ -241,6 +246,6 @@ if __name__ == '__main__':
         # print(xle_reader.sampling_rate_in_minutes)
     else:
 
-        file_location = file_example + "F2_20160223.lev"
+        file_location = os.path.join(file_loc,"F2_20160223.lev")
         lev_reader = SolinstLEV_Reader(file_location)
 

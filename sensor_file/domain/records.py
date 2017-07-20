@@ -65,8 +65,8 @@ class TimeSeriesRecords(Record):
                  parameter: str = None,
                  parameter_unit: str = None):
         super().__init__(records_date, parameter, parameter_unit, values)
-        if self.value is None:
-            self.value = OrderedDict()
+        self.value = OrderedDict()
+
 
     def set_time_serie_values(self, times: List[datetime.datetime], values: list):
         for date, val in zip(times, values):
@@ -88,6 +88,12 @@ class TimeSeriesRecords(Record):
                 if dates.date() == at_date.date():
                     date_val_return.append([dates, val])
         return date_val_return
+
+    def __str__(self) -> str:
+        tup_start_date = []
+        for i,dates in zip(range(10),self.value.keys()):
+            tup_start_date.append((dates,self.value[dates]))
+        return "{} ({}) :[{} ... ]".format(self.parameter,self.parameter_unit,tup_start_date)
 
     def get_data_between(self, first_date: datetime.datetime, last_date: datetime.datetime) -> list:
         """

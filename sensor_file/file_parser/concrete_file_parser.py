@@ -14,6 +14,7 @@ import openpyxl
 import xlrd
 from collections import OrderedDict
 from sensor_file.file_parser.abstract_file_parser import AbstractFileParser
+from bs4 import BeautifulSoup
 
 
 class CSVFileParser(AbstractFileParser):
@@ -155,6 +156,19 @@ class EXCELFileParser(AbstractFileParser):
     @property
     def get_file_content(self):
         return self._file_content
+
+class XMLFileParser(AbstractFileParser):
+    def __init__(self, file_path: str = None, header_length: int = None):
+        super().__init__(file_path, header_length)
+        self._file_content = BeautifulSoup(open(self._file), 'xml')
+
+    def read_file(self):
+        pass
+
+    def read_file_header(self):
+        pass
+
+
 
 
 if __name__ == '__main__':
