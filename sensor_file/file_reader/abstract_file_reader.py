@@ -156,5 +156,8 @@ class GeochemistryFileReader(AbstractFileReader):
         sample = Sample(site_name, visit_date, lab_sample_name, sample_type, project_name)
         self._site_of_interest[site_name] = sample
 
+# TODO: """create an alternative to SensorPlateform and GeochemistryFileReader to have a time series and samples
+#  for each dates in  times series, have a sample (date, param, record(value).
+
 
 

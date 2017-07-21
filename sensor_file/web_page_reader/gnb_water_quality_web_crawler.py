@@ -13,6 +13,8 @@ import bs4
 import requests
 from collections import defaultdict
 
+# TODO : make this class a child of AbstractFileReader
+
 class GNB_WaterQualityStation(object):
     STATION_PARAMETER_URL_ADRESS = "http://www.elgegl.gnb.ca/WaterNB-NBEau/fr/Lieu%C3%89chantillonnage/%C3%A9chantillons/{station_name}"
     SATION_DATA_URL_ADRESS = "http://www.elgegl.gnb.ca/WaterNB-NBEau/en/SamplingLocation/SamplesData/"
