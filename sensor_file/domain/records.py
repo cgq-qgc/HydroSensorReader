@@ -171,6 +171,10 @@ class ChemistryRecord(Record):
     def sampling_date(self):
         return self.record_date
 
+    @sampling_date.setter
+    def sampling_date(self, value):
+        self.record_date = value
+
     def __str__(self) -> str:
         return "({}) -- {} : {} {}".format(self.sampling_date, self.parameter,self.value,self.parameter_unit)
 
