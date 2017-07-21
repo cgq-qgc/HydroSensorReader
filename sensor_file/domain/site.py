@@ -53,7 +53,10 @@ class SensorPlateform(Site):
         time_serie.set_time_serie_values(dates,values)
         self.records.append(time_serie)
 
-
+    def __str__(self) -> str:
+        return "({serial}):{site} - {date}".format(serial= self.instrument_serial_number,
+                                                   site=self.site_name,
+                                                   date=self.visit_date)
 
 
 class Sample(Site):

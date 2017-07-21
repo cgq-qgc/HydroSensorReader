@@ -36,8 +36,11 @@ class SolinstFileReader(PlateformReaderFile):
 
 
 class LEVSolinstFileReader(PlateformReaderFile):
+    DATA_CHANNEL_STRING = ".*CHANNEL {} from data header.*"
+
     def __init__(self, file_name: str = None, header_length: int = 10):
         super().__init__(file_name, header_length)
+        self._update_header_lentgh()
         self.date_times = self._get_date_list()
 
     def _read_file_header(self):
@@ -70,20 +73,20 @@ class LEVSolinstFileReader(PlateformReaderFile):
         _date = None
         _time = None
         for lines in self.file_content[:self._header_length]:
-            if re.search("^date.*",lines.lower()):
-                _date = lines.split(":")[1].replace(" ","")
-            if re.search(r"^time.*",lines.lower()):
-                _time = lines.split(" :")[1].replace(" ","")
-        self._update_header_lentgh()
-        to_datetime = datetime.datetime.strptime("{} {}".format(_date,_time),'%m/%d/%y %H:%M:%S')
+            if re.search("^date.*", lines.lower()):
+                _date = lines.split(":")[1].replace(" ", "")
+            if re.search(r"^time.*", lines.lower()):
+                _time = lines.split(" :")[1].replace(" ", "")
+        to_datetime = datetime.datetime.strptime("{} {}".format(_date, _time), '%m/%d/%y %H:%M:%S')
         return to_datetime
+
     def _update_header_lentgh(self):
-        for i,lines in enumerate(self.file_content):
-            if re.search('^.data.*',lines.lower()):
-                self._header_length = i+1
+        for i, lines in enumerate(self.file_content):
+            if re.search('^.data.*', lines.lower()):
+                self._header_length = i + 1
                 break
 
-    def _get_instrument_info(self, regex_:str) ->str:
+    def _get_instrument_info(self, regex_: str) -> str:
         str_to_find = None
         for lines in self.file_content:
             if re.search(regex_, lines):
@@ -96,26 +99,46 @@ class LEVSolinstFileReader(PlateformReaderFile):
 
     def _get_serial_number(self):
         serial_string = self._get_instrument_info(r".*(S|s)erial.number.*")
-        serial_numb = re.split(r"[ -]",serial_string)[1]
+        serial_numb = re.split(r"[ -]", serial_string)[1]
         return serial_numb
 
     def _get_project_name(self):
         return self._get_instrument_info(r".*(I|i)nstrument.number.*")
 
-    def _get_number_of_channels(self) ->int:
+    def _get_number_of_channels(self) -> int:
         return int(self._get_instrument_info(r" *Channel *=.*"))
-
 
     def _get_date_list(self) -> list:
         datetime_list = []
-        for lines in self.file_content[self._header_length+1:-1]:
+        for lines in self.file_content[self._header_length + 1:-1]:
             sep_line = lines.split(" ")
-            _date_time = datetime.datetime.strptime("{} {}".format(sep_line[0],sep_line[1]),'%Y/%m/%d %H:%M:%S.%f')
+            _date_time = datetime.datetime.strptime("{} {}".format(sep_line[0], sep_line[1]), '%Y/%m/%d %H:%M:%S.%f')
             datetime_list.append(_date_time)
         return datetime_list
 
     def _get_data(self):
-        pass
+        for channel_num in range(self._get_number_of_channels()):
+            parameter = None
+            parametere_unit = None
+
+            for row_num, row in enumerate(self.file_content[:self._header_length]):
+                if re.search(self.DATA_CHANNEL_STRING.format(channel_num + 1), row):
+                    row_offset = 1
+                    while not (re.search(self.DATA_CHANNEL_STRING.format(channel_num + 2),
+                                         self.file_content[row_num + row_offset]) or
+                                   re.search(r".*data.*", self.file_content[row_num + row_offset].lower())):
+                        row_with_offset = str(self.file_content[row_num + row_offset])
+                        if re.search(r".*identification.*", row_with_offset.lower()):
+                            parameter = row_with_offset.split("=")[1]
+                        if re.search(r".*unit.*", row_with_offset.lower()):
+                            parametere_unit = row_with_offset.split("=")[1]
+                        row_offset += 1
+
+            values = []
+            for lines in self.file_content[self._header_length + 1:-1]:
+                sep_line = [data for data in list(lines.split(" ")) if data != '']
+                values.append(sep_line[channel_num + 2])
+            self._site_of_interest.create_time_serie(parameter, parametere_unit, self.date_times, values)
 
 
 class XLESolinstFileReader(PlateformReaderFile):
@@ -123,7 +146,6 @@ class XLESolinstFileReader(PlateformReaderFile):
 
     def __init__(self, file_name: str = None, header_length: int = 10):
         super().__init__(file_name, header_length)
-        self.dates_list = self._get_date_list()
 
     def _read_file_header(self):
         """
@@ -135,6 +157,8 @@ class XLESolinstFileReader(PlateformReaderFile):
         """
         implementation of the base class abstract method
         """
+
+        self.dates_list = self._get_date_list()
         self._get_data()
 
     def _read_file_data_header(self):
@@ -177,14 +201,14 @@ class XLESolinstFileReader(PlateformReaderFile):
         return self.file_content.select_one('Instrument_info').Battery_level.string
 
     def _get_date_list(self) -> list:
-        datetime_list = []
-        for _data in self.file_content.find_all('Log'):
-            date_time_add = datetime.datetime.strptime("{} {}:{}".
-                                                       format(_data.Date.string,
-                                                              _data.Time.string,
-                                                              _data.ms.string), '%Y/%m/%d %H:%M:%S:%f')
-            datetime_list.append(date_time_add)
+        datetime_list = [datetime.datetime.strptime("{} {}:{}".format(_data.Date.string,
+                                                                      _data.Time.string,
+                                                                      _data.ms.string),
+                                                    '%Y/%m/%d %H:%M:%S:%f')
+                     for _data in self.file_content.find_all('Log')]
+
         return datetime_list
+
 
     def _get_data(self):
         for channels in range(self._get_number_of_channels()):
@@ -192,12 +216,11 @@ class XLESolinstFileReader(PlateformReaderFile):
             channel_parammeter = self.file_content.select_one(channel_name).Identification.string
             channel_unit = self.file_content.select_one(channel_name).Unit.string
             ch_selector = "ch{}"
-            for _data in self.file_content.find_all('Data'):
-                values = [d.text for d in _data.find_all(ch_selector.format(channels + 1))]
-                self._site_of_interest.\
-                    create_time_serie(channel_parammeter,
-                                      channel_unit,self.dates_list,
-                                      values)
+            values = [d.text for d in self.file_content.find_all(ch_selector.format(channels + 1))]
+            self._site_of_interest. \
+                create_time_serie(channel_parammeter,
+                                  channel_unit, self.dates_list,
+                                  values)
 
 
 class CSVSolinstFileReader(PlateformReaderFile):
@@ -234,11 +257,13 @@ if __name__ == '__main__':
     teste_all = True
 
     if teste_all:
-        # file_location = os.path.join(file_loc, "2029499_F7_NordChamp_PL20150925_2015_09_25.xle")
-        file_location = os.path.join(file_loc,"2041929_PO-06_XM20170307_2017_03_07.lev")
-
+        file_location = os.path.join(file_loc, "2029499_F7_NordChamp_PL20150925_2015_09_25.xle")
+        # file_location = os.path.join(file_loc, "2041929_PO-06_XM20170307_2017_03_07.lev")
+        # file_location = os.path.join(file_loc,"2056794_PO-05_baro_CB20161109_2016_11_09.lev")
+        print(file_location)
         solinst_file = SolinstFileReader(file_location)
+        print(solinst_file.file_reader)
         solinst_file.read_file()
-
-        # for time_serie in solinst_file.sites.records:
-        #     print(str(time_serie))
+        print(solinst_file.sites)
+        for time_serie in solinst_file.sites.records:
+            print(str(time_serie))
