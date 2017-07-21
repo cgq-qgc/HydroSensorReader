@@ -11,11 +11,14 @@ import datetime
 from abc import abstractmethod
 from collections import defaultdict
 
-from typing import Dict
+from typing import Dict, List
 
 import sensor_file.file_parser.concrete_file_parser as file_parser
 from sensor_file.domain.site import Sample, SensorPlateform
 
+sample_ana_type = Dict[str, Sample]
+sample_dict = Dict[str, sample_ana_type]
+date_list = List[datetime.datetime]
 
 class AbstractFileReader(object):
     """Interface permettant de lire un fichier provenant d'un datalogger quelconque
@@ -124,10 +127,10 @@ class PlateformReaderFile(AbstractFileReader):
     def __init__(self, file_name: str = None, header_length: int = 10):
         super().__init__(file_name, header_length)
         self._site_of_interest = SensorPlateform()
-
-
-sample_ana_type = Dict[str, Sample]
-sample_dict = Dict[str, sample_ana_type]
+        self._date_list = None
+    @abstractmethod
+    def _get_date_list(self) -> date_list:
+        pass
 
 
 class GeochemistryFileReader(AbstractFileReader):

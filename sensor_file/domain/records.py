@@ -92,7 +92,7 @@ class TimeSeriesRecords(Record):
     def __str__(self) -> str:
         tup_start_date = []
         for i,dates in zip(range(10),self.value.keys()):
-            tup_start_date.append((dates,self.value[dates]))
+            tup_start_date.append((str(dates),self.value[dates]))
         return "{} ({}) :[{} ... ]".format(self.parameter,self.parameter_unit,tup_start_date)
 
     def get_data_between(self, first_date: datetime.datetime, last_date: datetime.datetime) -> list:
