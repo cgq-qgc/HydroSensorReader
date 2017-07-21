@@ -10,7 +10,7 @@ import re
 
 from sensor_file.domain.site import Sample
 from sensor_file.file_reader.abstract_file_reader import GeochemistryFileReader
-
+import warnings
 
 class XSLMaxxamFileReader(GeochemistryFileReader):
     IGNORE_CONTENT = ["LDR = Limite de détection rapportée",
@@ -183,6 +183,7 @@ class XSLMaxxamFileReader(GeochemistryFileReader):
         :param column_index:
         :return:
         """
+        warnings.warn('deprecated',DeprecationWarning)
         # for each row for the column at column_index, create a sample for the quality control made by maxxam.
         for lines in self.file_content[sheet_name][self._sample_name_row_index:]:
             if lines[column_index] is not None and not re.search('lot.*cq.*', lines[column_index].lower()):
