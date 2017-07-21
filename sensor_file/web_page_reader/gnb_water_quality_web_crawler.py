@@ -11,7 +11,7 @@ import json
 
 import bs4
 import requests
-
+from collections import defaultdict
 
 class GNB_WaterQualityStation(object):
     STATION_PARAMETER_URL_ADRESS = "http://www.elgegl.gnb.ca/WaterNB-NBEau/fr/Lieu%C3%89chantillonnage/%C3%A9chantillons/{station_name}"
@@ -20,7 +20,7 @@ class GNB_WaterQualityStation(object):
     def __init__(self, station_name: str):
         self.station_name = str(station_name)
         self.station_url_adress = self.STATION_PARAMETER_URL_ADRESS.format(station_name=self.station_name)
-        self.station_parameters = {}
+        self.station_parameters = defaultdict(dict)
         self.no_param = []
         self.get_avaible_parameter()
         self.get_all_parameter_data()
@@ -71,6 +71,8 @@ class GNB_WaterQualityStation(object):
     def get_sampling_date(self):
         value_for_station_by_date = {}
         for param in self.station_parameters.keys():
+            print(param)
+            print(self.station_parameters[param])
             data = self.station_parameters[param]['data']
             for time_data in data:
                 if time_data[0] in value_for_station_by_date.keys():
@@ -78,8 +80,10 @@ class GNB_WaterQualityStation(object):
                 else:
                     value_for_station_by_date[time_data[0]] = {}
                     value_for_station_by_date[time_data[0]][param] = time_data[1]
-        for date in value_for_station_by_date.keys():
-            print(value_for_station_by_date[date].keys())
+        # for date in value_for_station_by_date.keys():
+        #     print(date)
+        #     for val in value_for_station_by_date[date].keys():
+        #         print(value_for_station_by_date[date][val])
 
 
 
