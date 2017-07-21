@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from bs4 import BeautifulSoup
-
-
+from typing import Any
+import warnings
 
 class SolinstXLE_Reader(FileReader):
     """
@@ -24,11 +24,15 @@ class SolinstXLE_Reader(FileReader):
     """
     CHANNEL_DATA_HEADER = "Ch{}_data_header"
 
+    warnings.simplefilter("always")
+    warnings.warn('class not maintained anymore', DeprecationWarning)
+
     def __init__(self, file_name: str = None):
         """
         :param file_name: string représentant l'emplacement/nom du fichier à ouvrir      
         """
         super(SolinstXLE_Reader, self).__init__(file_name)
+
 
     def reload(self, file_name):
         old_file_name = self._file_name
