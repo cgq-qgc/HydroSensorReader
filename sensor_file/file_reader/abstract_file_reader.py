@@ -20,6 +20,7 @@ sample_ana_type = Dict[str, Sample]
 sample_dict = Dict[str, sample_ana_type]
 date_list = List[datetime.datetime]
 
+
 class AbstractFileReader(object):
     """Interface permettant de lire un fichier provenant d'un datalogger quelconque
     classe permettant d'extraire des données d'un fichier quelconque.
@@ -31,7 +32,11 @@ class AbstractFileReader(object):
     TXT_FILE_TYPES = ['dat', 'lev']
     XLS_FILES_TYPES = ['xls', 'xlsx']
     CSV_FILES_TYPES = ['csv']
-    XML_FILES_TYPES = ['xle']
+    WEB_XML_FILES_TYPES = ['xle', 'xml', 'http']
+    MONTH_S_DAY_S_YEAR_HMS_DATE_STRING_FORMAT = '%m/%d/%y %H:%M:%S'
+    YEAR_S_MONTH_S_DAY_HM_DATE_STRING_FORMAT = '%Y/%m/%d %H:%M'
+    YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT = YEAR_S_MONTH_S_DAY_HM_DATE_STRING_FORMAT + ":%S"
+    YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT = YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT + ".%f"
 
     def __init__(self, file_name: str = None, header_length: int = 10):
         self._file = file_name
@@ -49,15 +54,21 @@ class AbstractFileReader(object):
         set the good file parser to open and read the provided file
         :return:
         """
-        file_ext = self.file_extension
-        if file_ext in self.TXT_FILE_TYPES:
-            self.file_reader = file_parser.TXTFileParser(self._file, self._header_length)
-        elif file_ext in self.XLS_FILES_TYPES:
-            self.file_reader = file_parser.EXCELFileParser(self._file, self._header_length)
-        elif file_ext in self.CSV_FILES_TYPES:
-            self.file_reader = file_parser.CSVFileParser(self._file, self._header_length)
-        elif file_ext in self.XML_FILES_TYPES:
-            self.file_reader = file_parser.XMLFileParser(self._file)
+        try:
+            file_ext = self.file_extension
+            if file_ext in self.TXT_FILE_TYPES:
+                self.file_reader = file_parser.TXTFileParser(self._file, self._header_length)
+            elif file_ext in self.XLS_FILES_TYPES:
+                self.file_reader = file_parser.EXCELFileParser(self._file, self._header_length)
+            elif file_ext in self.CSV_FILES_TYPES:
+                self.file_reader = file_parser.CSVFileParser(self._file, self._header_length)
+            elif file_ext in self.WEB_XML_FILES_TYPES:
+                self.file_reader = file_parser.WEB_XMLFileParser(self._file)
+        except ValueError as e:
+            if 'http' in self._file:
+                self.file_reader = file_parser.WEB_XMLFileParser(self._file)
+            else:
+                raise e
 
         self.file_reader.read_file()
 
@@ -128,6 +139,11 @@ class PlateformReaderFile(AbstractFileReader):
         super().__init__(file_name, header_length)
         self._site_of_interest = SensorPlateform()
         self._date_list = None
+
+    @property
+    def time_series_dates(self):
+        return self._date_list
+
     @abstractmethod
     def _get_date_list(self) -> date_list:
         pass
@@ -135,8 +151,7 @@ class PlateformReaderFile(AbstractFileReader):
 
 class GeochemistryFileReader(AbstractFileReader):
     def __init__(self, file_name: str = None,
-                 header_length: int = 10,
-                 _sites: sample_dict = None ):
+                 header_length: int = 10):
         super().__init__(file_name, header_length)
         self._site_of_interest = defaultdict(dict)  # dict of Samples
         self.project = None
@@ -156,8 +171,36 @@ class GeochemistryFileReader(AbstractFileReader):
         sample = Sample(site_name, visit_date, lab_sample_name, sample_type, project_name)
         self._site_of_interest[site_name] = sample
 
+
+class TimeSeriesGeochemistryFileReader(PlateformReaderFile, GeochemistryFileReader):
+    TIME_SERIES_DATA = 'timeSerie'
+    GEOCHEMISTRY_DATA = 'samples'
+
+    def __init__(self, file_name: str = None, header_length: int = 10):
+        super().__init__(file_name, header_length)
+        self._site_of_interest = defaultdict(dict)
+        self._site_of_interest[self.TIME_SERIES_DATA] = SensorPlateform()
+        self._site_of_interest[self.GEOCHEMISTRY_DATA] = defaultdict(dict)  # dict sorted by [samp_name][samp_date]
+
+    def get_sample_by_date(self, p_samp_name, p_date):
+        try:
+            return self._site_of_interest[self.GEOCHEMISTRY_DATA][p_samp_name][p_date]
+        except:
+            return None
+
+    def get_time_series_data(self) -> SensorPlateform:
+        return self._site_of_interest[self.TIME_SERIES_DATA]
+
+    def get_geochemistry_data(self) -> dict:
+        return self._site_of_interest[self.GEOCHEMISTRY_DATA]
+
+    def _get_date_list(self) -> date_list:
+        return self.get_time_series_data().get_unique_dates_for_all_record()
+
+    @property
+    def time_series_dates(self):
+        self._date_list = self._get_date_list()
+        return self._date_list
+
 # TODO: """create an alternative to SensorPlateform and GeochemistryFileReader to have a time series and samples
 #  for each dates in  times series, have a sample (date, param, record(value).
-
-
-

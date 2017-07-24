@@ -45,6 +45,18 @@ class SensorPlateform(Site):
         self.records = [] # list(TimeSeriesRecords())
         self.batterie_level = None
         self.model_number = None
+        self.longest_time_series = None
+        self._datetime_not_in_longest_time_series = []
+
+    def get_unique_dates_for_all_record(self):
+        self.set_longest_time_series()
+        self.all_times_series_dates_are_equals()
+        all_dates = self.longest_time_series
+
+        if len(self._datetime_not_in_longest_time_series ) != 0:
+            all_dates.append(self._datetime_not_in_longest_time_series)
+        dates = sorted(all_dates)
+        return dates
 
     def create_time_serie(self,parameter,unit,dates,values):
         time_serie = TimeSeriesRecords()
@@ -52,11 +64,46 @@ class SensorPlateform(Site):
         time_serie.parameter_unit = unit
         time_serie.set_time_serie_values(dates,values)
         self.records.append(time_serie)
+        self.set_longest_time_series()
 
     def __str__(self) -> str:
         return "({serial}):{site} - {date}".format(serial= self.instrument_serial_number,
                                                    site=self.site_name,
                                                    date=self.visit_date)
+
+    def set_longest_time_series(self):
+        max_len = 0
+        times_serie_date = None
+        for ts in self.records:
+            if len(ts.get_dates) > max_len:
+                max_len = len(ts.get_dates)
+                times_serie_date = ts.get_dates
+        self.longest_time_series = times_serie_date
+
+        self.all_times_series_dates_are_equals()
+
+
+    def _is_date_in_longest_time_series(self, p_date) -> bool:
+        _times_series_are_equals = True
+        if p_date not in self.longest_time_series:
+            if p_date not in self._datetime_not_in_longest_time_series:
+                _times_series_are_equals = False
+                self._datetime_not_in_longest_time_series.append(p_date)
+        return _times_series_are_equals
+
+    def all_times_series_dates_are_equals(self) -> bool:
+        # get the longest time series
+        if self.longest_time_series is None:
+            self.set_longest_time_series()
+        _times_series_are_equals = True
+        for ts in self.records:
+            # date list are differents
+            if ts.get_dates != self.longest_time_series:
+                for _dates in ts.get_dates:
+                    _times_series_are_equals = self._is_date_in_longest_time_series(_dates)
+                    if _times_series_are_equals == False:
+                        break
+        return _times_series_are_equals
 
 
 class Sample(Site):

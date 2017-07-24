@@ -14,7 +14,8 @@ import openpyxl
 import xlrd
 from collections import OrderedDict
 from sensor_file.file_parser.abstract_file_parser import AbstractFileParser
-from bs4 import BeautifulSoup
+import bs4
+import requests
 
 
 class CSVFileParser(AbstractFileParser):
@@ -157,10 +158,14 @@ class EXCELFileParser(AbstractFileParser):
     def get_file_content(self):
         return self._file_content
 
-class XMLFileParser(AbstractFileParser):
+class WEB_XMLFileParser(AbstractFileParser):
     def __init__(self, file_path: str = None, header_length: int = None):
         super().__init__(file_path, header_length)
-        self._file_content = BeautifulSoup(open(self._file), 'xml')
+        if 'http' in self._file:
+            web_site = requests.get(self._file, params={'type': 2})
+            self._file_content = bs4.BeautifulSoup(web_site.text, "html.parser")
+        else:
+            self._file_content = bs4.BeautifulSoup(open(self._file), 'xml')
 
     def read_file(self):
         pass
@@ -168,7 +173,9 @@ class XMLFileParser(AbstractFileParser):
     def read_file_header(self):
         pass
 
-
+    @property
+    def get_file_content(self) -> bs4.BeautifulSoup:
+        return self._file_content
 
 
 if __name__ == '__main__':

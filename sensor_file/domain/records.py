@@ -91,9 +91,15 @@ class TimeSeriesRecords(Record):
 
     def __str__(self) -> str:
         tup_start_date = []
-        for i,dates in zip(range(10),self.value.keys()):
+        tup_end_date = []
+        for i,dates in zip(range(3),self.value.keys()):
             tup_start_date.append((str(dates),self.value[dates]))
-        return "{} ({}) :[{} ... ]".format(self.parameter,self.parameter_unit,tup_start_date)
+        for dates in list(self.value.keys())[-3:]:
+            tup_end_date.append((str(dates),self.value[dates]))
+        return "{} ({}) :[{} ... {}]\n".format(self.parameter,
+                                             self.parameter_unit,
+                                             tup_start_date,
+                                             tup_end_date)
 
     def get_data_between(self, first_date: datetime.datetime, last_date: datetime.datetime) -> list:
         """
@@ -139,7 +145,9 @@ class TimeSeriesRecords(Record):
     @property
     def start_date(self):
         return list(self.value.keys())[0]
-
+    @property
+    def get_dates(self):
+        return list(self.value.keys())
 
 class ChemistryRecord(Record):
     """

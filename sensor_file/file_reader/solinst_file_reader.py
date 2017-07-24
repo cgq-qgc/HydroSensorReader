@@ -81,7 +81,7 @@ class LEVSolinstFileReader(PlateformReaderFile):
                 _date = lines.split(":")[1].replace(" ", "")
             if re.search(r"^time.*", lines.lower()):
                 _time = lines.split(" :")[1].replace(" ", "")
-        to_datetime = datetime.datetime.strptime("{} {}".format(_date, _time), '%m/%d/%y %H:%M:%S')
+        to_datetime = datetime.datetime.strptime("{} {}".format(_date, _time), self.MONTH_S_DAY_S_YEAR_HMS_DATE_STRING_FORMAT)
         return to_datetime
 
     def _update_header_lentgh(self):
@@ -116,7 +116,7 @@ class LEVSolinstFileReader(PlateformReaderFile):
         datetime_list = []
         for lines in self.file_content[self._header_length + 1:-1]:
             sep_line = lines.split(" ")
-            _date_time = datetime.datetime.strptime("{} {}".format(sep_line[0], sep_line[1]), '%Y/%m/%d %H:%M:%S.%f')
+            _date_time = datetime.datetime.strptime("{} {}".format(sep_line[0], sep_line[1]), self.YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT)
             datetime_list.append(_date_time)
         return datetime_list
 
@@ -192,7 +192,7 @@ class XLESolinstFileReader(PlateformReaderFile):
         date_str = self.file_content.select_one('File_info').Date.string
         time_str = self.file_content.select_one('File_info').Time.string
         datetime_str = "{} {}".format(date_str, time_str)
-        datetime_obj = datetime.datetime.strptime(datetime_str, '%Y/%m/%d %H:%M:%S')
+        datetime_obj = datetime.datetime.strptime(datetime_str, self.YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT)
         return datetime_obj
 
     def _get_site_name(self) -> str:
@@ -295,10 +295,10 @@ class CSVSolinstFileReader(PlateformReaderFile):
         #                   _data.Time.string,
         #                   _data.ms.string),
         date_format_string = "{} {}"
-        strptime_string = '%Y/%m/%d %H:%M:%S'
+        strptime_string = self.YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT
         if 'ms' in self.file_content[self._start_of_data_row_index]:
             cells_to_check +=1
-            strptime_string += ".%f"
+            strptime_string = self.YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT
             date_format_string += ".{}"
         for i, line in zip(range(10),self.file_content[self._start_of_data_row_index+1:]):
             _date_datetime = None
