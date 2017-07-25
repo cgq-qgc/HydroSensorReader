@@ -8,10 +8,10 @@ __version__ = '1.0'
 import datetime
 import warnings
 import re
-from sensor_file.file_reader.abstract_file_reader import PlateformReaderFile
+from sensor_file.file_reader.abstract_file_reader import TimeSeriesFileReader
 from collections import defaultdict
 
-class SolinstFileReader(PlateformReaderFile):
+class SolinstFileReader(TimeSeriesFileReader):
     def __init__(self, file_name: str = None, header_length: int = 10):
         super().__init__(file_name, header_length)
         self.__main_reader = None
@@ -39,7 +39,7 @@ class SolinstFileReader(PlateformReaderFile):
         self.__main_reader.read_file()
 
 
-class LEVSolinstFileReader(PlateformReaderFile):
+class LEVSolinstFileReader(TimeSeriesFileReader):
     DATA_CHANNEL_STRING = ".*CHANNEL {} from data header.*"
 
     def __init__(self, file_name: str = None, header_length: int = 10):
@@ -145,7 +145,7 @@ class LEVSolinstFileReader(PlateformReaderFile):
             self._site_of_interest.create_time_serie(parameter, parametere_unit, self._date_list, values)
 
 
-class XLESolinstFileReader(PlateformReaderFile):
+class XLESolinstFileReader(TimeSeriesFileReader):
     CHANNEL_DATA_HEADER = "Ch{}_data_header"
 
     def __init__(self, file_name: str = None, header_length: int = 10):
@@ -243,7 +243,7 @@ class XLESolinstFileReader(PlateformReaderFile):
                                   values)
 
 
-class CSVSolinstFileReader(PlateformReaderFile):
+class CSVSolinstFileReader(TimeSeriesFileReader):
     UNIT = 'unit'
     PARAMETER_COL_INDEX = 'col_index'
     def __init__(self, file_name: str = None, header_length: int = 12):

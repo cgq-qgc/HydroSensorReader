@@ -8,7 +8,7 @@ __version__ = '1.0'
 import datetime
 from sensor_file.domain.records import TimeSeriesRecords
 from sensor_file.domain.records import ChemistryRecord
-
+from typing import List
 class Site(object):
     """
     most basic site definition with a site name and a visit date
@@ -47,16 +47,18 @@ class SensorPlateform(Site):
         self.model_number = None
         self.longest_time_series = None
         self._datetime_not_in_longest_time_series = []
+    
+    def get_records(self) ->List[TimeSeriesRecords]:
+        return self.records
 
     def get_unique_dates_for_all_record(self):
         self.set_longest_time_series()
         self.all_times_series_dates_are_equals()
-        all_dates = self.longest_time_series
+        all_dates = []
+        all_dates.extend(self.longest_time_series)
+        all_dates.extend(self._datetime_not_in_longest_time_series)
 
-        if len(self._datetime_not_in_longest_time_series ) != 0:
-            all_dates.append(self._datetime_not_in_longest_time_series)
-        dates = sorted(all_dates)
-        return dates
+        return sorted(all_dates)
 
     def create_time_serie(self,parameter,unit,dates,values):
         time_serie = TimeSeriesRecords()
@@ -65,7 +67,11 @@ class SensorPlateform(Site):
         time_serie.set_time_serie_values(dates,values)
         self.records.append(time_serie)
         self.set_longest_time_series()
-
+    
+    def add_time_serie(self) ->TimeSeriesRecords:
+        ts = TimeSeriesRecords()
+        self.records.append(ts)
+        return self.records[-1]
     def __str__(self) -> str:
         return "({serial}):{site} - {date}".format(serial= self.instrument_serial_number,
                                                    site=self.site_name,
@@ -79,7 +85,7 @@ class SensorPlateform(Site):
                 max_len = len(ts.get_dates)
                 times_serie_date = ts.get_dates
         self.longest_time_series = times_serie_date
-
+        
         self.all_times_series_dates_are_equals()
 
 
@@ -146,6 +152,15 @@ class Sample(Site):
                                   report_date=report_date,
                                   analysis_type=ana_type)
         self.records.append(new_rec)
+
+    def __str__(self) -> str:
+        str_sample =  "sample name:{} at date:{}\n".format(self.site_name,self.visit_date)
+        for rec in self.records:
+            str_sample += "\t" + str(rec) + "\n"
+            
+        return str_sample
+        
+    
 
 
 

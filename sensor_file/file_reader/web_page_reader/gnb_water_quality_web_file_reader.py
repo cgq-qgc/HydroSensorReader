@@ -79,7 +79,7 @@ class GNB_WaterQualityStation(TimeSeriesGeochemistryFileReader):
                 self._make_parameter_data(json_file)
             except:
                 # the parameter have no results for the current station
-                warnings.warn("station {station_name} have no results for {param}".format(station_name=self.station_name,param= parameter))
+                print("station {station_name} have no results for {param}\n".format(station_name=self.station_name,param= parameter))
                 self.no_param.append(parameter)
         self._clean_parameter_list()
 
@@ -119,6 +119,12 @@ if __name__ == '__main__':
     print(x.time_series_dates)
     # for ts in x.get_time_series_data().records:
     #     print(ts)
+    x.makes_samples_with_time_series()
+    for dates in x.get_geochemistry_data().keys():
+        for samp in x.get_geochemistry_data()[dates]:
+            print(x.get_sample_by_date(dates,samp))
 
+   
+    
     # GNB_WaterQualityStation('20122')
     # GNB_WaterQualityStation('837')

@@ -134,7 +134,7 @@ class AbstractFileReader(object):
         pass
 
 
-class PlateformReaderFile(AbstractFileReader):
+class TimeSeriesFileReader(AbstractFileReader):
     def __init__(self, file_name: str = None, header_length: int = 10):
         super().__init__(file_name, header_length)
         self._site_of_interest = SensorPlateform()
@@ -172,19 +172,30 @@ class GeochemistryFileReader(AbstractFileReader):
         self._site_of_interest[site_name] = sample
 
 
-class TimeSeriesGeochemistryFileReader(PlateformReaderFile, GeochemistryFileReader):
+class TimeSeriesGeochemistryFileReader(TimeSeriesFileReader, GeochemistryFileReader):
     TIME_SERIES_DATA = 'timeSerie'
     GEOCHEMISTRY_DATA = 'samples'
-
+   
     def __init__(self, file_name: str = None, header_length: int = 10):
+        """
+        class between TimeSeriesFileReader and GeochemistryFileReader.
+        internal data structure is like:
+        self._site_of_interest
+            [TIMES_SERIES]
+                SensorPlateform
+            [GEOCHEMISTRY]
+                [date : datetime.datetime]
+                    [sample_name:str]
+                        Sample
+       """
         super().__init__(file_name, header_length)
         self._site_of_interest = defaultdict(dict)
         self._site_of_interest[self.TIME_SERIES_DATA] = SensorPlateform()
         self._site_of_interest[self.GEOCHEMISTRY_DATA] = defaultdict(dict)  # dict sorted by [samp_name][samp_date]
 
-    def get_sample_by_date(self, p_samp_name, p_date):
+    def get_sample_by_date(self, p_date, p_samp_name):
         try:
-            return self._site_of_interest[self.GEOCHEMISTRY_DATA][p_samp_name][p_date]
+            return self._site_of_interest[self.GEOCHEMISTRY_DATA][p_date][p_samp_name]
         except:
             return None
 
@@ -201,6 +212,42 @@ class TimeSeriesGeochemistryFileReader(PlateformReaderFile, GeochemistryFileRead
     def time_series_dates(self):
         self._date_list = self._get_date_list()
         return self._date_list
+    
+    def makes_samples_with_time_series(self):
+        sample_name = self.get_time_series_data().site_name
+        project = self.get_time_series_data().project_name
+        # iterate through all dates
+        for dates in self.time_series_dates:
+            # create a sample
+            samp = Sample(site_name=sample_name,
+                          visit_date=dates,
+                          lab_sample_name=None,
+                          sample_type='automatic',
+                          analysis_type=None,
+                          project_name=project)
+            # create and add a record to the sample
+            for rec in self.get_time_series_data().get_records():
+                val = rec.get_value_at_date(dates)
+                param = rec.parameter
+                unit = rec.parameter_unit
+                samp.create_complete_record(dates,param,unit,val,None,dates,None)
+            # add the sample to the geochemistry datas
+            self.get_geochemistry_data()[dates][sample_name] = samp
+    
+    def make_time_series_with_samples(self):
+        """
+        :return:
+        """
+        treated_samp = []
+        current_samp = None
+        date_list = list(self.get_geochemistry_data().keys())
+        values = []
+        samp = None
+        for dates in date_list:
+            for samp in self.get_geochemistry_data()[dates]:
+                current_samp = samp
+                
+            
 
 # TODO: """create an alternative to SensorPlateform and GeochemistryFileReader to have a time series and samples
 #  for each dates in  times series, have a sample (date, param, record(value).

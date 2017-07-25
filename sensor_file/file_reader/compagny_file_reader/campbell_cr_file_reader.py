@@ -9,9 +9,9 @@ __version__ = '1.0'
 
 from sensor_file.domain.records import TimeSeriesRecords
 from sensor_file.domain.site import SensorPlateform
-from sensor_file.file_reader.abstract_file_reader import PlateformReaderFile
+from sensor_file.file_reader.abstract_file_reader import TimeSeriesFileReader
 
-class CampbellCRFileReader(PlateformReaderFile):
+class CampbellCRFileReader(TimeSeriesFileReader):
     def __init__(self, file_name: str = None, header_length: int = 10):
         super().__init__(file_name, header_length)
 
