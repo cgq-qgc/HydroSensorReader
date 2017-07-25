@@ -206,14 +206,14 @@ if __name__ == '__main__':
     max_file = XSLMaxxamFileReader(file_name=os.path.join(file_loc, file_name))
     max_file.read_file()
     for samp in list(max_file.sites.keys()):
-        print("--" + samp)
+        print(samp)
         try:
             for samp_method in list(max_file.sites[samp].keys()):
-                print("-- -- " + samp_method)
+                print("\t" + samp_method)
 
                 for records in max_file.get_sample_object_by_name_and_analysis(samp, samp_method).records:
-                    print("-- -- -- " + str(records))
-                    print("-- -- -- -- record report date: " + str(records.report_date))
-                    print("-- -- -- -- analysis delay: " + str(records.report_date - records.record_date))
+                    print("\t\t" + str(records))
+                    print("\t\t\trecord report date: " + str(records.report_date))
+                    print("\t\t\t\tanalysis delay: " + str(records.report_date - records.record_date))
         except Exception as e:
             print(str(e))

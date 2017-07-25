@@ -357,9 +357,9 @@ if __name__ == '__main__':
 
     if teste_all:
         # file_name = "F21_logger_20160224_20160621.csv"
-        file_name = "slug_PO-05_20160729_1600.csv"
+        # file_name = "slug_PO-05_20160729_1600.csv"
         # file_name = "2029499_F7_NordChamp_PL20150925_2015_09_25.xle"
-        # file_name = "2041929_PO-06_XM20170307_2017_03_07.lev"
+        file_name = "2041929_PO-06_XM20170307_2017_03_07.lev"
         # file_name = "2056794_PO-05_baro_CB20161109_2016_11_09.lev"
         file_location = os.path.join(file_loc, file_name)
         print(file_location)

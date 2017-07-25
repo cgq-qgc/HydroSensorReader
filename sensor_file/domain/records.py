@@ -114,7 +114,8 @@ class TimeSeriesRecords(Record):
         for i, dates in zip(range(3), self.value.keys()):
             tup_start_date.append((str(dates), self.value[dates]))
         for dates in list(self.value.keys())[-3:]:
-            tup_end_date.append((str(dates), self.value[dates]))
+            if str(dates) not in [date[0] for date in tup_start_date]:
+                tup_end_date.append((str(dates), self.value[dates]))
         return "{} ({}) :[{} ... {}]\n".format(self.parameter,
                                                self.parameter_unit,
                                                tup_start_date,
@@ -231,21 +232,7 @@ class ChemistryRecord(Record):
         return normal_value
 
 
-class MaxxamChemistryRecord(ChemistryRecord):
-    def __init__(self,
-                 sampling_date: datetime.datetime = None,
-                 parameter: str = None,
-                 parameter_unit: str = None,
-                 value: str = None,
-                 detection_limit: str = None,
-                 report_date: datetime.datetime = None,
-                 analysis_type: str = None,
-                 lot_cq_name: str = None):
-        super().__init__(sampling_date, parameter,
-                         parameter_unit, value,
-                         detection_limit, report_date,
-                         analysis_type)
-        self.lot_cq_name = lot_cq_name
+
 
 
 if __name__ == '__main__':

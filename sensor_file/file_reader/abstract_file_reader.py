@@ -11,7 +11,7 @@ import datetime
 from abc import abstractmethod
 from collections import defaultdict
 
-from typing import Dict, List
+from typing import Dict, List, Union
 
 import sensor_file.file_parser.concrete_file_parser as file_parser
 from sensor_file.domain.site import Sample, SensorPlateform
@@ -175,14 +175,15 @@ class GeochemistryFileReader(AbstractFileReader):
 class TimeSeriesGeochemistryFileReader(TimeSeriesFileReader, GeochemistryFileReader):
     TIME_SERIES_DATA = 'timeSerie'
     GEOCHEMISTRY_DATA = 'samples'
-   
+
     def __init__(self, file_name: str = None, header_length: int = 10):
         """
         class between TimeSeriesFileReader and GeochemistryFileReader.
         internal data structure is like:
         self._site_of_interest
             [TIMES_SERIES]
-                SensorPlateform
+                [site_name]
+                    SensorPlateform
             [GEOCHEMISTRY]
                 [date : datetime.datetime]
                     [sample_name:str]
@@ -190,34 +191,71 @@ class TimeSeriesGeochemistryFileReader(TimeSeriesFileReader, GeochemistryFileRea
        """
         super().__init__(file_name, header_length)
         self._site_of_interest = defaultdict(dict)
-        self._site_of_interest[self.TIME_SERIES_DATA] = SensorPlateform()
+        self._site_of_interest[self.TIME_SERIES_DATA] = defaultdict(SensorPlateform)
         self._site_of_interest[self.GEOCHEMISTRY_DATA] = defaultdict(dict)  # dict sorted by [samp_name][samp_date]
 
-    def get_sample_by_date(self, p_date, p_samp_name):
+    def get_sample_by_date(self, p_date, p_samp_name) -> Sample:
         try:
             return self._site_of_interest[self.GEOCHEMISTRY_DATA][p_date][p_samp_name]
         except:
             return None
 
-    def get_time_series_data(self) -> SensorPlateform:
-        return self._site_of_interest[self.TIME_SERIES_DATA]
+    def get_time_series_data(self, site_name=None) -> Union[SensorPlateform, dict]:
+        """
+        get all sites avaible that have a time serie OR
+        get all timeseries for the given "site_name"
+        with this structure:
+        [TIMES_SERIES]
+            [site_name]
+                SensorPlateform
+        :param site_name:
+        :return:
+        """
+        if site_name is not None:
+            return self._site_of_interest[self.TIME_SERIES_DATA][site_name]
+        else:
+            return self._site_of_interest[self.TIME_SERIES_DATA]
 
     def get_geochemistry_data(self) -> dict:
+        """
+        get the dictionnary for geochemistry in this structure:
+        [GEOCHEMISTRY]
+            [date : datetime.datetime]
+                [sample_name:str]
+                    Sample
+        :return:
+        """
         return self._site_of_interest[self.GEOCHEMISTRY_DATA]
 
-    def _get_date_list(self) -> date_list:
-        return self.get_time_series_data().get_unique_dates_for_all_record()
+    def _get_date_list(self, site_name) -> date_list:
+        """
+        get all dates for the given site_name. No matter the parameter
+        :param site_name:
+        :return:
+        """
+        return self.get_time_series_data(site_name).get_unique_dates_for_all_record()
 
-    @property
-    def time_series_dates(self):
-        self._date_list = self._get_date_list()
+    @TimeSeriesFileReader.time_series_dates.getter
+    def time_series_dates(self, site_name):
+        """
+        overide of time_series_dates property getter. Needs to have a site_name because of
+        the dict structure
+        :param site_name:
+        :return:
+        """
+        self._date_list = self._get_date_list(site_name)
         return self._date_list
-    
-    def makes_samples_with_time_series(self):
-        sample_name = self.get_time_series_data().site_name
-        project = self.get_time_series_data().project_name
+
+    def makes_samples_with_time_series(self, site_name):
+        """
+        make sample with all the time series for the given site_name
+        :param site_name:
+        :return:
+        """
+        sample_name = self.get_time_series_data(site_name).site_name
+        project = self.get_time_series_data(site_name).project_name
         # iterate through all dates
-        for dates in self.time_series_dates:
+        for dates in self._get_date_list(site_name):
             # create a sample
             samp = Sample(site_name=sample_name,
                           visit_date=dates,
@@ -226,28 +264,68 @@ class TimeSeriesGeochemistryFileReader(TimeSeriesFileReader, GeochemistryFileRea
                           analysis_type=None,
                           project_name=project)
             # create and add a record to the sample
-            for rec in self.get_time_series_data().get_records():
+            for rec in self.get_time_series_data(site_name).get_records():
                 val = rec.get_value_at_date(dates)
                 param = rec.parameter
                 unit = rec.parameter_unit
-                samp.create_complete_record(dates,param,unit,val,None,dates,None)
+                if val is not None:
+                    samp.create_complete_record(dates, param, unit, val, None, dates, None)
             # add the sample to the geochemistry datas
             self.get_geochemistry_data()[dates][sample_name] = samp
-    
+
     def make_time_series_with_samples(self):
         """
+        take all the samples in self._site_of_interest[self.GEOCHEMISTRY_DATA]
+        and create a time serie for each record.
+         After all timeseries are made, they are filled with all the sampling data
         :return:
         """
-        treated_samp = []
-        current_samp = None
-        date_list = list(self.get_geochemistry_data().keys())
-        values = []
-        samp = None
-        for dates in date_list:
-            for samp in self.get_geochemistry_data()[dates]:
-                current_samp = samp
-                
-            
+        self._site_of_interest[self.TIME_SERIES_DATA].clear()
+        self._site_of_interest[self.TIME_SERIES_DATA] = defaultdict(SensorPlateform)
+        self._create_time_series_with_samples()
+        self._fill_time_series_with_samples_data()
 
-# TODO: """create an alternative to SensorPlateform and GeochemistryFileReader to have a time series and samples
-#  for each dates in  times series, have a sample (date, param, record(value).
+    def _create_time_series_with_samples(self):
+        """
+        create time serie entry for each parameters avaiable for each samples
+        remember, geochemistry data structure is like:
+        [GEOCHEMISTRY]
+            [date : datetime.datetime]
+                [sample_name:str]
+                    Sample
+        :return:
+        """
+        for sampled_dates in self.get_geochemistry_data().keys():
+            for samples_at_date in self.get_geochemistry_data()[sampled_dates].keys():
+                for records_in_sample in self.get_sample_by_date(sampled_dates, samples_at_date).get_records():
+                    self._add_time_serie_value_by_geochemistry_record(records_in_sample,samples_at_date)
+
+    def _add_time_serie_value_by_geochemistry_record(self, rec, sample_name):
+        param = rec.parameter
+        unit = rec.parameter_unit
+        val = [rec.value]
+        val_date = [rec.sampling_date]
+        try:
+            self.get_time_series_data(sample_name).create_time_serie(param, unit, val_date, val)
+        except:
+            pass
+
+    def _fill_time_series_with_samples_data(self):
+        """
+        fill the time series for the given parameter with all the values avaible
+        :return:
+        """
+        for site in self.get_time_series_data():
+            for ts in self.get_time_series_data(site).get_records():
+                for _dates in self.get_geochemistry_data():
+                    rec = self.get_sample_by_date(_dates, site).get_record_by_parameter(ts.parameter)
+                    try:
+                        ts.add_value(rec.sampling_date, rec.value)
+                    except KeyError as k:
+                        continue
+                    except AttributeError as a:
+                        pass
+                    except Exception as e:
+                        print(type(e))
+                        print(e)
+                ts.reorder_values()

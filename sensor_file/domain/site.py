@@ -9,6 +9,7 @@ import datetime
 from sensor_file.domain.records import TimeSeriesRecords
 from sensor_file.domain.records import ChemistryRecord
 from typing import List
+
 class Site(object):
     """
     most basic site definition with a site name and a visit date
@@ -19,8 +20,10 @@ class Site(object):
         self.site_name = site_name
         self.visit_date = visit_date
         self.project_name = project_name
-        self.records = None
+        self._records = None
 
+    def get_records(self):
+        return self._records
 
 
 class SensorPlateform(Site):
@@ -51,6 +54,14 @@ class SensorPlateform(Site):
     def get_records(self) ->List[TimeSeriesRecords]:
         return self.records
 
+    def get_time_serie_by_param(self, p_parameter) -> TimeSeriesRecords:
+        returned_ts = None
+        for ts in self.get_records():
+            if ts.parameter == p_parameter:
+                returned_ts = ts
+                break
+        return returned_ts
+
     def get_unique_dates_for_all_record(self):
         self.set_longest_time_series()
         self.all_times_series_dates_are_equals()
@@ -61,6 +72,10 @@ class SensorPlateform(Site):
         return sorted(all_dates)
 
     def create_time_serie(self,parameter,unit,dates,values):
+        for ts in self.get_records():
+            if ts.parameter == parameter:
+                raise ValueError('time serie with the same parameter allready exist')
+
         time_serie = TimeSeriesRecords()
         time_serie.parameter = parameter
         time_serie.parameter_unit = unit
@@ -72,6 +87,7 @@ class SensorPlateform(Site):
         ts = TimeSeriesRecords()
         self.records.append(ts)
         return self.records[-1]
+
     def __str__(self) -> str:
         return "({serial}):{site} - {date}".format(serial= self.instrument_serial_number,
                                                    site=self.site_name,
@@ -138,6 +154,9 @@ class Sample(Site):
         self.records = []   #list(ChemistryRecord)
         self.analysis_type = analysis_type
 
+    def get_records(self) ->List[ChemistryRecord]:
+        return self.records
+
     def create_new_record(self) -> ChemistryRecord:
         new_rec = ChemistryRecord()
         self.records.append(new_rec)
@@ -152,6 +171,14 @@ class Sample(Site):
                                   report_date=report_date,
                                   analysis_type=ana_type)
         self.records.append(new_rec)
+
+    def get_record_by_parameter(self,p_parameter) ->ChemistryRecord:
+        record = None
+        for rec in self.get_records():
+            if rec.parameter == p_parameter:
+                record = rec
+                break
+        return record
 
     def __str__(self) -> str:
         str_sample =  "sample name:{} at date:{}\n".format(self.site_name,self.visit_date)

@@ -27,8 +27,8 @@ class GNB_WaterQualityStation(TimeSeriesGeochemistryFileReader):
         super(GNB_WaterQualityStation, self).__init__(file_name=web_site_name)
         self.station_parameters = defaultdict(dict)
         self.no_param = []
-        self.get_time_series_data().site_name = self.station_name
-        self.get_time_series_data().visit_date = datetime.datetime.now()
+        self.get_time_series_data(self.station_name).site_name = self.station_name
+        self.get_time_series_data(self.station_name).visit_date = datetime.datetime.now()
 
     def _read_file_data_header(self):
         self.get_avaible_parameter()
@@ -59,25 +59,42 @@ class GNB_WaterQualityStation(TimeSeriesGeochemistryFileReader):
         values = [value[1] for value in  json_file['data'][0]]
         parameter = json_file['labels'][0]
         param_unit = json_file['units'][0]
-        self.get_time_series_data().create_time_serie(parameter, param_unit,dates_,values)
+        self.get_time_series_data(self.station_name).create_time_serie(parameter, param_unit,dates_,values)
 
     def _transform_to_datetime(self,data:list) ->list:
         return [datetime.datetime.strptime(value[0], self.YEAR_S_MONTH_S_DAY_HM_DATE_STRING_FORMAT.replace("/","-"))
                 for value in  data]
 
-    def get_all_parameter_data(self):
-        for parameter in self.station_parameters.keys():
-            web_site = requests.get(self.SATION_DATA_URL_ADRESS,
-                                    params={'sampleLocationId': self.station_name,
-                                            'parameterIds': parameter,
-                                            'type': 2,
-                                            'chartStartDate': '1980-01-01',
-                                            'chartEndDate': datetime.date.today()}
-                                    , headers={'Content-Type': 'application/json'})
+    def _attempt_request_for_parameter(self, param):
+        timeout = 10
+        for i in range(10):
             try:
+                web_site = requests.get(self.SATION_DATA_URL_ADRESS,
+                                        params={'sampleLocationId': self.station_name,
+                                                'parameterIds': param,
+                                                'type': 2,
+                                                'chartStartDate': '1980-01-01',
+                                                'chartEndDate': datetime.date.today()}
+                                        , headers={'Content-Type': 'application/json'},
+                                        timeout=timeout)
                 json_file = json.loads(web_site.text)
                 self._make_parameter_data(json_file)
-            except:
+            except requests.exceptions.ReadTimeout:
+                timeout += 10
+                print("try {}".format(timeout))
+                continue
+            except Exception as e:
+                raise e
+            else:
+                break
+
+    def get_all_parameter_data(self):
+        for parameter in self.station_parameters.keys():
+            try:
+                self._attempt_request_for_parameter(parameter)
+            except Exception as e:
+                print(e.args)
+                print(type(e))
                 # the parameter have no results for the current station
                 print("station {station_name} have no results for {param}\n".format(station_name=self.station_name,param= parameter))
                 self.no_param.append(parameter)
@@ -109,22 +126,32 @@ class GNB_WaterQualityStation(TimeSeriesGeochemistryFileReader):
                     value_for_station_by_date[time_data[0]] = {}
                     value_for_station_by_date[time_data[0]][param] = time_data[1]
 
+    def makes_samples_with_time_series(self, site_name=None):
+        super().makes_samples_with_time_series(self.station_name)
 
-
-
+    @TimeSeriesGeochemistryFileReader.time_series_dates.getter
+    def time_series_dates(self):
+        self._date_list = self._get_date_list(self.station_name)
+        return self._date_list
 
 if __name__ == '__main__':
-    x = GNB_WaterQualityStation('470')
+    x = GNB_WaterQualityStation('837')
     x.read_file()
     print(x.time_series_dates)
     # for ts in x.get_time_series_data().records:
     #     print(ts)
     x.makes_samples_with_time_series()
-    for dates in x.get_geochemistry_data().keys():
-        for samp in x.get_geochemistry_data()[dates]:
-            print(x.get_sample_by_date(dates,samp))
+    print('samples dones')
+    x.make_time_series_with_samples()
+    print('time series re-made')
+    for site in x.get_time_series_data():
+        for ts in x.get_time_series_data(site).get_records():
+            print(ts)
+    # for dates in x.get_geochemistry_data().keys():
+    #     for samp in x.get_geochemistry_data()[dates]:
+    #         print(x.get_sample_by_date(dates,samp))
 
    
     
     # GNB_WaterQualityStation('20122')
-    # GNB_WaterQualityStation('837')
+    # GNB_WaterQualityStation('470')
