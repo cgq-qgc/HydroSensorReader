@@ -15,7 +15,6 @@ import requests
 from collections import defaultdict
 import warnings
 
-# TODO : make this class a child of AbstractFileReader
 
 class GNB_WaterQualityStation(TimeSeriesGeochemistryFileReader):
     STATION_PARAMETER_URL_ADRESS = "http://www.elgegl.gnb.ca/WaterNB-NBEau/fr/Lieu%C3%89chantillonnage/%C3%A9chantillons/{station_name}"
