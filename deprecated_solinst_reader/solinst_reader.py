@@ -5,16 +5,17 @@ __date__ = '2016-04-25'
 __description__ = " "
 __version__ = '1.0'
 
-from deprec_abstract_file_reader import FileReader
 import datetime
 import re
+import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from bs4 import BeautifulSoup
-from typing import Any
-import warnings
+
+from deprecated_solinst_reader.deprec_abstract_file_reader import FileReader
+
 
 class SolinstXLE_Reader(FileReader):
     """
