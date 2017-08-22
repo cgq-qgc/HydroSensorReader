@@ -9,7 +9,7 @@ import datetime
 import re
 from collections import OrderedDict
 
-from typing import Dict, List
+import typing
 
 
 class Parameter(object):
@@ -57,7 +57,7 @@ class TimeSeriesRecords(Record):
     implementation of a TimeSeriesRecord. The record_date correspond to the first date of the values list.
     Values are stored as an OrderedDict : [(date1, value1),(date2, value2),...]
     """
-    TimeSerieValue = Dict[datetime.datetime, str]
+    TimeSerieValue = typing.Dict[datetime.datetime, str]
     
     def __init__(self,
                  records_date: datetime.datetime = None,
@@ -81,7 +81,7 @@ class TimeSeriesRecords(Record):
             new_dict[keys] = self.value[keys]
         self.value = new_dict
     
-    def set_time_serie_values(self, times: List[datetime.datetime], values: list):
+    def set_time_serie_values(self, times: typing.List[datetime.datetime], values: list):
         for date, val in zip(times, values):
             self.add_value(date, val)
         self.reorder_values()
