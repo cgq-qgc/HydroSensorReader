@@ -7,9 +7,8 @@ __version__ = '1.0'
 
 import datetime
 import re
-from collections import OrderedDict
-
 import typing
+from collections import OrderedDict
 
 
 class Parameter(object):
@@ -69,7 +68,8 @@ class TimeSeriesRecords(Record):
     
     def add_value(self, _date: datetime.datetime, val, reorder=False):
         if _date in self.value.keys():
-            raise KeyError("date all-ready exist")
+            pass
+            # raise KeyError("date all-ready exist")
         else:
             self.value[_date] = val
         if reorder == True:

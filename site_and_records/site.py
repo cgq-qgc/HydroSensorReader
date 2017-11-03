@@ -6,21 +6,28 @@ __description__ = " "
 __version__ = '1.0'
 
 import datetime
-from sensor_file.domain.records import TimeSeriesRecords
-from sensor_file.domain.records import ChemistryRecord
+from collections import namedtuple
 from typing import List
+
+from python_data_transfert_files.sensor_file.domain.records import ChemistryRecord
+from python_data_transfert_files.sensor_file.domain.records import TimeSeriesRecords
+
+geographical_coordinates = namedtuple('XYZPoint', ['x', 'y', 'z'])
+
 
 class Site(object):
     """
     most basic site definition with a site name and a visit date
     """
-    def __init__(self,site_name:str = None,
-                 visit_date:datetime.datetime = None,
+
+    def __init__(self, site_name: str = None,
+                 visit_date: datetime.datetime = None,
                  project_name: str = None):
         self.site_name = site_name
         self.visit_date = visit_date
         self.project_name = project_name
         self._records = None
+        self.other_attributes = {}
 
     def get_records(self):
         return self._records
@@ -34,8 +41,8 @@ class SensorPlateform(Site):
 
     def __init__(self, site_name: str = None,
                  visit_date: datetime.datetime = None,
-                 instrument_serial_number:str = None,
-                 project_name:str = None):
+                 instrument_serial_number: str = None,
+                 project_name: str = None):
         """
         initialization of a sensor plateform
         :param site_name: site name or location name of the sensor
@@ -45,13 +52,13 @@ class SensorPlateform(Site):
         """
         super().__init__(site_name, visit_date, project_name)
         self.instrument_serial_number = instrument_serial_number
-        self.records = [] # list(TimeSeriesRecords())
+        self.records = []  # list(TimeSeriesRecords())
         self.batterie_level = None
         self.model_number = None
         self.longest_time_series = None
         self._datetime_not_in_longest_time_series = []
-    
-    def get_records(self) ->List[TimeSeriesRecords]:
+
+    def get_records(self) -> List[TimeSeriesRecords]:
         return self.records
 
     def get_time_serie_by_param(self, p_parameter) -> TimeSeriesRecords:
@@ -71,7 +78,7 @@ class SensorPlateform(Site):
 
         return sorted(all_dates)
 
-    def create_time_serie(self,parameter,unit,dates,values):
+    def create_time_serie(self, parameter, unit, dates, values):
         for ts in self.get_records():
             if ts.parameter == parameter:
                 raise ValueError('time serie with the same parameter allready exist')
@@ -79,17 +86,17 @@ class SensorPlateform(Site):
         time_serie = TimeSeriesRecords()
         time_serie.parameter = parameter
         time_serie.parameter_unit = unit
-        time_serie.set_time_serie_values(dates,values)
+        time_serie.set_time_serie_values(dates, values)
         self.records.append(time_serie)
         self.set_longest_time_series()
-    
-    def add_time_serie(self) ->TimeSeriesRecords:
+
+    def add_time_serie(self) -> TimeSeriesRecords:
         ts = TimeSeriesRecords()
         self.records.append(ts)
         return self.records[-1]
 
     def __str__(self) -> str:
-        return "({serial}):{site} - {date}".format(serial= self.instrument_serial_number,
+        return "({serial}):{site} - {date}".format(serial=self.instrument_serial_number,
                                                    site=self.site_name,
                                                    date=self.visit_date)
 
@@ -101,9 +108,8 @@ class SensorPlateform(Site):
                 max_len = len(ts.get_dates)
                 times_serie_date = ts.get_dates
         self.longest_time_series = times_serie_date
-        
-        self.all_times_series_dates_are_equals()
 
+        self.all_times_series_dates_are_equals()
 
     def _is_date_in_longest_time_series(self, p_date) -> bool:
         _times_series_are_equals = True
@@ -133,11 +139,12 @@ class Sample(Site):
     Definition of a Sample as seen as a laboratory information. This represent the minimal informations
     given to/by the lab.
     """
+
     def __init__(self, site_name: str = None,
                  visit_date: datetime.datetime = None,  # sampling date
-                 lab_sample_name:str = None,
-                 sample_type:str = None,
-                 analysis_type:str = None,
+                 lab_sample_name: str = None,
+                 sample_type: str = None,
+                 analysis_type: str = None,
                  project_name: str = None):
         """
         initialization of a sample
@@ -148,13 +155,13 @@ class Sample(Site):
         :param analysis_type: analysis type
         :param project_name: project name
         """
-        super().__init__(site_name, visit_date,project_name)
+        super().__init__(site_name, visit_date, project_name)
         self.lab_sample_name = lab_sample_name
         self.sample_type = sample_type
-        self.records = []   #list(ChemistryRecord)
+        self.records = []  # list(ChemistryRecord)
         self.analysis_type = analysis_type
 
-    def get_records(self) ->List[ChemistryRecord]:
+    def get_records(self) -> List[ChemistryRecord]:
         return self.records
 
     def create_new_record(self) -> ChemistryRecord:
@@ -162,7 +169,7 @@ class Sample(Site):
         self.records.append(new_rec)
         return self.records[-1]
 
-    def create_complete_record(self,samp_date,param,param_unit,value,detect_lim,report_date,ana_type):
+    def create_complete_record(self, samp_date, param, param_unit, value, detect_lim, report_date, ana_type):
         new_rec = ChemistryRecord(sampling_date=samp_date,
                                   parameter=param,
                                   parameter_unit=param_unit,
@@ -172,7 +179,7 @@ class Sample(Site):
                                   analysis_type=ana_type)
         self.records.append(new_rec)
 
-    def get_record_by_parameter(self,p_parameter) ->ChemistryRecord:
+    def get_record_by_parameter(self, p_parameter) -> ChemistryRecord:
         record = None
         for rec in self.get_records():
             if rec.parameter == p_parameter:
@@ -181,15 +188,62 @@ class Sample(Site):
         return record
 
     def __str__(self) -> str:
-        str_sample =  "sample name:{} at date:{}\n".format(self.site_name,self.visit_date)
+        str_sample = "sample name:{} at date:{}\n".format(self.site_name, self.visit_date)
         for rec in self.records:
             str_sample += "\t" + str(rec) + "\n"
-            
+
         return str_sample
-        
-    
 
 
+class StationSite(SensorPlateform):
+    def __init__(self, site_name: str = None,
+                 visit_date: datetime.datetime = None,
+                 project_name: str = None,
+                 other_identifier: str = None,
+                 coordinates_x_y_z: geographical_coordinates = None):
+        super().__init__(site_name, visit_date, project_name)
+        self.other_identifier = other_identifier
+        self.coordinates_x_y_z = coordinates_x_y_z
+
+    def __str__(self) -> str:
+        return "({other_name}):{site} - {coordinates}". \
+            format(other_name=self.other_identifier,
+                   site=self.site_name,
+                   coordinates=self.coordinates_x_y_z)
 
 
+class StreamFlowStation(StationSite):
+    def __init__(self, site_name: str = None,
+                 visit_date: datetime.datetime = None,
+                 project_name: str = None,
+                 other_identifier: str = None,
+                 coordinates_x_y_z: geographical_coordinates = None,
+                 site_description: str = None,
+                 station_activity_status: str = None,
+                 active_period: str = None,
+                 municipality: str = None,
+                 administrative_region: str = None,
+                 stream_name: str = None,
+                 hydrographic_region: str = None,
+                 drain_area: str = None,
+                 flow_regime: str = None,
+                 federal_id: str = None,
+                 province: str = None):
+        super().__init__(site_name, visit_date, project_name, other_identifier, coordinates_x_y_z)
+        self.site_description = site_description
+        self.station_activity_status = station_activity_status
+        self.active_period = active_period
+        self.municipality = municipality
+        self.administrative_region = administrative_region
+        self.stream_name = stream_name
+        self.hydrographic_region = hydrographic_region
+        self.drain_area = drain_area
+        self.flow_regime = flow_regime
+        self.federal_id = federal_id
+        self.province = province
 
+    def __str__(self) -> str:
+        return "({other_name}):{site} - {coordinates}". \
+            format(other_name=self.other_identifier,
+                   site=self.site_name,
+                   coordinates=self.coordinates_x_y_z)

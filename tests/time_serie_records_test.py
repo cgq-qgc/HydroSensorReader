@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import unittest
-from sensor_file.domain.records import TimeSeriesRecords
 import datetime
+import unittest
+
+from site_and_records.records import TimeSeriesRecords
+
 
 class TimeSeriesRecordsTest(unittest.TestCase):
     def setUp(self):

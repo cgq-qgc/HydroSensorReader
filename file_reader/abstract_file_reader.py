@@ -13,8 +13,8 @@ from collections import defaultdict
 
 from typing import Dict, List, Union
 
-import sensor_file.file_parser.concrete_file_parser as file_parser
-from sensor_file.domain.site import Sample, SensorPlateform
+from site_and_records import *
+import file_parser
 
 sample_ana_type = Dict[str, Sample]
 sample_dict = Dict[str, sample_ana_type]

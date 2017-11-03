@@ -5,11 +5,13 @@ __date__ = '2017-07-14$'
 __description__ = " "
 __version__ = '1.0'
 
-import unittest
-import datetime
-from sensor_file.domain.records import ChemistryRecord
-import math
 import itertools
+import math
+import unittest
+
+from site_and_records.records import ChemistryRecord
+
+
 class ChemistryRecordsTest(unittest.TestCase):
     def setUp(self):
         self.chem_rec = ChemistryRecord()

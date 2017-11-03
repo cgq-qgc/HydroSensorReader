@@ -5,10 +5,6 @@ __date__ = '2017-07-16$'
 __description__ = " "
 __version__ = '1.0'
 
-
-
-from sensor_file.domain.records import TimeSeriesRecords
-from sensor_file.domain.site import SensorPlateform
 from sensor_file.file_reader.abstract_file_reader import TimeSeriesFileReader
 
 class CampbellCRFileReader(TimeSeriesFileReader):

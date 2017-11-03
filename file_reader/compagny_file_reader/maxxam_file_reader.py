@@ -8,7 +8,7 @@ __version__ = '1.0'
 import datetime
 import re
 
-from sensor_file.domain.site import Sample
+from site_and_records import Sample
 from sensor_file.file_reader.abstract_file_reader import GeochemistryFileReader
 import warnings
 

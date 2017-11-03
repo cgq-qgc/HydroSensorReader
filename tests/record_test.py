@@ -5,9 +5,12 @@ __date__ = '2017-07-13$'
 __description__ = " "
 __version__ = '1.0'
 
-import unittest
 import datetime
-from sensor_file.domain.records import Record
+import unittest
+
+from site_and_records.records import Record
+
+
 class Recordtest(unittest.TestCase):
     def setUp(self):
         self.rec = Record()
