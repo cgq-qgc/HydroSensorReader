@@ -160,10 +160,10 @@ class EXCELFileParser(AbstractFileParser):
 
 
 class WEB_XMLFileParser(AbstractFileParser):
-    def __init__(self, file_path: str = None, header_length: int = None):
+    def __init__(self, file_path: str = None, header_length: int = None, requests_params: dict = None):
         super().__init__(file_path, header_length)
         if 'http' in self._file:
-            web_site = requests.get(self._file, params={'type': 2})
+            web_site = requests.get(self._file, params=requests_params)
             self._file_content = bs4.BeautifulSoup(web_site.text, "html.parser")
         else:
             self._file_content = bs4.BeautifulSoup(open(self._file), 'xml')
