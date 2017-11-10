@@ -138,3 +138,8 @@ com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
+
+.idea/misc.xml
+.idea/ogc_om_interface.iml
+.idea/workspace.xml
+.idea/preferred-vcs.xml
