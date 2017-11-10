@@ -14,6 +14,7 @@ from collections import defaultdict
 import bs4
 
 from file_reader.abstract_file_reader import DrillingFileReader, AbstractFileReader
+from site_and_records import DrillingSite
 
 _GNB_MAIN_SEARCH_URL = "http://www1.gnb.ca/0078/geosciencedatabase/"
 _GNB_CORE_EXT = "core/"
@@ -29,12 +30,12 @@ GNB_CORE_SAMPLES_LIST_URL = _GNB_CORE_SAMPLES_MAIN_URL + _GNB_RESULTS_EXT
 # param_request = {'Num':xxxx} where xxxx is a Assessment Number from GNB_WEBSITE_MAP_SEARCH_URL
 # --------- CORE SAMPLES DATASHEET URL --------------
 _GNB_MAIN_PUBLICATION_URL = "http://dnr-mrn.gnb.ca/ParisWeb/"
-#GNB_CORE_SAMPLE_REPORT_URL
+# GNB_CORE_SAMPLE_REPORT_URL
 # Must add a parameter to the research URL GNB_CORE_SAMPLE_REPORT_URL as
 # param_request = {'Num':xxxx} where xxxx is a Assessment Number from GNB_WEBSITE_MAP_SEARCH_URL
 # This url give access to files stored in the web site.
 GNB_CORE_SAMPLE_REPORT_URL = _GNB_MAIN_PUBLICATION_URL + "Assessmentreportdetails.aspx"
-#GNB_CORE_FILES_REPORT_URL
+# GNB_CORE_FILES_REPORT_URL
 # Files found at the GNB_CORE_FILES_REPORT_URL and GNB_FILES_DOWNLOADER  have an id and must be provided to the request as
 # param_request = {'Id': 'id-present-in-the-html-page'}
 GNB_CORE_FILES_REPORT_URL = _GNB_MAIN_PUBLICATION_URL + "PDFView.aspx"
@@ -44,12 +45,71 @@ GNB_FILES_DOWNLOADER = _GNB_MAIN_PUBLICATION_URL + "StreamFile.aspx"
 _GNB_OIL_GAS_MAIN_URL = _GNB_MAIN_SEARCH_URL + "borehole/"
 GNB_OIL_GAS_NTS_MAP_SEARCH_URL = _GNB_OIL_GAS_MAIN_URL + _GNB_SEARCH_EXT
 GNB_OIL_GAS_LIST_URL = _GNB_OIL_GAS_MAIN_URL + _GNB_RESULTS_EXT
-#GNB_BOREHOLE_DETAIL_URL
+# GNB_BOREHOLE_DETAIL_URL
 # Must add a parameter to the research URL GNB_BOREHOLE_DETAIL_URL as
 # param_request = {'UIN':xx} where xxxx is a UIN found at the GNB_OIL_GAS_LIST_URL
 GNB_BOREHOLE_DETAIL_URL = _GNB_OIL_GAS_MAIN_URL + "Detail-e.asp"
 
 from threading import Thread
+
+GENERAL_INFO = 'general_info'
+LOCATION = 'location'
+WORK_PERFOMED = 'work_performed'
+MAP_AVAILABLE = 'maps_available'
+
+
+class GNBCoreSamplesDataFactory(DrillingFileReader):
+    def __init__(self, request_params: dict = None):
+        self._site_of_interest = DrillingSite()
+        self._content = {}
+        if request_params['Num'] != '':
+            super().__init__(file_name=GNB_CORE_SAMPLE_REPORT_URL, request_params=request_params, header_length=0)
+            self.read_file()
+
+    def _read_table_first_col_is_header(self, table_id) -> dict:
+        r_dict = {}
+        table = self.file_content.find(id=table_id)
+        for rows in table.find_all('tr', ):
+            cols = rows.find_all('td')
+            cols = [ele.text.strip() for ele in cols]
+            r_dict[cols[0]] = cols[1]
+        return r_dict
+
+    def _read_file_data(self):
+        self._read_general_information()
+        self._read_location()
+        self._read_work_performed()
+        self._read_map_info()
+
+        pprint.pprint(self._content)
+
+    def _read_general_information(self):
+        # table id = dlAssRptGeneral
+        print("Read general informations")
+        self._content[GENERAL_INFO] = self._read_table_first_col_is_header('dlAssRptGeneral')
+
+    def _read_location(self):
+        # table id = dlAssRptLocation
+        self._content[LOCATION] = self._read_table_first_col_is_header('dlAssRptLocation')
+
+    def _read_work_performed(self):
+        # table id = dlAssRptWorkPerformed
+        self._content[WORK_PERFOMED] = self._read_table_first_col_is_header('dlAssRptWorkPerformed')
+
+    def _read_map_info(self):
+        # table id = dgAssRptMaps
+        r_dict = {}
+        table = self.file_content.find(id='dgAssRptMaps')
+        header_data = []
+        for i, rows in enumerate(table.find_all('tr')):
+            cols = rows.find_all('td')
+            cols = [ele.text.strip() for ele in cols]
+            if i == 0:
+                header_data = cols
+            else:
+                r_dict['file-{}'.format(i)] = dict((k, v) for (k, v) in zip(header_data, cols))
+
+        self._content[MAP_AVAILABLE] = r_dict
 
 
 class AbstractGNBElementListWebScrapper(DrillingFileReader):
@@ -99,10 +159,15 @@ class GNBCoreSamplesListWebScrapper(AbstractGNBElementListWebScrapper):
             try:
                 cols = [ele.text.strip().replace('No Data', '') for ele in cols]
                 dict_content = dict((k, v) for (k, v) in zip(self.file_reader.get_file_header, cols))
+                if dict_content['Assessment #'] != '':
+                    print("Pumping {} sample".format(dict_content['Identification #']))
+                    dict_content['other_infos'] = GNBCoreSamplesDataFactory({'Num': dict_content['Assessment #']})
                 self._site_of_interest[
                     dict_content['Identification #'] + "_" + dict_content['Hole Reference #']] = dict_content
             except KeyError:
                 pass
+            except TypeError as t:
+                raise t
         print(str(self))
 
     def __str__(self) -> str:
@@ -128,6 +193,7 @@ class GNBOilAndGasWellsListWebScrapper(AbstractGNBElementListWebScrapper):
     def __str__(self) -> str:
         return super().__str__() + " oil and gas boreholes"
 
+
 gnb_element_list_web_scrapper = typing.Union[GNBOilAndGasWellsListWebScrapper, GNBCoreSamplesListWebScrapper]
 
 
@@ -142,6 +208,7 @@ class _scrapper(Thread):
         print("run element")
         self.factory = self.factory(request_params=self.req_params)
         return self.factory
+
 
 class Abstract_GNB_NTSMapSearchWebScrapper(AbstractFileReader):
     """
@@ -159,8 +226,6 @@ class Abstract_GNB_NTSMapSearchWebScrapper(AbstractFileReader):
         self._thread_scrapper = []
         self.read_file()
 
-
-
     def _read_file_data_header(self):
         pass
 
@@ -173,9 +238,9 @@ class Abstract_GNB_NTSMapSearchWebScrapper(AbstractFileReader):
                 url_params = re.split(r"[?&=]", elt['href'])
                 request_param = {url_params[1]: url_params[2], url_params[3]: url_params[4]}
                 nts_sheet = "{}{}".format(url_params[2], url_params[4])
-                if nts_sheet in ['21H11', '21H10', '21H14']\
+                if nts_sheet in ['21H11', '21H10', '21H14'] \
                         and nts_sheet not in self._site_of_interest.keys():
-                    elt = _scrapper(self.factory_class,req_params=request_param)
+                    elt = _scrapper(self.factory_class, req_params=request_param)
                     self._thread_scrapper.append(elt)
                     elt.start()
                     self._site_of_interest[nts_sheet] = elt.factory
@@ -199,10 +264,6 @@ class GNB_OilAndGas_NTSMapSearchWebScrapper(Abstract_GNB_NTSMapSearchWebScrapper
     def __init__(self, file_name: str = GNB_OIL_GAS_NTS_MAP_SEARCH_URL,
                  factory_class=GNBOilAndGasWellsListWebScrapper):
         super().__init__(file_name=file_name, factory_class=factory_class)
-
-
-class GNBCoresFilesWebScrapper(AbstractFileReader):
-    pass
 
 
 if __name__ == '__main__':
