@@ -9,11 +9,12 @@
 import datetime
 from abc import abstractmethod
 from collections import defaultdict
-
 from typing import Dict, List, Union
 
-from site_and_records import *
+import bs4
+
 import file_parser
+from site_and_records import *
 
 sample_ana_type = Dict[str, Sample]
 sample_dict = Dict[str, sample_ana_type]
@@ -37,43 +38,48 @@ class AbstractFileReader(object):
     YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT = YEAR_S_MONTH_S_DAY_HM_DATE_STRING_FORMAT + ":%S"
     YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT = YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT + ".%f"
 
-    def __init__(self, file_name: str = None, header_length: int = 10, request_params:dict = None):
+    def __init__(self, file_name: str = None, header_length: int = 10, request_params: dict = None):
         self.request_params = request_params
         self._file = file_name
         self._header_length = header_length
         self._site_of_interest = None
-        self.file_reader = None
-        self._set_file_reader()
+        self.file_reader = self._set_file_reader()
+        self.file_reader.read_file()
 
     @property
     def sites(self):
         return self._site_of_interest
 
-    def _set_file_reader(self):
+    def _set_file_reader(self) -> Union[file_parser.CSVFileParser,
+                                        file_parser.EXCELFileParser,
+                                        file_parser.TXTFileParser,
+                                        file_parser.WEB_XMLFileParser]:
         """
         set the good file parser to open and read the provided file
         :return:
         """
+        file_reader = ""
+        file_ext = self.file_extension
         try:
-            file_ext = self.file_extension
             if file_ext in self.TXT_FILE_TYPES:
-                self.file_reader = file_parser.TXTFileParser(file_path=self._file,
-                                                             header_length=self._header_length)
+                file_reader = file_parser.TXTFileParser(file_path=self._file,
+                                                        header_length=self._header_length)
             elif file_ext in self.XLS_FILES_TYPES:
-                self.file_reader = file_parser.EXCELFileParser(file_path=self._file,
-                                                               header_length=self._header_length)
+                file_reader = file_parser.EXCELFileParser(file_path=self._file,
+                                                          header_length=self._header_length)
             elif file_ext in self.CSV_FILES_TYPES:
-                self.file_reader = file_parser.CSVFileParser(file_path=self._file,
-                                                             header_length=self._header_length)
-            elif file_ext in self.WEB_XML_FILES_TYPES:
-                self.file_reader = file_parser.WEB_XMLFileParser(file_path=self._file,requests_params=self.request_params)
+                file_reader = file_parser.CSVFileParser(file_path=self._file,
+                                                        header_length=self._header_length)
+            elif file_ext in self.WEB_XML_FILES_TYPES or 'http' in self._file:
+                file_reader = file_parser.WEB_XMLFileParser(file_path=self._file,
+                                                            requests_params=self.request_params)
         except ValueError as e:
-            if 'http' in self._file:
-                self.file_reader = file_parser.WEB_XMLFileParser(file_path=self._file,requests_params=self.request_params)
-            else:
-                raise e
+            print(self._file)
+            print("File ext: {}".format(file_ext))
 
-        self.file_reader.read_file()
+            raise e
+        else:
+            return file_reader
 
     def read_file(self):
         self._make_site()
@@ -84,13 +90,13 @@ class AbstractFileReader(object):
         file_list = self._file.split(".")
         if len(file_list) == 1:
             raise ValueError("The path given doesn't point to a file name")
-        if len(file_list) > 2:
+        if len(file_list) > 2 and 'http' not in self._file:
             raise ValueError("The file name seems to be corrupted. Too much file extension in the current name")
         else:
             return file_list[-1].lower()
 
     @property
-    def file_content(self):
+    def file_content(self) -> Union[bs4.BeautifulSoup, list]:
         return self.file_reader.get_file_content
 
     def _make_site(self):
@@ -301,7 +307,7 @@ class TimeSeriesGeochemistryFileReader(TimeSeriesFileReader, GeochemistryFileRea
         for sampled_dates in self.get_geochemistry_data().keys():
             for samples_at_date in self.get_geochemistry_data()[sampled_dates].keys():
                 for records_in_sample in self.get_sample_by_date(sampled_dates, samples_at_date).get_records():
-                    self._add_time_serie_value_by_geochemistry_record(records_in_sample,samples_at_date)
+                    self._add_time_serie_value_by_geochemistry_record(records_in_sample, samples_at_date)
 
     def _add_time_serie_value_by_geochemistry_record(self, rec, sample_name):
         param = rec.parameter
@@ -332,3 +338,33 @@ class TimeSeriesGeochemistryFileReader(TimeSeriesFileReader, GeochemistryFileRea
                         print(type(e))
                         print(e)
                 ts.reorder_values()
+
+
+class DrillingFileReader(AbstractFileReader):
+    def __init__(self, file_name: str = None, header_length: int = None, request_params: dict = None):
+        super().__init__(file_name, header_length, request_params)
+        self._site_of_interest = defaultdict(dict)
+
+    def create_drilling_site(self, site_name: str):
+        self.create_complete_drilling_site(site_name=site_name)
+        yield self._site_of_interest[site_name]
+
+    def create_complete_drilling_site(self, site_name: str, visit_date: datetime.datetime = None,
+                                      project_name: str = None,
+                                      other_identifier: str = None,
+                                      coordinates_x_y_z: geographical_coordinates = None,
+                                      drilling_depth: float = 0.0,
+                                      drill_dip: float = 0.0,
+                                      drill_azimut: float = 0.0,
+                                      drilling_diameter: float = 0.0):
+        drilling_site = DrillingSite(site_name=site_name,
+                                     visit_date=visit_date,
+                                     project_name=project_name,
+                                     other_identifier=other_identifier,
+                                     coordinates_x_y_z=coordinates_x_y_z,
+                                     drill_azimut=drill_azimut,
+                                     drill_dip=drill_dip,
+                                     drilling_depth=drilling_depth,
+                                     drilling_diameter=drilling_diameter)
+        self._site_of_interest[site_name] = drilling_site
+        return self._site_of_interest[site_name]

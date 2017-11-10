@@ -7,7 +7,7 @@ __version__ = '1.0'
 
 
 
-from sensor_file.file_reader.abstract_file_reader import TimeSeriesFileReader
+from file_reader.abstract_file_reader import TimeSeriesFileReader
 
 class CSVHannaFileReader(TimeSeriesFileReader):
     def __init__(self, file_name: str = None, header_length: int = 10):

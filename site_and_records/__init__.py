@@ -6,4 +6,4 @@ __description__ = " "
 __version__ = '1.0'
 
 from .records import ChemistryRecord, Parameter, Record, TimeSeriesRecords
-from .site import Sample, SensorPlateform, Site, StreamFlowStation, StationSite
+from .site import Sample, SensorPlateform, Site, StreamFlowStation, StationSite, DrillingSite, geographical_coordinates

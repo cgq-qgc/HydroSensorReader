@@ -9,8 +9,8 @@ import datetime
 from collections import namedtuple
 from typing import List
 
-from python_data_transfert_files.sensor_file.domain.records import ChemistryRecord
-from python_data_transfert_files.sensor_file.domain.records import TimeSeriesRecords
+from .records import ChemistryRecord
+from .records import TimeSeriesRecords
 
 geographical_coordinates = namedtuple('XYZPoint', ['x', 'y', 'z'])
 
@@ -255,5 +255,22 @@ class DrillingSite(StationSite):
                  visit_date: datetime.datetime = None,
                  project_name: str = None,
                  other_identifier: str = None,
-                 coordinates_x_y_z: geographical_coordinates = None):
+                 coordinates_x_y_z: geographical_coordinates = None,
+                 drilling_depth:float = 0.0,
+                 drill_dip:float = 0.0,
+                 drill_azimut:float = 0.0,
+                 drilling_diameter:float = 0.0):
         super().__init__(site_name, visit_date, project_name, other_identifier, coordinates_x_y_z)
+        self.drilling_depth = drilling_depth
+        self.drill_dip = drill_dip
+        self.drill_azimut = drill_azimut
+        self.drilling_diameter = drilling_diameter
+
+    def __str__(self) -> str:
+        return "{coordinates} - {site_name} ({depth} deep) made in {date}".format(coordinates=self.coordinates_x_y_z,
+                                                                                  site_name=self.site_name,
+                                                                                  depth=self.drilling_depth,
+                                                                                  date=self.visit_date)
+
+
+

@@ -2,15 +2,16 @@
 # -*- coding: utf-8 -*-
 __author__ = 'Laptop$'
 __date__ = '2017-07-16$'
-__description__ = "Permet de lire des fichiers provenant de l'interface WHAT : https://github.com/jnsebgosselin/what.git"
+__description__ = "Permet de lire des fichiers provenant de l'interface" \
+                  " WHAT : https://github.com/jnsebgosselin/what.git"
 __version__ = '1.0'
 from abc import abstractmethod
 
 import datetime
 from typing import Union
 
-from python_data_transfert_files.sensor_file.domain.site import StationSite, geographical_coordinates, StreamFlowStation
-from python_data_transfert_files.sensor_file.file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
+from site_and_records import StationSite, geographical_coordinates, StreamFlowStation
+from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
 
 WHAT_METEO_FILES_HEADER_LENGTH = 10
 WHAT_WATER_LEVEL_FILES_HEADER_LENGTH = 8

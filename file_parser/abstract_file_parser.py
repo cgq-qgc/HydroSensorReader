@@ -6,7 +6,8 @@ __description__ = " "
 __version__ = '1.0'
 
 from abc import abstractmethod
-
+import typing
+import bs4
 
 class AbstractFileParser(object):
     def __init__(self, file_path: str = None, header_length: int = None):
@@ -24,7 +25,7 @@ class AbstractFileParser(object):
         pass
 
     @property
-    def get_file_content(self):
+    def get_file_content(self) -> typing.Union[bs4.BeautifulSoup, list]:
         return self._file_content
 
     @property

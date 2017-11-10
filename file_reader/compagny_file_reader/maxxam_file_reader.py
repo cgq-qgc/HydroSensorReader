@@ -9,7 +9,7 @@ import datetime
 import re
 
 from site_and_records import Sample
-from sensor_file.file_reader.abstract_file_reader import GeochemistryFileReader
+from file_reader.abstract_file_reader import GeochemistryFileReader
 import warnings
 
 class XSLMaxxamFileReader(GeochemistryFileReader):
