@@ -58,6 +58,21 @@ WORK_PERFOMED = 'work_performed'
 MAP_AVAILABLE = 'maps_available'
 
 
+class _scrapper(Thread):
+    """
+    factory thread class to scrappe faster!
+    """
+
+    def __init__(self, factory_class, req_params):
+        Thread.__init__(self)
+        self.factory = factory_class
+        self.req_params = req_params
+
+    def run(self):
+        print("run element")
+        self.factory = self.factory(request_params=self.req_params)
+
+
 class GNBCoreSamplesDataFactory(DrillingFileReader):
     def __init__(self, request_params: dict = None):
         self._site_of_interest = DrillingSite()
@@ -81,11 +96,8 @@ class GNBCoreSamplesDataFactory(DrillingFileReader):
         self._read_work_performed()
         self._read_map_info()
 
-        pprint.pprint(self._content)
-
     def _read_general_information(self):
         # table id = dlAssRptGeneral
-        print("Read general informations")
         self._content[GENERAL_INFO] = self._read_table_first_col_is_header('dlAssRptGeneral')
 
     def _read_location(self):
@@ -108,7 +120,6 @@ class GNBCoreSamplesDataFactory(DrillingFileReader):
                 header_data = cols
             else:
                 r_dict['file-{}'.format(i)] = dict((k, v) for (k, v) in zip(header_data, cols))
-
         self._content[MAP_AVAILABLE] = r_dict
 
 
@@ -117,6 +128,7 @@ class AbstractGNBElementListWebScrapper(DrillingFileReader):
                  header_length: int = None, ):
         super().__init__(file_name=file_name, header_length=header_length, request_params=request_params)
         self._site_of_interest = defaultdict(dict)
+        self._threads = []
         self.read_file()
 
     def _read_file_data_header(self):
@@ -161,14 +173,19 @@ class GNBCoreSamplesListWebScrapper(AbstractGNBElementListWebScrapper):
                 dict_content = dict((k, v) for (k, v) in zip(self.file_reader.get_file_header, cols))
                 if dict_content['Assessment #'] != '':
                     print("Pumping {} sample".format(dict_content['Identification #']))
-                    dict_content['other_infos'] = GNBCoreSamplesDataFactory({'Num': dict_content['Assessment #']})
+                    elt = _scrapper(GNBCoreSamplesDataFactory, {'Num': dict_content['Assessment #']})
+                    self._threads.append(elt)
+                    elt.start()
+                    dict_content['core_sample_data'] = elt.factory
                 self._site_of_interest[
                     dict_content['Identification #'] + "_" + dict_content['Hole Reference #']] = dict_content
             except KeyError:
                 pass
             except TypeError as t:
                 raise t
-        print(str(self))
+        for t in self._threads:
+            t.join()
+        pprint.pprint(self._site_of_interest)
 
     def __str__(self) -> str:
         return super().__str__() + " core samples"
@@ -195,19 +212,6 @@ class GNBOilAndGasWellsListWebScrapper(AbstractGNBElementListWebScrapper):
 
 
 gnb_element_list_web_scrapper = typing.Union[GNBOilAndGasWellsListWebScrapper, GNBCoreSamplesListWebScrapper]
-
-
-class _scrapper(Thread):
-    def __init__(self, factory_class, req_params):
-        Thread.__init__(self)
-        self.factory = factory_class
-        self.req_params = req_params
-        self.element = None
-
-    def run(self):
-        print("run element")
-        self.factory = self.factory(request_params=self.req_params)
-        return self.factory
 
 
 class Abstract_GNB_NTSMapSearchWebScrapper(AbstractFileReader):
