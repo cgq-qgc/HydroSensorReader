@@ -163,8 +163,8 @@ class WEB_XMLFileParser(AbstractFileParser):
     def __init__(self, file_path: str = None, header_length: int = None, requests_params: dict = None):
         super().__init__(file_path, header_length)
         if 'http' in self._file:
-            web_site = requests.get(self._file, params=requests_params)
-            self._file_content = bs4.BeautifulSoup(web_site.text, "html.parser")
+            self.web_url = requests.get(self._file, params=requests_params)
+            self._file_content = bs4.BeautifulSoup(self.web_url.text, "html.parser")
         else:
             self._file_content = bs4.BeautifulSoup(open(self._file), 'xml')
 
@@ -177,6 +177,14 @@ class WEB_XMLFileParser(AbstractFileParser):
     @property
     def get_file_content(self) -> bs4.BeautifulSoup:
         return self._file_content
+
+    @property
+    def get_file_header(self):
+        return self._file_header_content
+
+    @get_file_header.setter
+    def get_file_header(self, value):
+        self._file_header_content = value
 
 
 if __name__ == '__main__':
