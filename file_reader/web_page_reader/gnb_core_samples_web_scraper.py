@@ -231,7 +231,7 @@ class Abstract_GNB_NTSMapSearchWebScrapper(AbstractFileReader):
 
         self.factory_class = factory_class
         self._site_of_interest = dict()
-        self._thread_scrapper = []
+        self._thread_scrapper = {}
         self.read_file()
 
     def _read_file_data_header(self):
@@ -248,12 +248,15 @@ class Abstract_GNB_NTSMapSearchWebScrapper(AbstractFileReader):
                 nts_sheet = "{}{}".format(url_params[2], url_params[4])
                 # , '21H10', '21H14'
                 elt = _scrapper(self.factory_class, req_params=request_param)
-                if nts_sheet in ['21H11'] \
+                if nts_sheet in ['21H11', '21H10', '21H14'] \
                         and nts_sheet not in self._site_of_interest.keys():
-                    self._thread_scrapper.append(elt)
-                    elt.start()
-                    elt.join()
-                    self._site_of_interest[nts_sheet] = elt.factory
+                    self._site_of_interest[nts_sheet] = ""
+                    self._thread_scrapper[nts_sheet] = elt
+                    self._thread_scrapper[nts_sheet].start()
+        for ntf_values in self._thread_scrapper.keys():
+            self._thread_scrapper[ntf_values].join()
+            self._site_of_interest[ntf_values] = self._thread_scrapper[ntf_values].factory
+
         print(self._site_of_interest.items())
 
     @property
@@ -270,7 +273,10 @@ class GNB_CoreSamples_NTSMapSearchWebScrapper(Abstract_GNB_NTSMapSearchWebScrapp
         # with open('samples_location.csv','w'):
         for samp_list in self._site_of_interest.values():
             for cores in samp_list.get_sample_list():
+                print("="*50)
+                pprint.pprint(cores)
                 try:
+                    print("-"*50)
                     pprint.pprint(cores['core_sample_data'].get_url_content())
                 except KeyError:
                     pass
