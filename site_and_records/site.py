@@ -247,3 +247,13 @@ class StreamFlowStation(StationSite):
             format(other_name=self.other_identifier,
                    site=self.site_name,
                    coordinates=self.coordinates_x_y_z)
+
+
+class DrillingSite(StationSite):
+    def __init__(self,
+                 site_name: str = None,
+                 visit_date: datetime.datetime = None,
+                 project_name: str = None,
+                 other_identifier: str = None,
+                 coordinates_x_y_z: geographical_coordinates = None):
+        super().__init__(site_name, visit_date, project_name, other_identifier, coordinates_x_y_z)
