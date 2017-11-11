@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/ogc_om_interface.iml" filepath="$PROJECT_DIR$/.idea/ogc_om_interface.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/scientific_file_reader.iml" filepath="$PROJECT_DIR$/.idea/scientific_file_reader.iml" />
     </modules>
   </component>
 </project>
