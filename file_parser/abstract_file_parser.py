@@ -5,11 +5,11 @@ __date__ = '2017-07-11$'
 __description__ = " "
 __version__ = '1.0'
 
-from abc import abstractmethod
+from abc import abstractmethod, ABCMeta
 import typing
 import bs4
 
-class AbstractFileParser(object):
+class AbstractFileParser(object, metaclass=ABCMeta):
     def __init__(self, file_path: str = None, header_length: int = None):
         self._file = file_path
         self._header_length = header_length
