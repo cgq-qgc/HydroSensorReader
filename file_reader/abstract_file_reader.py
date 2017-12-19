@@ -369,6 +369,3 @@ class DrillingFileReader(AbstractFileReader):
         self._site_of_interest[site_name] = drilling_site
         return self._site_of_interest[site_name]
 
-
-if __name__ == '__main__':
-    b = AbstractFileReader("")
