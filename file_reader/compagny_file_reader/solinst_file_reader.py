@@ -6,10 +6,12 @@ __description__ = " "
 __version__ = '1.0'
 
 import datetime
-import warnings
 import re
-from file_reader.abstract_file_reader import TimeSeriesFileReader
+import warnings
 from collections import defaultdict
+
+from file_reader.abstract_file_reader import TimeSeriesFileReader
+
 
 class SolinstFileReader(TimeSeriesFileReader):
     def __init__(self, file_name: str = None, header_length: int = 10):
@@ -116,7 +118,9 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
         datetime_list = []
         for lines in self.file_content[self._header_length + 1:-1]:
             sep_line = lines.split(" ")
-            _date_time = datetime.datetime.strptime("{} {}".format(sep_line[0], sep_line[1]), self.YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT)
+            _date_time = datetime.datetime.strptime("{} {}".format(sep_line[0],
+                                                                   sep_line[1]),
+                                                    self.YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT)
             datetime_list.append(_date_time)
         return datetime_list
 
