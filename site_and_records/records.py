@@ -9,7 +9,8 @@ import datetime
 import re
 import typing
 from collections import OrderedDict
-import pandas
+import pandas as pd
+import warnings
 
 class Parameter(object):
     """
@@ -50,6 +51,10 @@ class Record(object):
     def parameter_unit(self, value: str):
         self._parameter.unit = value
 
+    @property
+    def parameter_col(self):
+        return '{}_{}'.format(self.parameter, self.parameter_unit)
+
 
 class TimeSeriesRecords(Record):
     """
@@ -64,7 +69,8 @@ class TimeSeriesRecords(Record):
                  parameter: str = None,
                  parameter_unit: str = None):
         super().__init__(records_date, parameter, parameter_unit, values)
-        self.value = OrderedDict()
+        self.value = pd.Series()
+
     
     def add_value(self, _date: datetime.datetime, val, reorder=False):
         if _date in self.value.keys():
@@ -76,6 +82,7 @@ class TimeSeriesRecords(Record):
             self.reorder_values()
     
     def reorder_values(self):
+        warnings.warn('deprecated function not usefull for pd.Series objects',DeprecationWarning)
         new_dict = OrderedDict()
         for keys in sorted(self.value.keys()):
             new_dict[keys] = self.value[keys]
