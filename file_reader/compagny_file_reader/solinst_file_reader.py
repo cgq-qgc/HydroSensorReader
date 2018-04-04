@@ -11,7 +11,7 @@ import warnings
 from collections import defaultdict
 from typing import List
 
-from pandas import DataFrame as pd_DataFrame, Timestamp
+from pandas import Timestamp
 
 from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
 
@@ -55,13 +55,6 @@ class SolinstFileReader(TimeSeriesFileReader):
     def _read_file_data(self):
         pass
 
-    @property
-    def records(self):
-        return self.sites.records
-
-    @records.setter
-    def records(self, value: pd_DataFrame):
-        self.sites.records = value
 
 class LEVSolinstFileReader(TimeSeriesFileReader):
     DATA_CHANNEL_STRING = ".*CHANNEL {} from data header.*"

@@ -21,6 +21,7 @@ sample_ana_type = Dict[str, Sample]
 sample_dict = Dict[str, sample_ana_type]
 date_list = List[datetime.datetime]
 import warnings
+from pandas import DataFrame
 
 
 class AbstractFileReader(object , metaclass=ABCMeta):
@@ -152,7 +153,7 @@ class TimeSeriesFileReader(AbstractFileReader):
     def __init__(self, file_name: str = None, header_length: int = 10):
         super().__init__(file_name, header_length)
         self._site_of_interest = SensorPlateform()
-        self._date_list = None
+        self._date_list = []
 
     @property
     def time_series_dates(self):
@@ -166,6 +167,13 @@ class TimeSeriesFileReader(AbstractFileReader):
     def sites(self) -> SensorPlateform:
         return self._site_of_interest
 
+    @property
+    def records(self) -> DataFrame:
+        return self.sites.records
+
+    @records.setter
+    def records(self, value: DataFrame):
+        self._site_of_interest.records = value
 
 class GeochemistryFileReader(AbstractFileReader):
     def __init__(self, file_name: str = None,
