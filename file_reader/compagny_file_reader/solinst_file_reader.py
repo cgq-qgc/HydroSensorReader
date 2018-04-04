@@ -9,14 +9,18 @@ import datetime
 import re
 import warnings
 from collections import defaultdict
+from typing import List
 
-from file_reader.abstract_file_reader import TimeSeriesFileReader
+from pandas import Timestamp
+
+from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
 
 
 class SolinstFileReader(TimeSeriesFileReader):
     def __init__(self, file_name: str = None, header_length: int = 10):
         super().__init__(file_name, header_length)
         self.__main_reader = None
+        self.__set_reader()
 
     def __set_reader(self):
         """
@@ -37,8 +41,19 @@ class SolinstFileReader(TimeSeriesFileReader):
         self._site_of_interest = self.__main_reader._site_of_interest
 
     def read_file(self):
-        self.__set_reader()
         self.__main_reader.read_file()
+
+    def _get_date_list(self) -> date_list:
+        pass
+
+    def _read_file_header(self):
+        pass
+
+    def _read_file_data_header(self):
+        pass
+
+    def _read_file_data(self):
+        pass
 
 
 class LEVSolinstFileReader(TimeSeriesFileReader):
@@ -79,9 +94,9 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
         _date = None
         _time = None
         for lines in self.file_content[:self._header_length]:
-            if re.search("^date.*", lines.lower()):
+            if re.search("^date.*", lines, re.IGNORECASE):
                 _date = lines.split(":")[1].replace(" ", "")
-            if re.search(r"^time.*", lines.lower()):
+            if re.search(r"^time.*", lines, re.IGNORECASE):
                 _time = lines.split(" :")[1].replace(" ", "")
         to_datetime = datetime.datetime.strptime("{} {}".format(_date, _time), self.MONTH_S_DAY_S_YEAR_HMS_DATE_STRING_FORMAT)
         return to_datetime
@@ -114,7 +129,7 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
     def _get_number_of_channels(self) -> int:
         return int(self._get_instrument_info(r" *Channel *=.*"))
 
-    def _get_date_list(self) -> list:
+    def _get_date_list(self) -> List[datetime.datetime]:
         datetime_list = []
         for lines in self.file_content[self._header_length + 1:-1]:
             sep_line = lines.split(" ")
@@ -128,7 +143,6 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
         for channel_num in range(self._get_number_of_channels()):
             parameter = None
             parametere_unit = None
-
             for row_num, row in enumerate(self.file_content[:self._header_length]):
                 if re.search(self.DATA_CHANNEL_STRING.format(channel_num + 1), row):
                     row_offset = 1
@@ -145,7 +159,7 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
             values = []
             for lines in self.file_content[self._header_length + 1:-1]:
                 sep_line = [data for data in list(lines.split(" ")) if data != '']
-                values.append(sep_line[channel_num + 2])
+                values.append(float(sep_line[channel_num + 2]))
             self._site_of_interest.create_time_serie(parameter, parametere_unit, self._date_list, values)
 
 
@@ -154,6 +168,7 @@ class XLESolinstFileReader(TimeSeriesFileReader):
 
     def __init__(self, file_name: str = None, header_length: int = 10):
         super().__init__(file_name, header_length)
+        self.file_root = self.file_content.getroot()
 
     def _read_file_header(self):
         """
@@ -193,42 +208,43 @@ class XLESolinstFileReader(TimeSeriesFileReader):
         the creation date of the file
         :return:
         """
-        date_str = self.file_content.select_one('File_info').Date.string
-        time_str = self.file_content.select_one('File_info').Time.string
+        file_info = self.file_root.find('File_info')
+
+        date_str = file_info.find('Date').text
+        time_str = file_info.find('Time').text
         datetime_str = "{} {}".format(date_str, time_str)
         datetime_obj = datetime.datetime.strptime(datetime_str, self.YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT)
         return datetime_obj
 
     def _get_site_name(self) -> str:
-        return self.file_content.select_one('Instrument_info_data_header').Location.string
+        return self.file_root.find('Instrument_info_data_header').find('Location').text
 
     def _get_serial_number(self):
-        return self.file_content.select_one('Instrument_info').Serial_number.string
+        return self.file_root.find('Instrument_info').find('Serial_number').text
 
     def _get_project_name(self):
-        return self.file_content.select_one('Instrument_info_data_header').Project_ID.string
+        return self.file_root.find('Instrument_info_data_header').find('Project_ID').text
 
     def _get_number_of_channels(self):
-        return int(self.file_content.select_one('Instrument_info').Channel.string)
+        return int(self.file_root.find('Instrument_info').find('Channel').text)
 
     def _get_model_number(self):
-        return self.file_content.select_one('Instrument_info').Model_number.string
+        return self.file_root.find('Instrument_info').find('Model_number').text
 
     def _get_battery_level(self):
-        return self.file_content.select_one('Instrument_info').Battery_level.string
+        return self.file_root.find('Instrument_info').find('Battery_level').text
 
     def _get_date_list(self) -> list:
         """
         get a list of timestamp present in the file
         :return:
         """
-        datetime_list = [datetime.datetime.strptime("{} {}:{}".format(_data.Date.string,
-                                                                      _data.Time.string,
-                                                                      _data.ms.string),
+        datetime_list = [datetime.datetime.strptime("{} {}:{}".format(_data.find('Date').text,
+                                                                      _data.find('Time').text,
+                                                                      _data.find('ms').text),
                                                     '%Y/%m/%d %H:%M:%S:%f')
-                     for _data in self.file_content.find_all('Log')]
+                         for _data in self.file_root.iter('Log')]
         return datetime_list
-
 
     def _get_data(self) -> None:
         """
@@ -237,10 +253,12 @@ class XLESolinstFileReader(TimeSeriesFileReader):
         """
         for channels in range(self._get_number_of_channels()):
             channel_name = self.CHANNEL_DATA_HEADER.format(channels + 1)
-            channel_parammeter = self.file_content.select_one(channel_name).Identification.string
-            channel_unit = self.file_content.select_one(channel_name).Unit.string
-            ch_selector = "ch{}"
-            values = [d.text for d in self.file_content.find_all(ch_selector.format(channels + 1))]
+            channel_parammeter = self.file_root.find(channel_name).find('Identification').text
+            channel_unit = self.file_root.find(channel_name).find('Unit').text
+            ch_selector = "ch{}".format(channels + 1)
+            print(ch_selector)
+            values = [float(d.find(ch_selector).text) for d in
+                      self.file_root.iter('Log')]
             self._site_of_interest. \
                 create_time_serie(channel_parammeter,
                                   channel_unit, self._date_list,
@@ -304,16 +322,13 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
             cells_to_check +=1
             strptime_string = self.YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT
             date_format_string += ".{}"
-        for i, line in zip(range(10),self.file_content[self._start_of_data_row_index+1:]):
+        for line in self.file_content[self._start_of_data_row_index + 1:]:
             _date_datetime = None
             try:
-                _date_datetime = datetime.datetime.strptime(date_format_string.format(*line[:cells_to_check]),
-                                                                         strptime_string)
+                _date_datetime = Timestamp(date_format_string.format(*line[:cells_to_check]))
             except ValueError as e:
                 # warnings.warn('bad datetime format string. date string = '+ str(line[:cells_to_check]), e)
-                strptime_string = strptime_string.replace("/","-")
-                _date_datetime = datetime.datetime.strptime(date_format_string.format(*line[:cells_to_check]),
-                                                            strptime_string)
+                raise e
 
             date_times.append(_date_datetime)
         return date_times
@@ -342,8 +357,8 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
         for parameter in list(self._params_dict.keys()):
             param_unit = self._params_dict[parameter][self.UNIT]
             param_col_index = self._params_dict[parameter][self.PARAMETER_COL_INDEX]
-            values = [val[param_col_index] for val in self.file_content[self._start_of_data_row_index+1:]]
-            self._site_of_interest.create_time_serie(parameter,param_unit,self._date_list,values)
+            values = [float(val[param_col_index]) for val in self.file_content[self._start_of_data_row_index + 1:]]
+            self._site_of_interest.create_time_serie(parameter, param_unit, self._date_list, values)
 
 
 
@@ -351,6 +366,7 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
 
 if __name__ == '__main__':
     import os
+    import matplotlib.pyplot as plt
 
     path = os.getcwd()
     while os.path.split(path)[1] != "scientific_file_reader":
@@ -361,15 +377,19 @@ if __name__ == '__main__':
 
     if teste_all:
         # file_name = "F21_logger_20160224_20160621.csv"
-        # file_name = "slug_PO-05_20160729_1600.csv"
+        file_name = "slug_PO-05_20160729_1600.csv"
         # file_name = "2029499_F7_NordChamp_PL20150925_2015_09_25.xle"
-        file_name = "2041929_PO-06_XM20170307_2017_03_07.lev"
+        # file_name = "2041929_PO-06_XM20170307_2017_03_07.lev"
         # file_name = "2056794_PO-05_baro_CB20161109_2016_11_09.lev"
         file_location = os.path.join(file_loc, file_name)
         print(file_location)
+        # t = ET.parse(open(file_location))
+        # root = t.getroot()
+        # print(root.find('Instrument_info_data_header').find('Location').text)
         solinst_file = SolinstFileReader(file_location)
         print(solinst_file.file_reader)
         solinst_file.read_file()
         print(solinst_file.sites)
-        for time_serie in solinst_file.sites.records:
-            print(str(time_serie))
+
+        solinst_file.records.plot()
+        plt.show(block=True)

@@ -8,24 +8,31 @@ __version__ = '1.0'
 import datetime
 import re
 import typing
+import warnings
 from collections import OrderedDict
+
+import numpy as np
+import pandas as pd
 
 
 class Parameter(object):
     """
     basic implementation of a parameter
     """
-    
+
     def __init__(self, param_name, unit):
         self.parameter = param_name
         self.unit = unit
+
+    def __str__(self) -> str:
+        return '{}_{}'.format(self.parameter, self.unit)
 
 
 class Record(object):
     """
     implementation of a basic record given by any kind of data file
     """
-    
+
     def __init__(self, record_date: datetime.datetime = None,
                  parameter: str = None,
                  parameter_unit: str = None,
@@ -33,149 +40,167 @@ class Record(object):
         self.record_date = record_date
         self._parameter = Parameter(parameter, parameter_unit)
         self.value = value
-    
+
     @property
     def parameter(self):
         return self._parameter.parameter
-    
+
     @parameter.setter
     def parameter(self, value: str):
         self._parameter.parameter = value
-    
+
     @property
     def parameter_unit(self):
         return self._parameter.unit
-    
+
     @parameter_unit.setter
     def parameter_unit(self, value: str):
         self._parameter.unit = value
+
+    @property
+    def parameter_as_string(self):
+        return self._parameter.__str__()
 
 
 class TimeSeriesRecords(Record):
     """
     implementation of a TimeSeriesRecord. The record_date correspond to the first date of the values list.
-    Values are stored as an OrderedDict : [(date1, value1),(date2, value2),...]
+    Values are stored as a pandas.Series
     """
-    TimeSerieValue = typing.Dict[datetime.datetime, str]
-    
+
     def __init__(self,
-                 records_date: datetime.datetime = None,
-                 values: TimeSerieValue = None,
+                 records_date: typing.Union[list, typing.List[datetime.datetime], pd.DatetimeIndex] = None,
+                 values: typing.Union[list, typing.List[int], typing.List[float], np.ndarray] = None,
                  parameter: str = None,
                  parameter_unit: str = None):
-        super().__init__(records_date, parameter, parameter_unit, values)
-        self.value = OrderedDict()
-    
-    def add_value(self, _date: datetime.datetime, val, reorder=False):
-        if _date in self.value.keys():
-            pass
-            # raise KeyError("date all-ready exist")
+        """
+
+        :param records_date:
+        :param values:
+        :param parameter:
+        :param parameter_unit:
+        """
+        if records_date is not None and values is not None:
+
+            super().__init__(records_date[0],
+                             parameter, parameter_unit, values[0])
+            self.value = pd.Series(data=values, index=records_date, name=self.parameter_as_string)
         else:
-            self.value[_date] = val
-        if reorder == True:
-            self.reorder_values()
-    
+            super().__init__(records_date, parameter, parameter_unit, values)
+            self.value = pd.Series()
+
+    def add_value(self, _date: datetime.datetime, val):
+        """
+        Add a value to the self.value attribute. Duplicate values generate an error
+        :param _date: date to add
+        :param val: value to add
+        """
+        warnings.warn('deprecated method', DeprecationWarning)
+        new_serie = pd.Series([val], index=_date)
+        try:
+            self.value.append(new_serie, verify_integrity=True)
+        except ValueError as e:
+            warnings.warn(str(e), ValueError)
+
     def reorder_values(self):
+        warnings.warn('deprecated function not usefull for pd.Series objects', DeprecationWarning)
         new_dict = OrderedDict()
         for keys in sorted(self.value.keys()):
             new_dict[keys] = self.value[keys]
         self.value = new_dict
-    
-    def set_time_serie_values(self, times: typing.List[datetime.datetime], values: list):
-        for date, val in zip(times, values):
-            self.add_value(date, val)
-        self.reorder_values()
-    
-    def get_data_at_time(self, at_date: datetime.datetime) -> list:
+
+    def set_time_serie_values(self, times: typing.Union[typing.List[datetime.datetime], pd.DatetimeIndex],
+                              values: typing.Union[np.ndarray, list]):
+        """
+        Add multiple values to the time series
+        :param times: list of datetime object
+        :param values: list of values
+        :raise : AssertionError if Times and Values are not the same size
+        """
+        assert len(times) == len(values), "Times and values are not the same size"
+
+        try:
+
+            new_ts = pd.Series(values, index=times)
+            self.value = self.value.append(new_ts, verify_integrity=True, ignore_index=False)
+        except ValueError as e:
+            warnings.warn(str(e), ValueError)
+
+    def get_data_at_time(self, at_date: typing.Union[datetime.datetime, str, datetime.date]) -> pd.Series:
         """
         method that return a list of an unique Record if the date match the
         Record date or a list of all the Record for the given date
-        :param at_date: datetime object corresponding to the needed Record"""
-        date_val_return = []
-        if at_date in self.value.keys():
-            date_val_return.append([at_date, self.value[at_date]])
-        # for dates having hours and minutes where dates are equals
-        elif at_date.date() in \
-                [dict_dates.date() for dict_dates in list(self.value.keys())]:
-            for dates, val in self.value.items():
-                if dates.date() == at_date.date():
-                    date_val_return.append([dates, val])
-        return date_val_return
-    
+        :param at_date: datetime object corresponding to the needed Record
+        :raise: KeyError if date not present
+        """
+        return self.value[at_date]
+
     def get_value_at_date(self, p_date):
+        warnings.warn('deprecated element', DeprecationWarning)
         try:
             return self.value[p_date]
         except KeyError:
             return None
-    
+
     def __str__(self) -> str:
-        tup_start_date = []
-        tup_end_date = []
-        for i, dates in zip(range(3), self.value.keys()):
-            tup_start_date.append((str(dates), self.value[dates]))
-        for dates in list(self.value.keys())[-3:]:
-            if str(dates) not in [date[0] for date in tup_start_date]:
-                tup_end_date.append((str(dates), self.value[dates]))
+        dates = self.get_dates
         return "{} ({}) :[{} ... {}]\n".format(self.parameter,
                                                self.parameter_unit,
-                                               tup_start_date,
-                                               tup_end_date)
-    
-    def get_data_between(self, first_date: datetime.datetime, last_date: datetime.datetime) -> list:
+                                               dates[:3],
+                                               dates[-3:])
+
+    def get_data_between(self, first_date: typing.Union[datetime.datetime, str],
+                         last_date: typing.Union[datetime.datetime, str]) -> pd.Series:
         """
         method that return a list of all the Record for the given date interval selected by
         >= first_date and < last_date
         :param first_date: start datetime object corresponding to the needed Record
         :param last_date: end datetime object corresponding to the needed Record. The end date will not
         be included in the selection
-        :return: list
+        :return: pandas Series of the selected values
         """
-        assert first_date <= last_date, 'The first date must be before the last date'
-        returned_data = []
-        try:
-            first_record_date = self.get_data_at_time(first_date)[0][0]
-            second_record_date = self.get_data_at_time(last_date)[0][0]
-            
-            for dates, val in self.value.items():
-                if dates >= first_record_date and dates <= second_record_date:
-                    returned_data.append([dates, val])
-                if dates > second_record_date:
-                    break
-        except IndexError:
-            pass
-        finally:
-            return returned_data
-    
-    def get_data_before_date(self, date_before: datetime.datetime) -> list:
-        first_date = self.start_date
-        if date_before < first_date:
-            first_date = date_before
-        return self.get_data_between(first_date, date_before)
-    
-    def get_data_after_date(self, date_after: datetime.datetime) -> list:
-        last_date = self.end_date
-        if date_after > last_date:
-            last_date = date_after
-        return self.get_data_between(date_after, last_date)
-    
+        # convert to pandas.Timestamp object for comparision of possible string and datetime input
+        f_date = pd.Timestamp(first_date)
+        l_date = pd.Timestamp(last_date)
+        if f_date > l_date:
+            return self.value[l_date:f_date]
+        else:
+            return self.value[f_date:l_date]
+
+    def get_data_before_date(self, date_before: typing.Union[datetime.datetime, str]) -> pd.Series:
+        """
+        Return a pandas.Series object. If date_before is inferior of self.start_date, return
+        :param date_before: input date
+        :return: If date_before is inferior of self.start_date, return an empty Series
+        """
+        return self.value[:date_before]
+
+    def get_data_after_date(self, date_after: typing.Union[datetime.datetime, str]) -> pd.Series:
+        """
+        Return a pandas.Series object. If date_after is inferior of self.start_date, return
+        :param date_after: input date
+        :return: If date_after is superior to self.end_date, return an empty Series
+        """
+        return self.value[date_after:]
+
     @property
-    def end_date(self):
-        return list(self.value.keys())[-1]
-    
+    def end_date(self) -> pd.Timestamp:
+        return self.value.index.max()
+
     @property
-    def start_date(self):
-        return list(self.value.keys())[0]
-    
+    def start_date(self) -> pd.Timestamp:
+        return self.value.index.min()
+
     @property
-    def get_dates(self):
-        return list(self.value.keys())
+    def get_dates(self) -> np.ndarray:
+        return self.value.index.values
 
 
 class ChemistryRecord(Record):
     """
     implementation of a Chemistry record. The main difference is that a chemetry record have a detection limit
     """
-    
+
     def __init__(self, sampling_date: datetime.datetime = None,
                  parameter: str = None,
                  parameter_unit: str = None,
@@ -196,18 +221,18 @@ class ChemistryRecord(Record):
         self.lower_detection_limit = detection_limit
         self.report_date = report_date
         self.analysis_type = analysis_type
-    
+
     @property
     def sampling_date(self):
         return self.record_date
-    
+
     @sampling_date.setter
     def sampling_date(self, value):
         self.record_date = value
-    
+
     def __str__(self) -> str:
         return "({}) -- {} : {} {}".format(self.sampling_date, self.parameter, self.value, self.parameter_unit)
-    
+
     @property
     def normalized_value(self) -> float:
         """
@@ -230,10 +255,3 @@ class ChemistryRecord(Record):
             normal_value = float(self.value)
         # todo : what to do with values above higher detection limit
         return normal_value
-
-
-
-
-
-if __name__ == '__main__':
-    print(float('nan').is_integer())

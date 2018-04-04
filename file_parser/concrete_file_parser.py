@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 __author__ = 'Laptop$'
 __date__ = '2017-07-11$'
 __description__ = " "
@@ -8,6 +9,7 @@ __version__ = '1.0'
 import csv
 import re
 import warnings
+import xml.etree.ElementTree as ET
 from collections import OrderedDict
 
 import bs4
@@ -159,14 +161,34 @@ class EXCELFileParser(AbstractFileParser):
         return self._file_content
 
 
-class WEB_XMLFileParser(AbstractFileParser):
+class XMLFileParser(AbstractFileParser):
+    def __init__(self, file_path: str = None, header_length: int = None):
+        super().__init__(file_path, header_length)
+        self._file_content = ET.parse(open(self._file))
+
+    def read_file(self):
+        pass
+
+    def read_file_header(self):
+        pass
+
+    @property
+    def get_file_content(self) -> bs4.BeautifulSoup:
+        return self._file_content
+
+    @property
+    def get_file_header(self):
+        return self._file_header_content
+
+
+class WEBFileParser(AbstractFileParser):
     def __init__(self, file_path: str = None, header_length: int = None, requests_params: dict = None):
         super().__init__(file_path, header_length)
         if 'http' in self._file:
             self.web_url = requests.get(self._file, params=requests_params)
             self._file_content = bs4.BeautifulSoup(self.web_url.text, "html.parser")
         else:
-            self._file_content = bs4.BeautifulSoup(open(self._file), 'xml')
+            raise AttributeError('error in file parsing')
 
     def read_file(self):
         pass

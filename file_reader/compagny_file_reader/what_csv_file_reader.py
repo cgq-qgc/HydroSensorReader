@@ -5,13 +5,12 @@ __date__ = '2017-07-16$'
 __description__ = "Permet de lire des fichiers provenant de l'interface" \
                   " WHAT : https://github.com/jnsebgosselin/what.git"
 __version__ = '1.0'
-from abc import abstractmethod
-
 import datetime
+from abc import abstractmethod
 from typing import Union
 
-from site_and_records import StationSite, geographical_coordinates, StreamFlowStation
 from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
+from site_and_records import StationSite, geographical_coordinates, StreamFlowStation
 
 WHAT_METEO_FILES_HEADER_LENGTH = 10
 WHAT_WATER_LEVEL_FILES_HEADER_LENGTH = 8
@@ -54,7 +53,7 @@ class AbstractWhatFileReader(TimeSeriesFileReader):
             else:
                 datas = []
                 for row in self.file_content[self._header_length + 1:]:
-                    datas.append(row[index + start_data_column])
+                    datas.append(float(row[index + start_data_column]))
                 self._site_of_interest.create_time_serie(parameter, unit, self._get_date_list(), datas)
 
     @property
@@ -171,24 +170,28 @@ class WhatStreamAndLevelDataFileReader(AbstractWhatFileReader):
 
 if __name__ == '__main__':
     import os
+    import matplotlib.pyplot as plt
 
-    name = os.getcwd()
-    path = os.path.split(os.getcwd())[0]
-    while name != 'qc_serie_temporelle':
+    path = os.getcwd()
+    while os.path.split(path)[1] != "scientific_file_reader":
         path = os.path.split(path)[0]
-        name = os.path.basename(path)
+    file_loc = os.path.join(path, 'file_example')
 
     # POUR LES STATIONS PIEZOMETRIQUE
 
-    # path = os.path.join(path, 'input_files', 'Waterlvl', 'Barraute (08070001).csv')
-    # level = WhatWaterLevelDataFileReader(file_path)
+    files = "Brome (03030011).csv"
 
     # POUR LES STATION HYDROMETRIQUE
-    files = "051502_1967-2017.csv"
-    file_path = os.path.join(path, 'input_files', 'Streamflow and Level', files)
-    level = WhatStreamAndLevelDataFileReader(file_path)
+    # files = "011704_1972-1974.csv"
+    file_location = os.path.join(file_loc, files)
+    print(file_location)
+    # level = WhatStreamAndLevelDataFileReader(file_location)
+    level = WhatWaterLevelDataFileReader(file_location)
+
     print(level.sites.site_name)
 
-    params = [t.parameter for t in level.sites.get_records()]
-    print(params)
-    print(level.sites.get_time_serie_by_param(params[1]))
+    params = [t for t in level.sites.get_records]
+    print(level.records)
+    level.records.plot(subplots=True)
+    print(level.records.describe())
+    plt.show(block=True)
