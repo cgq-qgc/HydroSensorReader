@@ -198,7 +198,11 @@ class TimeSeriesGeochemistryFileReader(TimeSeriesFileReader, GeochemistryFileRea
                     [sample_name:str]
                         Sample
        """
-        warnings.warn('Deprecated class. Needs to be adapted to site.py and records.py refactoring', DeprecationWarning)
+        warnings.warn("""Deprecated class. 
+                      Needs to be adapted to site.py and records.py refactoring 
+                      Don't know if this class is still usefull if a pandas.Dataframe is used.
+                      Maybe a MultiIndex can do the trick !
+                      - 2018-04-03""", DeprecationWarning)
 
         super().__init__(file_name, header_length)
         self._site_of_interest = defaultdict(dict)
