@@ -86,11 +86,17 @@ class SensorPlateform(Site):
             raise ValueError('time serie with the same parameter allready exist')
 
         time_serie = TimeSeriesRecords(dates, values, parameter, unit)
-        if False in (time_serie.get_dates == self.records.index):
+
+        if len(self.records.index) == 0:
+            # create a new dataframe
+            self.records = pd.DataFrame(data=time_serie.value, index=time_serie.get_dates,
+                                        columns=[time_serie.parameter_as_string])
+        elif False in (time_serie.get_dates == self.records.index):
             # If dates differs
             self.resample_records(new_time_serie=time_serie)
         else:
-            self.records[time_serie.parameter_as_string] = time_serie
+            # same dates and dataframe exist
+            self.records[time_serie.parameter_as_string] = time_serie.value
 
     def resample_records(self, new_time_serie: TimeSeriesRecords):
         """
