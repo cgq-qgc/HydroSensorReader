@@ -11,7 +11,7 @@ import warnings
 from collections import defaultdict
 from typing import List
 
-from pandas import DataFrame as pd_DataFrame
+from pandas import DataFrame as pd_DataFrame, Timestamp
 
 from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
 
@@ -329,16 +329,13 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
             cells_to_check +=1
             strptime_string = self.YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT
             date_format_string += ".{}"
-        for i, line in zip(range(10),self.file_content[self._start_of_data_row_index+1:]):
+        for line in self.file_content[self._start_of_data_row_index + 1:]:
             _date_datetime = None
             try:
-                _date_datetime = datetime.datetime.strptime(date_format_string.format(*line[:cells_to_check]),
-                                                                         strptime_string)
+                _date_datetime = Timestamp(date_format_string.format(*line[:cells_to_check]))
             except ValueError as e:
                 # warnings.warn('bad datetime format string. date string = '+ str(line[:cells_to_check]), e)
-                strptime_string = strptime_string.replace("/","-")
-                _date_datetime = datetime.datetime.strptime(date_format_string.format(*line[:cells_to_check]),
-                                                            strptime_string)
+                raise e
 
             date_times.append(_date_datetime)
         return date_times
@@ -367,8 +364,8 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
         for parameter in list(self._params_dict.keys()):
             param_unit = self._params_dict[parameter][self.UNIT]
             param_col_index = self._params_dict[parameter][self.PARAMETER_COL_INDEX]
-            values = [val[param_col_index] for val in self.file_content[self._start_of_data_row_index+1:]]
-            self._site_of_interest.create_time_serie(parameter,param_unit,self._date_list,values)
+            values = [float(val[param_col_index]) for val in self.file_content[self._start_of_data_row_index + 1:]]
+            self._site_of_interest.create_time_serie(parameter, param_unit, self._date_list, values)
 
 
 
@@ -387,8 +384,8 @@ if __name__ == '__main__':
 
     if teste_all:
         # file_name = "F21_logger_20160224_20160621.csv"
-        # file_name = "slug_PO-05_20160729_1600.csv"
-        file_name = "2029499_F7_NordChamp_PL20150925_2015_09_25.xle"
+        file_name = "slug_PO-05_20160729_1600.csv"
+        # file_name = "2029499_F7_NordChamp_PL20150925_2015_09_25.xle"
         # file_name = "2041929_PO-06_XM20170307_2017_03_07.lev"
         # file_name = "2056794_PO-05_baro_CB20161109_2016_11_09.lev"
         file_location = os.path.join(file_loc, file_name)
