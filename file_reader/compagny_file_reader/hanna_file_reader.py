@@ -43,5 +43,6 @@ if __name__ == '__main__':
     while os.path.split(path)[1] != "scientific_file_reader":
         path = os.path.split(path)[0]
     file_loc = os.path.join(path, 'file_example')
-
-    print(file_loc)
+    file_name = 'LOG002_0504093718.xls'
+    file = os.path.join(file_loc, file_name)
+    print(file)
