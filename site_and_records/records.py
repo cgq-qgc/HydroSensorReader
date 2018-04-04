@@ -84,8 +84,7 @@ class TimeSeriesRecords(Record):
 
             super().__init__(records_date[0],
                              parameter, parameter_unit, values[0])
-            self.value = pd.Series()
-            self.set_time_serie_values(records_date, values)
+            self.value = pd.Series(data=values, index=records_date, name=self.parameter_as_string)
         else:
             super().__init__(records_date, parameter, parameter_unit, values)
             self.value = pd.Series()
@@ -96,6 +95,7 @@ class TimeSeriesRecords(Record):
         :param _date: date to add
         :param val: value to add
         """
+        warnings.warn('deprecated method', DeprecationWarning)
         new_serie = pd.Series([val], index=_date)
         try:
             self.value.append(new_serie, verify_integrity=True)
