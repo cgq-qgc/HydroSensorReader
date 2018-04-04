@@ -19,7 +19,7 @@ from site_and_records import *
 sample_ana_type = Dict[str, Sample]
 sample_dict = Dict[str, sample_ana_type]
 date_list = List[datetime.datetime]
-
+import warnings
 
 class AbstractFileReader(object , metaclass=ABCMeta):
     """Interface permettant de lire un fichier provenant d'un datalogger quelconque
@@ -198,6 +198,8 @@ class TimeSeriesGeochemistryFileReader(TimeSeriesFileReader, GeochemistryFileRea
                     [sample_name:str]
                         Sample
        """
+        warnings.warn('Deprecated class. Needs to be adapted to site.py and records.py refactoring', DeprecationWarning)
+
         super().__init__(file_name, header_length)
         self._site_of_interest = defaultdict(dict)
         self._site_of_interest[self.TIME_SERIES_DATA] = defaultdict(SensorPlateform)
@@ -242,7 +244,7 @@ class TimeSeriesGeochemistryFileReader(TimeSeriesFileReader, GeochemistryFileRea
         :param site_name:
         :return:
         """
-        return self.get_time_series_data(site_name).get_unique_dates_for_all_record()
+        return self.get_time_series_data(site_name).get_dates()
 
     @TimeSeriesFileReader.time_series_dates.getter
     def time_series_dates(self, site_name):
@@ -296,7 +298,7 @@ class TimeSeriesGeochemistryFileReader(TimeSeriesFileReader, GeochemistryFileRea
 
     def _create_time_series_with_samples(self):
         """
-        create time serie entry for each parameters avaiable for each samples
+        create time serie entry for each parameters available for each samples
         remember, geochemistry data structure is like:
         [GEOCHEMISTRY]
             [date : datetime.datetime]
