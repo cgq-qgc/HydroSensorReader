@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-__author__ = 'Laptop$'
-__date__ = '2017-07-12$'
+__author__ = 'X-Malet'
+__date__ = '2017-07-12'
 __description__ = " "
 __version__ = '1.0'
 
@@ -9,9 +9,12 @@ import datetime
 from collections import namedtuple
 from typing import List
 
+import numpy as np
+import pandas as pd
+
 from site_and_records.records import ChemistryRecord
 from site_and_records.records import TimeSeriesRecords
-import pandas as pd
+
 geographical_coordinates = namedtuple('XYZPoint', ['x', 'y', 'z'])
 
 
@@ -58,76 +61,58 @@ class SensorPlateform(Site):
         self.longest_time_series = None
         self._datetime_not_in_longest_time_series = []
 
+    @property
     def get_records(self) -> pd.DataFrame:
         return self.records
 
-    def get_time_serie_by_param(self, p_parameter) -> TimeSeriesRecords:
+    def get_time_serie_by_param(self, p_parameter) -> pd.Series:
         if p_parameter in self.records.columns.values:
             return self.records[p_parameter]
 
-    def get_unique_dates_for_all_record(self):
-        self.set_longest_time_series()
-        self.all_times_series_dates_are_equals()
-        all_dates = []
-        all_dates.extend(self.longest_time_series)
-        all_dates.extend(self._datetime_not_in_longest_time_series)
+    @property
+    def get_dates(self) -> np.ndarray:
+        return self.records.index.values
 
-        return sorted(all_dates)
+    def create_time_serie(self, parameter, unit, dates: List[datetime.datetime], values: list):
+        """
+        Create a new TimeSerie and add id to the self.records DataFrame
+        :param parameter: observed parameter
+        :param unit: parameter's unit
+        :param dates: list of datetime objects
+        :param values: list of values
+        :return:
+        """
+        if parameter in self.records.keys():
+            raise ValueError('time serie with the same parameter allready exist')
 
-    def create_time_serie(self, parameter, unit, dates, values):
-        for ts in self.get_records():
-            if ts.parameter == parameter:
-                raise ValueError('time serie with the same parameter allready exist')
+        time_serie = TimeSeriesRecords(dates, values, parameter, unit)
+        if False in (time_serie.get_dates == self.records.index):
+            # If dates differs
+            self.resample_records(new_time_serie=time_serie)
+        else:
+            self.records[time_serie.parameter_as_string] = time_serie
 
-        time_serie = TimeSeriesRecords()
-        time_serie.parameter = parameter
-        time_serie.parameter_unit = unit
-        time_serie.set_time_serie_values(dates, values)
-        self.records.append(time_serie)
-        self.set_longest_time_series()
+    def resample_records(self, new_time_serie: TimeSeriesRecords):
+        """
+        Create a new dataframe by appending a new TimeSeriesRecords
+        :param new_time_serie: TimeSeriesRecords to append
+        """
+        new_data_frame = pd.DataFrame(data=new_time_serie.value,
+                                      index=new_time_serie.get_dates,
+                                      columns=[new_time_serie.parameter_as_string])
 
-    def add_time_serie(self) -> TimeSeriesRecords:
-        ts = TimeSeriesRecords()
-        self.records.append(ts)
-        return self.records[-1]
+        new_time_delta = new_data_frame.index[1] - new_data_frame.index[0]
+        old_time_delta = self.records.index[1] - self.records.index[0]
+        # The timeDelta of the new TimeSeriesRecords is lower
+        if old_time_delta > new_time_delta:
+            self.records = new_data_frame.combine_first(self.records)
+        else:
+            self.records = self.records.combine_first(new_data_frame)
 
     def __str__(self) -> str:
         return "({serial}):{site} - {date}".format(serial=self.instrument_serial_number,
                                                    site=self.site_name,
                                                    date=self.visit_date)
-
-    def set_longest_time_series(self):
-        max_len = 0
-        times_serie_date = None
-        for ts in self.records:
-            if len(ts.get_dates) > max_len:
-                max_len = len(ts.get_dates)
-                times_serie_date = ts.get_dates
-        self.longest_time_series = times_serie_date
-
-        self.all_times_series_dates_are_equals()
-
-    def _is_date_in_longest_time_series(self, p_date) -> bool:
-        _times_series_are_equals = True
-        if p_date not in self.longest_time_series:
-            if p_date not in self._datetime_not_in_longest_time_series:
-                _times_series_are_equals = False
-                self._datetime_not_in_longest_time_series.append(p_date)
-        return _times_series_are_equals
-
-    def all_times_series_dates_are_equals(self) -> bool:
-        # get the longest time series
-        if self.longest_time_series is None:
-            self.set_longest_time_series()
-        _times_series_are_equals = True
-        for ts in self.records:
-            # date list are differents
-            if ts.get_dates != self.longest_time_series:
-                for _dates in ts.get_dates:
-                    _times_series_are_equals = self._is_date_in_longest_time_series(_dates)
-                    if _times_series_are_equals == False:
-                        break
-        return _times_series_are_equals
 
 
 class Sample(Site):
@@ -135,7 +120,6 @@ class Sample(Site):
     Definition of a Sample as seen as a laboratory information. This represent the minimal informations
     given to/by the lab.
     """
-
     def __init__(self, site_name: str = None,
                  visit_date: datetime.datetime = None,  # sampling date
                  lab_sample_name: str = None,
@@ -252,10 +236,10 @@ class DrillingSite(StationSite):
                  project_name: str = None,
                  other_identifier: str = None,
                  coordinates_x_y_z: geographical_coordinates = None,
-                 drilling_depth:float = 0.0,
-                 drill_dip:float = 0.0,
-                 drill_azimut:float = 0.0,
-                 drilling_diameter:float = 0.0):
+                 drilling_depth: float = 0.0,
+                 drill_dip: float = 0.0,
+                 drill_azimut: float = 0.0,
+                 drilling_diameter: float = 0.0):
         super().__init__(site_name, visit_date, project_name, other_identifier, coordinates_x_y_z)
         self.drilling_depth = drilling_depth
         self.drill_dip = drill_dip
@@ -267,6 +251,3 @@ class DrillingSite(StationSite):
                                                                                   site_name=self.site_name,
                                                                                   depth=self.drilling_depth,
                                                                                   date=self.visit_date)
-
-
-

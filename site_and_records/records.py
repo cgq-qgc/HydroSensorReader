@@ -8,16 +8,18 @@ __version__ = '1.0'
 import datetime
 import re
 import typing
-from collections import OrderedDict
-import pandas as pd
 import warnings
+from collections import OrderedDict
+
 import numpy as np
+import pandas as pd
+
 
 class Parameter(object):
     """
     basic implementation of a parameter
     """
-    
+
     def __init__(self, param_name, unit):
         self.parameter = param_name
         self.unit = unit
@@ -30,7 +32,7 @@ class Record(object):
     """
     implementation of a basic record given by any kind of data file
     """
-    
+
     def __init__(self, record_date: datetime.datetime = None,
                  parameter: str = None,
                  parameter_unit: str = None,
@@ -38,19 +40,19 @@ class Record(object):
         self.record_date = record_date
         self._parameter = Parameter(parameter, parameter_unit)
         self.value = value
-    
+
     @property
     def parameter(self):
         return self._parameter.parameter
-    
+
     @parameter.setter
     def parameter(self, value: str):
         self._parameter.parameter = value
-    
+
     @property
     def parameter_unit(self):
         return self._parameter.unit
-    
+
     @parameter_unit.setter
     def parameter_unit(self, value: str):
         self._parameter.unit = value
@@ -63,17 +65,29 @@ class Record(object):
 class TimeSeriesRecords(Record):
     """
     implementation of a TimeSeriesRecord. The record_date correspond to the first date of the values list.
-    Values are stored as an OrderedDict : [(date1, value1),(date2, value2),...]
+    Values are stored as a pandas.Series
     """
-    TimeSerieValue = typing.Dict[datetime.datetime, str]
-    
+
     def __init__(self,
-                 records_date: datetime.datetime = None,
-                 values: TimeSerieValue = None,
+                 records_date: typing.Any[list, typing.List[datetime.datetime]] = None,
+                 values: typing.Any[list, typing.List[int], typing.List[float]] = None,
                  parameter: str = None,
                  parameter_unit: str = None):
-        super().__init__(records_date, parameter, parameter_unit, values)
+        """
+
+        :param records_date:
+        :param values:
+        :param parameter:
+        :param parameter_unit:
+        """
         self.value = pd.Series()
+        if records_date is not None and values is not None:
+            super().__init__(records_date[0],
+                             parameter, parameter_unit, values[0])
+
+            self.set_time_serie_values(records_date, values)
+        else:
+            super().__init__(records_date, parameter, parameter_unit, values)
 
     def add_value(self, _date: datetime.datetime, val):
         """
@@ -88,21 +102,23 @@ class TimeSeriesRecords(Record):
             warnings.warn(str(e), ValueError)
 
     def reorder_values(self):
-        warnings.warn('deprecated function not usefull for pd.Series objects',DeprecationWarning)
+        warnings.warn('deprecated function not usefull for pd.Series objects', DeprecationWarning)
         new_dict = OrderedDict()
         for keys in sorted(self.value.keys()):
             new_dict[keys] = self.value[keys]
         self.value = new_dict
-    
+
     def set_time_serie_values(self, times: typing.List[datetime.datetime], values: list):
         """
         Add multiple values to the time series
         :param times: list of datetime object
         :param values: list of values
+        :raise : AssertionError if Times and Values are not the same size
         """
-        new_serie = pd.Series(values, index=times)
+        assert (len(times) == len(values), "Times and values are not the same size")
+        new_ts = pd.Series(values, index=times)
         try:
-            self.value.append(new_serie, verify_integrity=True)
+            self.value.append(new_ts, verify_integrity=True)
         except ValueError as e:
             warnings.warn(str(e), ValueError)
 
@@ -114,21 +130,21 @@ class TimeSeriesRecords(Record):
         :raise: KeyError if date not present
         """
         return self.value[at_date]
-    
+
     def get_value_at_date(self, p_date):
-        warnings.warn('deprecated element',DeprecationWarning)
+        warnings.warn('deprecated element', DeprecationWarning)
         try:
             return self.value[p_date]
         except KeyError:
             return None
-    
+
     def __str__(self) -> str:
         dates = self.get_dates
         return "{} ({}) :[{} ... {}]\n".format(self.parameter,
                                                self.parameter_unit,
                                                dates[:3],
                                                dates[-3:])
-    
+
     def get_data_between(self, first_date: datetime.datetime, last_date: datetime.datetime) -> pd.Series:
         """
         method that return a list of all the Record for the given date interval selected by
@@ -146,21 +162,21 @@ class TimeSeriesRecords(Record):
         if date_before < first_date:
             first_date = date_before
         return self.get_data_between(first_date, date_before)
-    
+
     def get_data_after_date(self, date_after: datetime.datetime) -> pd.Series:
         last_date = self.end_date
         if date_after > last_date:
             last_date = date_after
         return self.get_data_between(date_after, last_date)
-    
+
     @property
     def end_date(self) -> pd.Timestamp:
         return self.value.index.max()
-    
+
     @property
-    def start_date(self)-> pd.Timestamp:
+    def start_date(self) -> pd.Timestamp:
         return self.value.index.min()
-    
+
     @property
     def get_dates(self) -> np.ndarray:
         return self.value.index.to_pydatetime()
@@ -170,7 +186,7 @@ class ChemistryRecord(Record):
     """
     implementation of a Chemistry record. The main difference is that a chemetry record have a detection limit
     """
-    
+
     def __init__(self, sampling_date: datetime.datetime = None,
                  parameter: str = None,
                  parameter_unit: str = None,
@@ -191,18 +207,18 @@ class ChemistryRecord(Record):
         self.lower_detection_limit = detection_limit
         self.report_date = report_date
         self.analysis_type = analysis_type
-    
+
     @property
     def sampling_date(self):
         return self.record_date
-    
+
     @sampling_date.setter
     def sampling_date(self, value):
         self.record_date = value
-    
+
     def __str__(self) -> str:
         return "({}) -- {} : {} {}".format(self.sampling_date, self.parameter, self.value, self.parameter_unit)
-    
+
     @property
     def normalized_value(self) -> float:
         """
@@ -225,7 +241,3 @@ class ChemistryRecord(Record):
             normal_value = float(self.value)
         # todo : what to do with values above higher detection limit
         return normal_value
-
-
-
-
