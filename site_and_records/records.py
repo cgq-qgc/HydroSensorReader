@@ -11,6 +11,7 @@ import typing
 from collections import OrderedDict
 import pandas as pd
 import warnings
+import numpy as np
 
 class Parameter(object):
     """
@@ -20,6 +21,9 @@ class Parameter(object):
     def __init__(self, param_name, unit):
         self.parameter = param_name
         self.unit = unit
+
+    def __str__(self) -> str:
+        return '{}_{}'.format(self.parameter, self.unit)
 
 
 class Record(object):
@@ -52,8 +56,8 @@ class Record(object):
         self._parameter.unit = value
 
     @property
-    def parameter_col(self):
-        return '{}_{}'.format(self.parameter, self.parameter_unit)
+    def parameter_as_string(self):
+        return self._parameter.__str__()
 
 
 class TimeSeriesRecords(Record):
@@ -71,16 +75,18 @@ class TimeSeriesRecords(Record):
         super().__init__(records_date, parameter, parameter_unit, values)
         self.value = pd.Series()
 
-    
-    def add_value(self, _date: datetime.datetime, val, reorder=False):
-        if _date in self.value.keys():
-            pass
-            # raise KeyError("date all-ready exist")
-        else:
-            self.value[_date] = val
-        if reorder == True:
-            self.reorder_values()
-    
+    def add_value(self, _date: datetime.datetime, val):
+        """
+        Add a value to the self.value attribute. Duplicate values generate an error
+        :param _date: date to add
+        :param val: value to add
+        """
+        new_serie = pd.Series([val], index=_date)
+        try:
+            self.value.append(new_serie, verify_integrity=True)
+        except ValueError as e:
+            warnings.warn(str(e), ValueError)
+
     def reorder_values(self):
         warnings.warn('deprecated function not usefull for pd.Series objects',DeprecationWarning)
         new_dict = OrderedDict()
@@ -89,46 +95,41 @@ class TimeSeriesRecords(Record):
         self.value = new_dict
     
     def set_time_serie_values(self, times: typing.List[datetime.datetime], values: list):
-        for date, val in zip(times, values):
-            self.add_value(date, val)
-        self.reorder_values()
-    
-    def get_data_at_time(self, at_date: datetime.datetime) -> list:
+        """
+        Add multiple values to the time series
+        :param times: list of datetime object
+        :param values: list of values
+        """
+        new_serie = pd.Series(values, index=times)
+        try:
+            self.value.append(new_serie, verify_integrity=True)
+        except ValueError as e:
+            warnings.warn(str(e), ValueError)
+
+    def get_data_at_time(self, at_date: datetime.datetime) -> pd.Series:
         """
         method that return a list of an unique Record if the date match the
         Record date or a list of all the Record for the given date
-        :param at_date: datetime object corresponding to the needed Record"""
-        date_val_return = []
-        if at_date in self.value.keys():
-            date_val_return.append([at_date, self.value[at_date]])
-        # for dates having hours and minutes where dates are equals
-        elif at_date.date() in \
-                [dict_dates.date() for dict_dates in list(self.value.keys())]:
-            for dates, val in self.value.items():
-                if dates.date() == at_date.date():
-                    date_val_return.append([dates, val])
-        return date_val_return
+        :param at_date: datetime object corresponding to the needed Record
+        :raise: KeyError if date not present
+        """
+        return self.value[at_date]
     
     def get_value_at_date(self, p_date):
+        warnings.warn('deprecated element',DeprecationWarning)
         try:
             return self.value[p_date]
         except KeyError:
             return None
     
     def __str__(self) -> str:
-        tup_start_date = []
-        tup_end_date = []
-        for i, dates in zip(range(3), self.value.keys()):
-            tup_start_date.append((str(dates), self.value[dates]))
-        for dates in list(self.value.keys())[-3:]:
-            if str(dates) not in [date[0] for date in tup_start_date]:
-                tup_end_date.append((str(dates), self.value[dates]))
+        dates = self.get_dates
         return "{} ({}) :[{} ... {}]\n".format(self.parameter,
                                                self.parameter_unit,
-                                               tup_start_date,
-                                               tup_end_date)
+                                               dates[:3],
+                                               dates[-3:])
     
-    def get_data_between(self, first_date: datetime.datetime, last_date: datetime.datetime) -> list:
+    def get_data_between(self, first_date: datetime.datetime, last_date: datetime.datetime) -> pd.Series:
         """
         method that return a list of all the Record for the given date interval selected by
         >= first_date and < last_date
@@ -138,44 +139,31 @@ class TimeSeriesRecords(Record):
         :return: list
         """
         assert first_date <= last_date, 'The first date must be before the last date'
-        returned_data = []
-        try:
-            first_record_date = self.get_data_at_time(first_date)[0][0]
-            second_record_date = self.get_data_at_time(last_date)[0][0]
-            
-            for dates, val in self.value.items():
-                if dates >= first_record_date and dates <= second_record_date:
-                    returned_data.append([dates, val])
-                if dates > second_record_date:
-                    break
-        except IndexError:
-            pass
-        finally:
-            return returned_data
-    
-    def get_data_before_date(self, date_before: datetime.datetime) -> list:
+        return self.value[first_date:last_date]
+
+    def get_data_before_date(self, date_before: datetime.datetime) -> pd.Series:
         first_date = self.start_date
         if date_before < first_date:
             first_date = date_before
         return self.get_data_between(first_date, date_before)
     
-    def get_data_after_date(self, date_after: datetime.datetime) -> list:
+    def get_data_after_date(self, date_after: datetime.datetime) -> pd.Series:
         last_date = self.end_date
         if date_after > last_date:
             last_date = date_after
         return self.get_data_between(date_after, last_date)
     
     @property
-    def end_date(self):
-        return list(self.value.keys())[-1]
+    def end_date(self) -> pd.Timestamp:
+        return self.value.index.max()
     
     @property
-    def start_date(self):
-        return list(self.value.keys())[0]
+    def start_date(self)-> pd.Timestamp:
+        return self.value.index.min()
     
     @property
-    def get_dates(self):
-        return list(self.value.keys())
+    def get_dates(self) -> np.ndarray:
+        return self.value.index.to_pydatetime()
 
 
 class ChemistryRecord(Record):
@@ -241,6 +229,3 @@ class ChemistryRecord(Record):
 
 
 
-
-if __name__ == '__main__':
-    print(float('nan').is_integer())
