@@ -69,8 +69,8 @@ class TimeSeriesRecords(Record):
     """
 
     def __init__(self,
-                 records_date: typing.Any[list, typing.List[datetime.datetime]] = None,
-                 values: typing.Any[list, typing.List[int], typing.List[float]] = None,
+                 records_date: typing.Union[list, typing.List[datetime.datetime], pd.DatetimeIndex] = None,
+                 values: typing.Union[list, typing.List[int], typing.List[float], np.ndarray] = None,
                  parameter: str = None,
                  parameter_unit: str = None):
         """
@@ -80,14 +80,15 @@ class TimeSeriesRecords(Record):
         :param parameter:
         :param parameter_unit:
         """
-        self.value = pd.Series()
         if records_date is not None and values is not None:
+
             super().__init__(records_date[0],
                              parameter, parameter_unit, values[0])
-
+            self.value = pd.Series()
             self.set_time_serie_values(records_date, values)
         else:
             super().__init__(records_date, parameter, parameter_unit, values)
+            self.value = pd.Series()
 
     def add_value(self, _date: datetime.datetime, val):
         """
@@ -108,21 +109,24 @@ class TimeSeriesRecords(Record):
             new_dict[keys] = self.value[keys]
         self.value = new_dict
 
-    def set_time_serie_values(self, times: typing.List[datetime.datetime], values: list):
+    def set_time_serie_values(self, times: typing.Union[typing.List[datetime.datetime], pd.DatetimeIndex],
+                              values: typing.Union[np.ndarray, list]):
         """
         Add multiple values to the time series
         :param times: list of datetime object
         :param values: list of values
         :raise : AssertionError if Times and Values are not the same size
         """
-        assert (len(times) == len(values), "Times and values are not the same size")
-        new_ts = pd.Series(values, index=times)
+        assert len(times) == len(values), "Times and values are not the same size"
+
         try:
-            self.value.append(new_ts, verify_integrity=True)
+
+            new_ts = pd.Series(values, index=times)
+            self.value = self.value.append(new_ts, verify_integrity=True, ignore_index=False)
         except ValueError as e:
             warnings.warn(str(e), ValueError)
 
-    def get_data_at_time(self, at_date: datetime.datetime) -> pd.Series:
+    def get_data_at_time(self, at_date: typing.Union[datetime.datetime, str, datetime.date]) -> pd.Series:
         """
         method that return a list of an unique Record if the date match the
         Record date or a list of all the Record for the given date
@@ -179,7 +183,7 @@ class TimeSeriesRecords(Record):
 
     @property
     def get_dates(self) -> np.ndarray:
-        return self.value.index.to_pydatetime()
+        return self.value.index.values
 
 
 class ChemistryRecord(Record):
