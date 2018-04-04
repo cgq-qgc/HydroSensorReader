@@ -149,29 +149,39 @@ class TimeSeriesRecords(Record):
                                                dates[:3],
                                                dates[-3:])
 
-    def get_data_between(self, first_date: datetime.datetime, last_date: datetime.datetime) -> pd.Series:
+    def get_data_between(self, first_date: typing.Union[datetime.datetime, str],
+                         last_date: typing.Union[datetime.datetime, str]) -> pd.Series:
         """
         method that return a list of all the Record for the given date interval selected by
         >= first_date and < last_date
         :param first_date: start datetime object corresponding to the needed Record
         :param last_date: end datetime object corresponding to the needed Record. The end date will not
         be included in the selection
-        :return: list
+        :return: pandas Series of the selected values
         """
-        assert first_date <= last_date, 'The first date must be before the last date'
-        return self.value[first_date:last_date]
+        # convert to pandas.Timestamp object for comparision of possible string and datetime input
+        f_date = pd.Timestamp(first_date)
+        l_date = pd.Timestamp(last_date)
+        if f_date > l_date:
+            return self.value[l_date:f_date]
+        else:
+            return self.value[f_date:l_date]
 
-    def get_data_before_date(self, date_before: datetime.datetime) -> pd.Series:
-        first_date = self.start_date
-        if date_before < first_date:
-            first_date = date_before
-        return self.get_data_between(first_date, date_before)
+    def get_data_before_date(self, date_before: typing.Union[datetime.datetime, str]) -> pd.Series:
+        """
+        Return a pandas.Series object. If date_before is inferior of self.start_date, return
+        :param date_before: input date
+        :return: If date_before is inferior of self.start_date, return an empty Series
+        """
+        return self.value[:date_before]
 
-    def get_data_after_date(self, date_after: datetime.datetime) -> pd.Series:
-        last_date = self.end_date
-        if date_after > last_date:
-            last_date = date_after
-        return self.get_data_between(date_after, last_date)
+    def get_data_after_date(self, date_after: typing.Union[datetime.datetime, str]) -> pd.Series:
+        """
+        Return a pandas.Series object. If date_after is inferior of self.start_date, return
+        :param date_after: input date
+        :return: If date_after is superior to self.end_date, return an empty Series
+        """
+        return self.value[date_after:]
 
     @property
     def end_date(self) -> pd.Timestamp:
