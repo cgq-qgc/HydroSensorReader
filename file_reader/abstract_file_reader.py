@@ -10,6 +10,7 @@ import datetime
 from abc import abstractmethod, ABCMeta
 from collections import defaultdict
 from typing import Dict, List, Union
+from xml.etree import ElementTree as ET
 
 import bs4
 
@@ -21,6 +22,7 @@ sample_dict = Dict[str, sample_ana_type]
 date_list = List[datetime.datetime]
 import warnings
 
+
 class AbstractFileReader(object , metaclass=ABCMeta):
     """Interface permettant de lire un fichier provenant d'un datalogger quelconque
     classe permettant d'extraire des données d'un fichier quelconque.
@@ -31,8 +33,9 @@ class AbstractFileReader(object , metaclass=ABCMeta):
     """
     TXT_FILE_TYPES = ['dat', 'lev']
     XLS_FILES_TYPES = ['xls', 'xlsx']
+    XML_FILES_TYPES = ['xle', 'xml']
     CSV_FILES_TYPES = ['csv']
-    WEB_XML_FILES_TYPES = ['xle', 'xml', 'http']
+    WEB_XML_FILES_TYPES = ['http']
     MONTH_S_DAY_S_YEAR_HMS_DATE_STRING_FORMAT = '%m/%d/%y %H:%M:%S'
     YEAR_S_MONTH_S_DAY_HM_DATE_STRING_FORMAT = '%Y/%m/%d %H:%M'
     YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT = YEAR_S_MONTH_S_DAY_HM_DATE_STRING_FORMAT + ":%S"
@@ -53,7 +56,7 @@ class AbstractFileReader(object , metaclass=ABCMeta):
     def _set_file_reader(self) -> Union[file_parser.CSVFileParser,
                                         file_parser.EXCELFileParser,
                                         file_parser.TXTFileParser,
-                                        file_parser.WEB_XMLFileParser]:
+                                        file_parser.WEBFileParser]:
         """
         set the good file parser to open and read the provided file
         :return:
@@ -71,8 +74,10 @@ class AbstractFileReader(object , metaclass=ABCMeta):
                 file_reader = file_parser.CSVFileParser(file_path=self._file,
                                                         header_length=self._header_length)
             elif file_ext in self.WEB_XML_FILES_TYPES or 'http' in self._file:
-                file_reader = file_parser.WEB_XMLFileParser(file_path=self._file,
-                                                            requests_params=self.request_params)
+                file_reader = file_parser.WEBFileParser(file_path=self._file,
+                                                        requests_params=self.request_params)
+            elif file_ext in self.XML_FILES_TYPES:
+                file_reader = file_parser.XMLFileParser(file_path=self._file)
         except ValueError as e:
             print(self._file)
             print("File ext: {}".format(file_ext))
@@ -96,7 +101,7 @@ class AbstractFileReader(object , metaclass=ABCMeta):
             return file_list[-1].lower()
 
     @property
-    def file_content(self) -> Union[bs4.BeautifulSoup, list]:
+    def file_content(self) -> Union[ET.ElementTree, bs4.BeautifulSoup, list,]:
         return self.file_reader.get_file_content
 
     def _make_site(self):
@@ -156,6 +161,10 @@ class TimeSeriesFileReader(AbstractFileReader):
     @abstractmethod
     def _get_date_list(self) -> date_list:
         pass
+
+    @property
+    def sites(self) -> SensorPlateform:
+        return self._site_of_interest
 
 
 class GeochemistryFileReader(AbstractFileReader):
