@@ -44,7 +44,6 @@ class TimeSeriesRecordsTest(unittest.TestCase):
         d_after = 3
         getted_records = self.ts.get_data_after_date(self.dates[d_after])
         anticipated_values = pd.Series(self.vals[d_after:], self.dates[d_after:])
-        print(anticipated_values)
         self.assertEqual(getted_records.all(), anticipated_values.all())
 
     def test_get_data_before(self):
@@ -56,13 +55,16 @@ class TimeSeriesRecordsTest(unittest.TestCase):
     def test_get_data_between_bad_interval(self):
         d_from = 4
         d_to = 2
-        with self.assertRaises(AssertionError) as context:
-            self.ts.get_data_between(self.dates[d_from], self.dates[d_to])
-            self.assertTrue("The first date must be before the last date" in str(context.msg))
+        first_date = self.dates[d_from]
+        last_date = self.dates[d_to]
+        ts = self.ts.get_data_between(first_date, last_date)
+        self.assertTrue(ts.all() == pd.Series(self.vals[d_to:d_from], index=self.dates[d_to:d_from]).all())
+
+
 
     def test_get_data_before_not_in_values(self):
         date_before = self.dates[0]
-        date_before = datetime.datetime(date_before.year-1,date_before.month,date_before.day)
+        date_before = datetime.datetime(date_before.year - 1, date_before.month, date_before.day)
         getted_dates = self.ts.get_data_before_date(date_before)
         self.assertTrue(len(getted_dates) == 0)
 
@@ -71,6 +73,7 @@ class TimeSeriesRecordsTest(unittest.TestCase):
         date_after = datetime.datetime(date_after.year+1,date_after.month, date_after.day)
         getted_dates = self.ts.get_data_after_date(date_after)
         self.assertTrue(len(getted_dates) == 0)
+
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TimeSeriesRecordsTest)
 unittest.TextTestRunner(verbosity=2).run(suite)
