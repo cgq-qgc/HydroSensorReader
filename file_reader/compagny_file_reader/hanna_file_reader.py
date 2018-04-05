@@ -67,26 +67,32 @@ class XLSHannaFileReader(TimeSeriesFileReader):
         self.sites.instrument_serial_number = self.header_content['Instrument Serial No.']
         self.sites.visit_date = self.header_content['Started Date and Time']
 
+    def _add_axe_to_plot(self, parent_plot, element, color, linestyle='-', outward=0):
+        new_axis = parent_plot.twinx()
+        new_axis.plot(self.records[element], color=color, linestyle=linestyle)
+        new_axis.set_ylabel(element, color=color)
+        new_axis.spines["right"].set_color(color)
+        if outward != 0:
+            new_axis.spines["right"].set_position(("outward", outward))
+
     def plot(self, *args, **kwargs):
         fig, temp_axe = plt.subplots(figsize=(20, 10))
-        temp_axe.plot(self.records['Temp.[°C]'])
-        temp_axe.set_ylabel('Temp.[°C]')
+        temp_axe.plot(self.records['Temp.[°C]'], color='blue', )
+        temp_axe.set_ylabel('Temp.[°C]', color='blue')
+        temp_axe.spines['left'].set_color('blue')
+        temp_axe.set_title(self.sites.site_name)
+
         ph_text = 'pH '
-        ph_axe = temp_axe.twinx()
-        ph_axe.plot(self.records[ph_text], color='orange', linestyle='--')
-        ph_axe.set_ylabel(ph_text)
-
+        self._add_axe_to_plot(temp_axe, ph_text, 'black', '--')
+        outward = 50
         do_text = 'D.O.[%]'
-        cond_axe = temp_axe.twinx()
-        cond_axe.plot(self.records[do_text], color='red')
-        cond_axe.set_ylabel(do_text)
-        cond_axe.spines["right"].set_position(("axes", 1.3))
-
+        self._add_axe_to_plot(temp_axe, do_text, 'red', outward=outward)
         orp_text = 'ORP[mV]'
-        orp_axe = temp_axe.twinx()
-        orp_axe.plot(self.records[orp_text], color='red')
-        orp_axe.set_ylabel(orp_text)
-        orp_axe.spines["right"].set_position(("axes", 1.5))
+        self._add_axe_to_plot(temp_axe, orp_text, 'green', outward=2 * outward)
+
+        fig.legend(loc='upper left')
+
+
 
 
 
@@ -98,7 +104,7 @@ if __name__ == '__main__':
     while os.path.split(path)[1] != "scientific_file_reader":
         path = os.path.split(path)[0]
     file_loc = os.path.join(path, 'file_example')
-    file_name = 'LOG006_0621113447.xls'
+    file_name = 'LOG001_1011105528.xls'
     file = os.path.join(file_loc, file_name)
     print(file)
 
