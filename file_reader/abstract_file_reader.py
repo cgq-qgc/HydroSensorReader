@@ -169,6 +169,9 @@ class TimeSeriesFileReader(AbstractFileReader):
     def records(self, value: DataFrame):
         self._site_of_interest.records = value
 
+    def plot(self, *args, **kwargs):
+        self.records.plot(*args, **kwargs)
+
 class GeochemistryFileReader(AbstractFileReader):
     def __init__(self, file_name: str = None,
                  header_length: int = 10):
