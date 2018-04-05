@@ -15,6 +15,10 @@ class XLSHannaFileReader(TimeSeriesFileReader):
     def __init__(self, file_name: str = None, header_length: int = 10):
         super().__init__(file_name, header_length)
 
+    def read_file(self):
+        self._date_list = self._get_date_list()
+        self._read_file_data()
+
     @property
     def header_info(self):
         return self.file_content[' Lot Info ']
@@ -30,13 +34,19 @@ class XLSHannaFileReader(TimeSeriesFileReader):
         pass
 
     def _get_date_list(self) -> date_list:
-        pass
+        date_list = [d[0] for d in hanna_file.data_sheet[1:]]
+        time_list = [datetime.time(d[1].hour, d[1].minute, d[1].second) for d in hanna_file.data_sheet[1:]]
+        date_time = [datetime.datetime(d.year, d.month, d.day, t.hour, t.minute, t.second)
+                     for d, t in zip(date_list, time_list)]
+        return date_time
 
     def _read_file_data(self):
         """
         implementation of the base class abstract method
         """
-        pass
+        values = [val[2:] for val in hanna_file.data_sheet[1:]]
+        self._site_of_interest.records = pd.DataFrame(data=values, columns=hanna_file.data_sheet[0][2:],
+                                                      index=self._get_date_list())
 
     def _read_file_data_header(self):
         """
@@ -61,10 +71,16 @@ if __name__ == '__main__':
     hanna_file = XLSHannaFileReader(file)
     date_list = [d[0] for d in hanna_file.data_sheet[1:]]
     time_list = [datetime.time(d[1].hour, d[1].minute, d[1].second) for d in hanna_file.data_sheet[1:]]
+    date_time = [datetime.datetime(d.year, d.month, d.day, t.hour, t.minute, t.second)
+                 for d, t in zip(date_list, time_list)]
     values = [val[2:] for val in hanna_file.data_sheet[1:]]
-    pprint.pprint(hanna_file.data_sheet[:5], width=350)
-    df = pd.DataFrame(data=values, columns=hanna_file.data_sheet[0][2:], index=[date_list, time_list])
+    hanna_file.read_file()
+    print(len(values))
+    print(len(date_time))
+    pprint.pprint(date_time[:5], width=350)
+    pprint.pprint(hanna_file.data_sheet[0][2:], width=250)
+    df = pd.DataFrame(data=values, columns=hanna_file.data_sheet[0][2:], index=date_time)
     print(df.head())
     print()
-    df.plot(subplots=True, title=file_name)
+    hanna_file.records.plot(subplots=True, title=file_name)
     plt.show(block=True)
