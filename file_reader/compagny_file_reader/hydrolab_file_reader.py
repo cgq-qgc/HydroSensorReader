@@ -5,6 +5,12 @@ __date__ = '2018-04-08'
 __description__ = " "
 __version__ = '1.0'
 
+import datetime
+import re
+
+import matplotlib.pyplot as plt
+import pandas as pd
+
 from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
 
 
