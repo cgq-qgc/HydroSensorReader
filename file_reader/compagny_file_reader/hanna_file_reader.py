@@ -16,7 +16,6 @@ from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
 class XLSHannaFileReader(TimeSeriesFileReader):
     def __init__(self, file_name: str = None, header_length: int = 10):
         super().__init__(file_name, header_length)
-        self.header_content = {}
 
     def read_file(self):
         self._date_list = self._get_date_list()
@@ -42,8 +41,8 @@ class XLSHannaFileReader(TimeSeriesFileReader):
                 self.header_content[key] = row[1]
 
     def _get_date_list(self) -> date_list:
-        date_list = [d[0] for d in hanna_file.data_sheet[1:]]
-        time_list = [datetime.time(d[1].hour, d[1].minute, d[1].second) for d in hanna_file.data_sheet[1:]]
+        date_list = [d[0] for d in self.data_sheet[1:]]
+        time_list = [datetime.time(d[1].hour, d[1].minute, d[1].second) for d in self.data_sheet[1:]]
         date_time = [datetime.datetime(d.year, d.month, d.day, t.hour, t.minute, t.second)
                      for d, t in zip(date_list, time_list)]
         return date_time
@@ -52,8 +51,8 @@ class XLSHannaFileReader(TimeSeriesFileReader):
         """
         implementation of the base class abstract method
         """
-        values = [val[2:] for val in hanna_file.data_sheet[1:]]
-        self._site_of_interest.records = pd.DataFrame(data=values, columns=hanna_file.data_sheet[0][2:],
+        values = [val[2:] for val in self.data_sheet[1:]]
+        self._site_of_interest.records = pd.DataFrame(data=values, columns=self.data_sheet[0][2:],
                                                       index=self._get_date_list())
 
 
