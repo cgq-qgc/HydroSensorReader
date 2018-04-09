@@ -5,9 +5,11 @@ __date__ = '2017-07-11$'
 __description__ = " "
 __version__ = '1.0'
 
-from abc import abstractmethod, ABCMeta
 import typing
+from abc import abstractmethod, ABCMeta
+
 import bs4
+
 
 class AbstractFileParser(object, metaclass=ABCMeta):
     def __init__(self, file_path: str = None, header_length: int = None):
@@ -29,5 +31,8 @@ class AbstractFileParser(object, metaclass=ABCMeta):
         return self._file_content
 
     @property
-    def get_file_header(self):
-        return self._file_header_content
+    def get_file_header(self) -> typing.Union[bs4.BeautifulSoup, typing.List[str]]:
+        if len(self._file_header_content) > 0:
+            return self._file_header_content
+        else:
+            return self._file_content[0: self._header_length]
