@@ -20,12 +20,12 @@ station_possible = Union[StationSite, StreamFlowStation]
 
 
 class AbstractWhatFileReader(TimeSeriesFileReader):
-    def __init__(self, file_name: str = None, header_length: int = WHAT_METEO_FILES_HEADER_LENGTH,
+    def __init__(self, file_path: str = None, header_length: int = WHAT_METEO_FILES_HEADER_LENGTH,
                  station_type: station_possible=None):
         # if file_name is None:
         #     pass
         # else:
-        super().__init__(file_name, header_length)
+        super().__init__(file_path, header_length)
         self._site_of_interest = station_type
         self.read_file()
 
@@ -107,8 +107,8 @@ class AbstractWhatFileReader(TimeSeriesFileReader):
 
 
 class WhatMeteorologicalDataFileReader(AbstractWhatFileReader):
-    def __init__(self, file_name: str = None):
-        super().__init__(file_name, WHAT_METEO_FILES_HEADER_LENGTH,StationSite())
+    def __init__(self, file_path: str = None):
+        super().__init__(file_path, WHAT_METEO_FILES_HEADER_LENGTH, StationSite())
 
     def _read_file_data_header(self):
         self._make_station_coordinates_from_file()
@@ -123,8 +123,8 @@ class WhatMeteorologicalDataFileReader(AbstractWhatFileReader):
 
 
 class WhatWaterLevelDataFileReader(AbstractWhatFileReader):
-    def __init__(self, file_name: str = None):
-        super().__init__(file_name, WHAT_WATER_LEVEL_FILES_HEADER_LENGTH,station_type=StationSite())
+    def __init__(self, file_path: str = None):
+        super().__init__(file_path, WHAT_WATER_LEVEL_FILES_HEADER_LENGTH, station_type=StationSite())
 
     def _read_file_data(self, start_data_column: int = 4):
         super()._read_file_data(start_data_column)
@@ -139,9 +139,9 @@ class WhatWaterLevelDataFileReader(AbstractWhatFileReader):
 
 
 class WhatStreamAndLevelDataFileReader(AbstractWhatFileReader):
-    def __init__(self, file_name: str = None,
+    def __init__(self, file_path: str = None,
                  header_length: int = WHAT_STREAM_FLOW_STATION_HEADER_LENGTH):
-        super().__init__(file_name, header_length, StreamFlowStation())
+        super().__init__(file_path, header_length, StreamFlowStation())
 
     def _read_file_data(self, start_data_column: int = 4):
         super()._read_file_data(start_data_column)

@@ -37,14 +37,25 @@ class AbstractFileReader(object , metaclass=ABCMeta):
     YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT = YEAR_S_MONTH_S_DAY_HM_DATE_STRING_FORMAT + ":%S"
     YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT = YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT + ".%f"
 
-    def __init__(self, file_name: str = None, header_length: int = 10, request_params: dict = None, encoding='utf8'):
+    def __init__(self, file_path: str = None, header_length: int = 10, request_params: dict = None, encoding='utf8',
+                 wait_read=False):
+        """
+
+        :param file_path: path to the file to treat
+        :param header_length: header length
+        :param request_params: request parameter for web element
+        :param encoding: encoding type :default = 'utf-8'
+        :param wait_read: if wait_read is False, will wait to read the file content. This is usefull for hierarchi-class
+        see file_reader.compagny_file_reader.solinst_file_reader.py for an example
+        """
         self.request_params = request_params
-        self._file = file_name
+        self._file = file_path
         self._header_length = header_length
         self._encoding = encoding
         self._site_of_interest = None
         self.file_reader = self._set_file_reader()
-        self.file_reader.read_file()
+        if wait_read == False:
+            self.file_reader.read_file()
 
     @property
     def sites(self):
@@ -146,8 +157,8 @@ class AbstractFileReader(object , metaclass=ABCMeta):
 
 
 class TimeSeriesFileReader(AbstractFileReader):
-    def __init__(self, file_name: str = None, header_length: int = 10, encoding='utf8'):
-        super().__init__(file_name, header_length,encoding=encoding)
+    def __init__(self, file_path: str = None, header_length: int = 10, encoding='utf8', wait_read=False):
+        super().__init__(file_path, header_length, encoding=encoding, wait_read=wait_read)
         self._site_of_interest = SensorPlateform()
         self._date_list = []
         self.header_content = {}
@@ -198,9 +209,9 @@ class TimeSeriesFileReader(AbstractFileReader):
 
 
 class GeochemistryFileReader(AbstractFileReader):
-    def __init__(self, file_name: str = None,
+    def __init__(self, file_path: str = None,
                  header_length: int = 10):
-        super().__init__(file_name, header_length)
+        super().__init__(file_path, header_length)
         self._site_of_interest = defaultdict(dict)  # dict of Samples
         self.project = None
         self.report_date = None
@@ -224,7 +235,7 @@ class TimeSeriesGeochemistryFileReader(TimeSeriesFileReader, GeochemistryFileRea
     TIME_SERIES_DATA = 'timeSerie'
     GEOCHEMISTRY_DATA = 'samples'
 
-    def __init__(self, file_name: str = None, header_length: int = 10):
+    def __init__(self, file_path: str = None, header_length: int = 10):
         """
         class between TimeSeriesFileReader and GeochemistryFileReader.
         internal data structure is like:
@@ -243,7 +254,7 @@ class TimeSeriesGeochemistryFileReader(TimeSeriesFileReader, GeochemistryFileRea
                       Maybe a MultiIndex can do the trick !
                       - 2018-04-03""", DeprecationWarning)
 
-        super().__init__(file_name, header_length)
+        super().__init__(file_path, header_length)
         self._site_of_interest = defaultdict(dict)
         self._site_of_interest[self.TIME_SERIES_DATA] = defaultdict(SensorPlateform)
         self._site_of_interest[self.GEOCHEMISTRY_DATA] = defaultdict(dict)  # dict sorted by [samp_name][samp_date]
@@ -386,8 +397,8 @@ class TimeSeriesGeochemistryFileReader(TimeSeriesFileReader, GeochemistryFileRea
 
 
 class DrillingFileReader(AbstractFileReader):
-    def __init__(self, file_name: str = None, header_length: int = None, request_params: dict = None):
-        super().__init__(file_name, header_length, request_params)
+    def __init__(self, file_path: str = None, header_length: int = None, request_params: dict = None):
+        super().__init__(file_path, header_length, request_params)
         self._site_of_interest = defaultdict(dict)
 
     def create_drilling_site(self, site_name: str):

@@ -22,7 +22,7 @@ class GNB_WaterQualityStation(TimeSeriesGeochemistryFileReader):
     def __init__(self, station_name: str):
         self.station_name = str(station_name)
         web_site_name = self.STATION_PARAMETER_URL_ADRESS.format(station_name=self.station_name)
-        super(GNB_WaterQualityStation, self).__init__(file_name=web_site_name)
+        super(GNB_WaterQualityStation, self).__init__(file_path=web_site_name)
         self.station_parameters = defaultdict(dict)
         self.no_param = []
         self.get_time_series_data(self.station_name).site_name = self.station_name

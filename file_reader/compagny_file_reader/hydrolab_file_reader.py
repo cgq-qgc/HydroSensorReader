@@ -21,8 +21,8 @@ _START_DATA_WO_DATES = 2
 
 class TXTHydrolabFileReader(TimeSeriesFileReader):
 
-    def __init__(self, file_name: str = None, header_length: int = 11):
-        super().__init__(file_name, header_length, encoding='cp1252')
+    def __init__(self, file_path: str = None, header_length: int = 11):
+        super().__init__(file_path, header_length, encoding='cp1252')
         self.data_header_index = 0
 
     @property

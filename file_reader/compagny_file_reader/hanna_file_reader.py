@@ -14,8 +14,8 @@ from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
 
 
 class XLSHannaFileReader(TimeSeriesFileReader):
-    def __init__(self, file_name: str = None, header_length: int = 10):
-        super().__init__(file_name, header_length)
+    def __init__(self, file_path: str = None, header_length: int = 10):
+        super().__init__(file_path, header_length)
 
     def read_file(self):
         self._date_list = self._get_date_list()
@@ -79,18 +79,13 @@ class XLSHannaFileReader(TimeSeriesFileReader):
 
         self._set_date_time_plot_format(axe)
 
-
-
         fig.legend(loc='upper left')
-
-
-
-
 
 
 if __name__ == '__main__':
     import os
     import pprint
+
     path = os.getcwd()
     while os.path.split(path)[1] != "scientific_file_reader":
         path = os.path.split(path)[0]

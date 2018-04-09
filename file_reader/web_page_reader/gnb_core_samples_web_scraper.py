@@ -79,7 +79,7 @@ class GNBCoreSamplesDataFactory(DrillingFileReader):
         self._site_of_interest = DrillingSite()
         self._content = {}
         if request_params['Num'] != '':
-            super().__init__(file_name=GNB_CORE_SAMPLE_REPORT_URL, request_params=request_params, header_length=0)
+            super().__init__(file_path=GNB_CORE_SAMPLE_REPORT_URL, request_params=request_params, header_length=0)
             self.read_file()
 
     def _read_table_first_col_is_header(self, table_id) -> dict:
@@ -127,9 +127,9 @@ class GNBCoreSamplesDataFactory(DrillingFileReader):
         return self._content
 
 class AbstractGNBElementListWebScrapper(DrillingFileReader):
-    def __init__(self, request_params: dict, file_name: str,
+    def __init__(self, request_params: dict, file_path: str,
                  header_length: int = None, ):
-        super().__init__(file_name=file_name, header_length=header_length, request_params=request_params)
+        super().__init__(file_path=file_path, header_length=header_length, request_params=request_params)
         self._site_of_interest = defaultdict(dict)
         self._threads = {}
         self.read_file()
@@ -165,9 +165,9 @@ class GNBCoreSamplesListWebScrapper(AbstractGNBElementListWebScrapper):
 
     """
 
-    def __init__(self, request_params: dict, file_name: str = GNB_CORE_SAMPLES_LIST_URL,
+    def __init__(self, request_params: dict, file_path: str = GNB_CORE_SAMPLES_LIST_URL,
                  header_length: int = None, ):
-        super().__init__(file_name=file_name, header_length=header_length, request_params=request_params)
+        super().__init__(file_path=file_path, header_length=header_length, request_params=request_params)
 
     def _read_file_data(self):
         print("Getting data")
@@ -196,8 +196,8 @@ class GNBCoreSamplesListWebScrapper(AbstractGNBElementListWebScrapper):
 
 
 class GNBOilAndGasWellsListWebScrapper(AbstractGNBElementListWebScrapper):
-    def __init__(self, request_params: dict, file_name: str = GNB_OIL_GAS_LIST_URL, header_length: int = None):
-        super().__init__(file_name=file_name, header_length=header_length, request_params=request_params)
+    def __init__(self, request_params: dict, file_path: str = GNB_OIL_GAS_LIST_URL, header_length: int = None):
+        super().__init__(file_path=file_path, header_length=header_length, request_params=request_params)
 
     def _read_file_data(self):
         print("Getting data")
@@ -224,10 +224,10 @@ class Abstract_GNB_NTSMapSearchWebScrapper(AbstractFileReader):
     from the GNB_WEBSITE_MAP_SEARCH_URL
     """
 
-    def __init__(self, file_name: str,
+    def __init__(self, file_path: str,
                  factory_class: gnb_element_list_web_scrapper,
                  ):
-        super().__init__(file_name=file_name, header_length=0, request_params=None)
+        super().__init__(file_path=file_path, header_length=0, request_params=None)
 
         self.factory_class = factory_class
         self._site_of_interest = dict()
@@ -265,9 +265,9 @@ class Abstract_GNB_NTSMapSearchWebScrapper(AbstractFileReader):
 
 
 class GNB_CoreSamples_NTSMapSearchWebScrapper(Abstract_GNB_NTSMapSearchWebScrapper):
-    def __init__(self, file_name: str = GNB_CORE_SAMPLES_NTS_MAP_SEARCH_URL,
+    def __init__(self, file_path: str = GNB_CORE_SAMPLES_NTS_MAP_SEARCH_URL,
                  factory_class=GNBCoreSamplesListWebScrapper):
-        super().__init__(file_name=file_name, factory_class=factory_class)
+        super().__init__(file_path=file_path, factory_class=factory_class)
 
     def write_file(self):
         # with open('samples_location.csv','w'):
@@ -282,9 +282,9 @@ class GNB_CoreSamples_NTSMapSearchWebScrapper(Abstract_GNB_NTSMapSearchWebScrapp
                     pass
 
 class GNB_OilAndGas_NTSMapSearchWebScrapper(Abstract_GNB_NTSMapSearchWebScrapper):
-    def __init__(self, file_name: str = GNB_OIL_GAS_NTS_MAP_SEARCH_URL,
+    def __init__(self, file_path: str = GNB_OIL_GAS_NTS_MAP_SEARCH_URL,
                  factory_class=GNBOilAndGasWellsListWebScrapper):
-        super().__init__(file_name=file_name, factory_class=factory_class)
+        super().__init__(file_path=file_path, factory_class=factory_class)
 
 
 if __name__ == '__main__':

@@ -17,8 +17,8 @@ from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
 
 
 class SolinstFileReader(TimeSeriesFileReader):
-    def __init__(self, file_name: str = None, header_length: int = 10):
-        super().__init__(file_name, header_length)
+    def __init__(self, file_path: str = None, header_length: int = 10):
+        super().__init__(file_path, header_length, encoding='cp1252', wait_read=True)
         self.__main_reader = None
         self.__set_reader()
 
@@ -59,8 +59,8 @@ class SolinstFileReader(TimeSeriesFileReader):
 class LEVSolinstFileReader(TimeSeriesFileReader):
     DATA_CHANNEL_STRING = ".*CHANNEL {} from data header.*"
 
-    def __init__(self, file_name: str = None, header_length: int = 10):
-        super().__init__(file_name, header_length)
+    def __init__(self, file_path: str = None, header_length: int = 10):
+        super().__init__(file_path, header_length, encoding='cp1252')
         self._update_header_lentgh()
         self._date_list = self._get_date_list()
 
@@ -166,8 +166,8 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
 class XLESolinstFileReader(TimeSeriesFileReader):
     CHANNEL_DATA_HEADER = "Ch{}_data_header"
 
-    def __init__(self, file_name: str = None, header_length: int = 10):
-        super().__init__(file_name, header_length)
+    def __init__(self, file_path: str = None, header_length: int = 10):
+        super().__init__(file_path, header_length)
         self.file_root = self.file_content.getroot()
 
     def _read_file_header(self):
@@ -268,8 +268,9 @@ class XLESolinstFileReader(TimeSeriesFileReader):
 class CSVSolinstFileReader(TimeSeriesFileReader):
     UNIT = 'unit'
     PARAMETER_COL_INDEX = 'col_index'
-    def __init__(self, file_name: str = None, header_length: int = 12):
-        super().__init__(file_name, header_length)
+
+    def __init__(self, file_path: str = None, header_length: int = 12):
+        super().__init__(file_path, header_length)
         self._params_dict = defaultdict(dict)
         self._start_of_data_row_index = 0
     def _read_file_header(self):

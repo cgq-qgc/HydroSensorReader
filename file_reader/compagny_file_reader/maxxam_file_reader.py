@@ -19,8 +19,8 @@ class XSLMaxxamFileReader(GeochemistryFileReader):
                       "Les résultats ne se rapportent qu’aux échantillons soumis pour analyse",
                       "Duplicata de laboratoire"]
 
-    def __init__(self, file_name: str = None, header_length: int = 12):
-        super().__init__(file_name, header_length)
+    def __init__(self, file_path: str = None, header_length: int = 12):
+        super().__init__(file_path, header_length)
         self.maxxam_file = None
         self.command_number = None
         assert self.file_extension in self.XLS_FILES_TYPES, "Bad file type"
@@ -203,7 +203,7 @@ if __name__ == '__main__':
     # file_name = "B656097V1-R2016-08-31_16-20-01_N001.xls"
     file_name = "B653824V1-R2016-08-18_16-31-39_N001.xls"
 
-    max_file = XSLMaxxamFileReader(file_name=os.path.join(file_loc, file_name))
+    max_file = XSLMaxxamFileReader(file_path=os.path.join(file_loc, file_name))
     max_file.read_file()
     for samp in list(max_file.sites.keys()):
         print(samp)
