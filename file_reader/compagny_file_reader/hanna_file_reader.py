@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 __author__ = 'Laptop$'
-__date__ = '2017-07-16$'
+__date__ = '2017-07-16'
 __description__ = " "
 __version__ = '1.0'
 import datetime
 import re
 
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 import pandas as pd
 
 from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
