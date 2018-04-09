@@ -88,7 +88,8 @@ class DATCampbellCRFileReader(TimeSeriesFileReader):
         outward = 50
         self._add_axe_to_plot(axe,'TDGP1_Avg (mmHg)','darkorange','-',outward*2)
         press_axe = self._add_axe_to_plot(axe,'Pression_bridge (psi)','red')
-
+        press_axe.grid(True)
+        
         press_axe_avg = self._add_axe_to_plot(axe,'Pression_bridge_Avg (psi)','black','--', outward, linewidth=0.7)
 
         press_axe_avg.set_ylim(self.records['Pression_bridge (psi)'].min()-15,self.records['Pression_bridge (psi)'].max()+10)
@@ -111,7 +112,7 @@ if __name__ == '__main__':
     while os.path.split(path)[1] != "scientific_file_reader":
         path = os.path.split(path)[0]
     file_loc = os.path.join(path, 'file_example')
-    file_name = "F-4_F4_XM20160620.dat"
+    file_name = "cr_file_example.dat"
     file = os.path.join(file_loc, file_name)
     print(file)
 
