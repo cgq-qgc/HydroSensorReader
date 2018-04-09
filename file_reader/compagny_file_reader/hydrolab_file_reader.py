@@ -118,18 +118,19 @@ class TXTHydrolabFileReader(TimeSeriesFileReader):
         print(self.records.dtypes)
 
     def plot(self, *args, **kwargs):
-        fig, temp_axe = plt.subplots(figsize=(20, 10))
+        fig, main_axis = plt.subplots(figsize=(20, 10))
 
-        temp_axe.plot(self.records['Temp (°C)'], color='blue', )
-        temp_axe.set_ylabel('Temp (°C)', color='blue')
-        temp_axe.spines['left'].set_color('blue')
-        temp_axe.set_title(self.sites.site_name)
+        temperature_text = 'Temp (°C)'
+        self._add_first_axis(main_axis, temperature_text)
 
-        outward = 50
+
         TDG_PSI = 'TDG (psia)'
-        self._add_axe_to_plot(temp_axe, TDG_PSI, 'red')
+        tdg_axe = self._add_axe_to_plot(main_axis, TDG_PSI, 'red')
+        tdg_axe.grid(True)
+        outward = 50
         i_batt = 'IBatt (Volts)'
-        self._add_axe_to_plot(temp_axe, i_batt, 'green', outward=outward)
+        self._add_axe_to_plot(main_axis, i_batt, 'green', outward=outward)
+        self._set_date_time_plot_format(main_axis)
 
         fig.legend(loc='upper left')
 

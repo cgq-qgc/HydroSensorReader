@@ -8,6 +8,7 @@ import datetime
 import re
 
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import pandas as pd
 
 from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
@@ -63,21 +64,23 @@ class XLSHannaFileReader(TimeSeriesFileReader):
         self.sites.instrument_serial_number = self.header_content['Instrument Serial No.']
         self.sites.visit_date = self.header_content['Started Date and Time']
 
+    def plot(self, **kwargs):
+        fig, axe = plt.subplots(figsize=(20, 10))
 
-    def plot(self, *args, **kwargs):
-        fig, temp_axe = plt.subplots(figsize=(20, 10))
-        temp_axe.plot(self.records['Temp.[°C]'], color='blue', )
-        temp_axe.set_ylabel('Temp.[°C]', color='blue')
-        temp_axe.spines['left'].set_color('blue')
-        temp_axe.set_title(self.sites.site_name)
+        temperature_text = 'Temp.[°C]'
+        self._add_first_axis(axe, temperature_text)
 
         ph_text = 'pH '
-        self._add_axe_to_plot(temp_axe, ph_text, 'black', '--')
+        self._add_axe_to_plot(axe, ph_text, 'black', '--')
         outward = 50
         do_text = 'D.O.[%]'
-        self._add_axe_to_plot(temp_axe, do_text, 'red', outward=outward)
+        self._add_axe_to_plot(axe, do_text, 'red', outward=outward)
         orp_text = 'ORP[mV]'
-        self._add_axe_to_plot(temp_axe, orp_text, 'green', outward=2 * outward)
+        self._add_axe_to_plot(axe, orp_text, 'green', outward=2 * outward)
+
+        self._set_date_time_plot_format(axe)
+
+
 
         fig.legend(loc='upper left')
 
@@ -93,15 +96,23 @@ if __name__ == '__main__':
     while os.path.split(path)[1] != "scientific_file_reader":
         path = os.path.split(path)[0]
     file_loc = os.path.join(path, 'file_example')
-    file_name = 'LOG002_0504093718.xls'
+    file_name = 'LOG006_0621113447.xls'
+    file_name_2 = 'LOG001_1011105528.xls'
     file = os.path.join(file_loc, file_name)
+    file_2 = os.path.join(file_loc, file_name_2)
     print(file)
 
     hanna_file = XLSHannaFileReader(file)
     hanna_file.read_file()
     pprint.pprint(hanna_file.header_content, width=250)
 
+    hanna_file_2 = XLSHannaFileReader(file_2)
+    hanna_file_2.read_file()
+    hanna_file_2.plot()
+
     print(hanna_file.records.head())
-    print()
-    hanna_file.plot(subplots=True, title=hanna_file.sites.site_name)
+    print("*" * 15)
+    print(hanna_file_2.records.head())
+
+    hanna_file.plot(subplots=True, title=hanna_file.sites.site_name, x_compat=True)
     plt.show(block=True)
