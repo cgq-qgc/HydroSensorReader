@@ -192,19 +192,19 @@ class TimeSeriesFileReader(AbstractFileReader):
         self.records = self.records.drop_duplicates()
         return self.records
 
-    def _add_axe_to_plot(self, parent_plot, element, color, linestyle='-', outward=0) -> mp_axe.Axes:
+    def _add_axe_to_plot(self, parent_plot, element, color, linestyle='-', outward=0, **kwargs) -> mp_axe.Axes:
         new_axis = parent_plot.twinx()
-        new_axis.plot(self.records[element], color=color, linestyle=linestyle)
+        new_axis.plot(self.records[element], color=color, linestyle=linestyle,**kwargs)
         new_axis.set_ylabel(element, color=color)
         new_axis.spines["right"].set_color(color)
         if outward != 0:
             new_axis.spines["right"].set_position(("outward", outward))
         return new_axis
 
-    def _add_first_axis(self, main_axis: mp_axe.Axes, parameter: str = None, color: str = 'blue') -> mp_axe.Axes:
-        main_axis.plot(self.records[parameter], color=color)
-        main_axis.set_ylabel(parameter, color='blue')
-        main_axis.spines['left'].set_color('blue')
+    def _add_first_axis(self, main_axis: mp_axe.Axes, parameter: str = None, color: str = 'blue',**kwargs) -> mp_axe.Axes:
+        main_axis.plot(self.records[parameter], color=color,**kwargs)
+        main_axis.set_ylabel(parameter, color=color)
+        main_axis.spines['left'].set_color(color)
         main_axis.set_title(self.sites.site_name + " - Visit date: " + str(self.sites.visit_date))
         return main_axis
 
