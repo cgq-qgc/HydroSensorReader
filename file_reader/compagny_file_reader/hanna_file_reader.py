@@ -53,8 +53,7 @@ class XLSHannaFileReader(TimeSeriesFileReader):
         """
         values = [val[2:] for val in self.data_sheet[1:]]
         self._site_of_interest.records = pd.DataFrame(data=values, columns=self.data_sheet[0][2:],
-                                                      index=self._get_date_list())
-
+                                                      index=self._date_list)
 
     def _read_file_data_header(self):
         """
@@ -64,13 +63,6 @@ class XLSHannaFileReader(TimeSeriesFileReader):
         self.sites.instrument_serial_number = self.header_content['Instrument Serial No.']
         self.sites.visit_date = self.header_content['Started Date and Time']
 
-    def _add_axe_to_plot(self, parent_plot, element, color, linestyle='-', outward=0):
-        new_axis = parent_plot.twinx()
-        new_axis.plot(self.records[element], color=color, linestyle=linestyle)
-        new_axis.set_ylabel(element, color=color)
-        new_axis.spines["right"].set_color(color)
-        if outward != 0:
-            new_axis.spines["right"].set_position(("outward", outward))
 
     def plot(self, *args, **kwargs):
         fig, temp_axe = plt.subplots(figsize=(20, 10))
@@ -101,7 +93,7 @@ if __name__ == '__main__':
     while os.path.split(path)[1] != "scientific_file_reader":
         path = os.path.split(path)[0]
     file_loc = os.path.join(path, 'file_example')
-    file_name = 'LOG001_1011105528.xls'
+    file_name = 'LOG002_0504093718.xls'
     file = os.path.join(file_loc, file_name)
     print(file)
 

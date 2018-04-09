@@ -172,7 +172,15 @@ class TimeSeriesFileReader(AbstractFileReader):
         self._site_of_interest.records = value
 
     def plot(self, *args, **kwargs):
-        self.records.plot(*args, **kwargs)
+        self._site_of_interest.records.plot(*args, **kwargs)
+
+    def _add_axe_to_plot(self, parent_plot, element, color, linestyle='-', outward=0):
+        new_axis = parent_plot.twinx()
+        new_axis.plot(self.records[element], color=color, linestyle=linestyle)
+        new_axis.set_ylabel(element, color=color)
+        new_axis.spines["right"].set_color(color)
+        if outward != 0:
+            new_axis.spines["right"].set_position(("outward", outward))
 
 class GeochemistryFileReader(AbstractFileReader):
     def __init__(self, file_name: str = None,
