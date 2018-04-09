@@ -26,7 +26,7 @@ class AbstractFileReader(object , metaclass=ABCMeta):
     - Entete d'information sur les colonnes de données
     - Les colonnes de données
     """
-    TXT_FILE_TYPES = ['dat', 'lev']
+    TXT_FILE_TYPES = ['dat', 'lev', 'txt']
     XLS_FILES_TYPES = ['xls', 'xlsx']
     XML_FILES_TYPES = ['xle', 'xml']
     CSV_FILES_TYPES = ['csv']
@@ -36,10 +36,11 @@ class AbstractFileReader(object , metaclass=ABCMeta):
     YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT = YEAR_S_MONTH_S_DAY_HM_DATE_STRING_FORMAT + ":%S"
     YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT = YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT + ".%f"
 
-    def __init__(self, file_name: str = None, header_length: int = 10, request_params: dict = None):
+    def __init__(self, file_name: str = None, header_length: int = 10, request_params: dict = None, encoding='utf8'):
         self.request_params = request_params
         self._file = file_name
         self._header_length = header_length
+        self._encoding = encoding
         self._site_of_interest = None
         self.file_reader = self._set_file_reader()
         self.file_reader.read_file()
@@ -61,7 +62,7 @@ class AbstractFileReader(object , metaclass=ABCMeta):
         try:
             if file_ext in self.TXT_FILE_TYPES:
                 file_reader = file_parser.TXTFileParser(file_path=self._file,
-                                                        header_length=self._header_length)
+                                                        header_length=self._header_length,encoding=self._encoding)
             elif file_ext in self.XLS_FILES_TYPES:
                 file_reader = file_parser.EXCELFileParser(file_path=self._file,
                                                           header_length=self._header_length)
@@ -144,10 +145,12 @@ class AbstractFileReader(object , metaclass=ABCMeta):
 
 
 class TimeSeriesFileReader(AbstractFileReader):
-    def __init__(self, file_name: str = None, header_length: int = 10):
-        super().__init__(file_name, header_length)
+    def __init__(self, file_name: str = None, header_length: int = 10, encoding='utf8'):
+        super().__init__(file_name, header_length,encoding=encoding)
         self._site_of_interest = SensorPlateform()
         self._date_list = []
+        self.header_content = {}
+
 
     @property
     def time_series_dates(self):
@@ -170,7 +173,15 @@ class TimeSeriesFileReader(AbstractFileReader):
         self._site_of_interest.records = value
 
     def plot(self, *args, **kwargs):
-        self.records.plot(*args, **kwargs)
+        self._site_of_interest.records.plot(*args, **kwargs)
+
+    def _add_axe_to_plot(self, parent_plot, element, color, linestyle='-', outward=0):
+        new_axis = parent_plot.twinx()
+        new_axis.plot(self.records[element], color=color, linestyle=linestyle)
+        new_axis.set_ylabel(element, color=color)
+        new_axis.spines["right"].set_color(color)
+        if outward != 0:
+            new_axis.spines["right"].set_position(("outward", outward))
 
 class GeochemistryFileReader(AbstractFileReader):
     def __init__(self, file_name: str = None,

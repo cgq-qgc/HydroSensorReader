@@ -52,11 +52,12 @@ class CSVFileParser(AbstractFileParser):
 
 
 class TXTFileParser(AbstractFileParser):
-    def __init__(self, file_path: str = None, header_length: int = 20):
+    def __init__(self, file_path: str = None, header_length: int = 20, encoding='utf8'):
+        self._encoding = encoding
         super().__init__(file_path, header_length)
 
     def read_file(self):
-        with open(self._file, 'r') as txt_file:
+        with open(self._file, 'r', encoding=self._encoding) as txt_file:
             self._file_content = [line.replace('\n', '') for line in txt_file.readlines()]
 
     def read_file_header(self):
