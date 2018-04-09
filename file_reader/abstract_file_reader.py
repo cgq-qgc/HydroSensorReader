@@ -164,6 +164,7 @@ class TimeSeriesFileReader(AbstractFileReader):
         self.header_content = {}
 
 
+
     @property
     def time_series_dates(self):
         return self._date_list
@@ -187,6 +188,10 @@ class TimeSeriesFileReader(AbstractFileReader):
     def plot(self, *args, **kwargs):
         self._site_of_interest.records.plot(*args, **kwargs)
 
+    def remove_duplicates(self) -> DataFrame:
+        self.records = self.records.drop_duplicates()
+        return self.records
+
     def _add_axe_to_plot(self, parent_plot, element, color, linestyle='-', outward=0) -> mp_axe.Axes:
         new_axis = parent_plot.twinx()
         new_axis.plot(self.records[element], color=color, linestyle=linestyle)
@@ -196,11 +201,12 @@ class TimeSeriesFileReader(AbstractFileReader):
             new_axis.spines["right"].set_position(("outward", outward))
         return new_axis
 
-    def _add_first_axis(self, main_axis: mp_axe.Axes, parameter: str = None, color: str = 'blue'):
+    def _add_first_axis(self, main_axis: mp_axe.Axes, parameter: str = None, color: str = 'blue') -> mp_axe.Axes:
         main_axis.plot(self.records[parameter], color=color)
         main_axis.set_ylabel(parameter, color='blue')
         main_axis.spines['left'].set_color('blue')
         main_axis.set_title(self.sites.site_name + " - Visit date: " + str(self.sites.visit_date))
+        return main_axis
 
     def _set_date_time_plot_format(self, axis: mp_axe.Axes):
         myFmt = mdates.DateFormatter('(%Y-%m-%d) %H:%M')
