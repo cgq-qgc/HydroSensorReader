@@ -1,4 +1,4 @@
-﻿HYDROLAB MS5 65376
+HYDROLAB MS5 65376
 "Log File Name : site_name_for_hydrolab_file"
 "Setup Date (YYYY-MM-DD) : 2017-02-22"
 "Setup Time (HH:MM:SS) : 11:48:20"
@@ -11,7 +11,7 @@
 "Circltr warmup (HH:MM:SS) : 00:02:00"
 
 "Date","Time","","Temp","","TDG","","TDG","","TDG","","IBatt","","EBatt","","IBatt","","EBatt","","Circ",""
-"YYYY-MM-DD","HH:MM:SS","","°C","","mmHg","","psia","","mV","","Volts","","Volts","","%Left","","%Left","","Status",""
+"YYYY-MM-DD","HH:MM:SS","","�C","","mmHg","","psia","","mV","","Volts","","Volts","","%Left","","%Left","","Status",""
 
 2017-02-22,12:00:00,"","8.24","","751","","14.53","","12.12","","11.4","","0.0","","87","","0","","1",""
 2017-02-22,12:15:00,"","8.79","","752","","14.54","","12.13","","11.4","","0.0","","87","","0","","1",""

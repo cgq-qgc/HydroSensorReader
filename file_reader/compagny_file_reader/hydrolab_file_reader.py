@@ -142,7 +142,7 @@ if __name__ == '__main__':
     while os.path.split(path)[1] != "scientific_file_reader":
         path = os.path.split(path)[0]
     file_loc = os.path.join(path, 'file_example')
-    file_name = 'F2_XM20170505 [HYDROLAB MS5 - 65376].txt'
+    file_name = 'hydrolab_file.txt'
     file = os.path.join(file_loc, file_name)
     print(file)
 
