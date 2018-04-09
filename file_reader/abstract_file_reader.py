@@ -26,7 +26,7 @@ class AbstractFileReader(object , metaclass=ABCMeta):
     - Entete d'information sur les colonnes de données
     - Les colonnes de données
     """
-    TXT_FILE_TYPES = ['dat', 'lev']
+    TXT_FILE_TYPES = ['dat', 'lev', 'txt']
     XLS_FILES_TYPES = ['xls', 'xlsx']
     XML_FILES_TYPES = ['xle', 'xml']
     CSV_FILES_TYPES = ['csv']
