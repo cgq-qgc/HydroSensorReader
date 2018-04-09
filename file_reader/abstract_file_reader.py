@@ -148,6 +148,8 @@ class TimeSeriesFileReader(AbstractFileReader):
         super().__init__(file_name, header_length)
         self._site_of_interest = SensorPlateform()
         self._date_list = []
+        self.header_content = {}
+
 
     @property
     def time_series_dates(self):
