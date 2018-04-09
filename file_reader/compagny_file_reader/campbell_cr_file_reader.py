@@ -1,15 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from pyparsing import col
 
 __author__ = 'Laptop$'
 __date__ = '2018-04-09'
 __description__ = " "
 __version__ = '1.0'
-
-from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
-import datetime
-import re
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -18,6 +13,8 @@ from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
 
 VALUES_START = 4
 COL_HEADER = 'col_header'
+
+
 class DATCampbellCRFileReader(TimeSeriesFileReader):
     def __init__(self, file_path: str = None, header_length: int = 4):
         super().__init__(file_path, header_length)
@@ -39,7 +36,6 @@ class DATCampbellCRFileReader(TimeSeriesFileReader):
         print(header_content)
         self.sites.site_name = header_content[-1]
         self.sites.instrument_serial_number = header_content[3]
-
 
     def _read_file_data(self):
         """
@@ -70,43 +66,37 @@ class DATCampbellCRFileReader(TimeSeriesFileReader):
     def _get_date_list(self) -> date_list:
         dates = []
         for i in self.datas:
-            dates.append(pd.Timestamp(i[0].replace('"','')))
+            dates.append(pd.Timestamp(i[0].replace('"', '')))
         self.sites.visit_date = dates[-1]
         return dates
 
-
-
     def plot(self, *args, **kwargs):
-        fig, axe = plt.subplots(figsize=(20, 10),**kwargs)
+        fig, axe = plt.subplots(figsize=(20, 10), **kwargs)
         #
         self.records['Bat_Volt_mean (volt)'] = self.records['Bat_Volt (volt)'].resample('D').mean()
         self.records['Bat_Volt_mean (volt)'] = self.records['Bat_Volt_mean (volt)'].interpolate()
 
-        bat_axe = self._add_first_axis(axe,'Bat_Volt (volt)',color='green', linewidth=0.5)
-        bat_axe_mean = self._add_first_axis(axe,'Bat_Volt_mean (volt)','blue')
-        bat_axe.set_ylim(0,20)
+        bat_axe = self._add_first_axis(axe, 'Bat_Volt (volt)', color='green', linewidth=0.5)
+        bat_axe_mean = self._add_first_axis(axe, 'Bat_Volt_mean (volt)', 'blue')
+        bat_axe.set_ylim(0, 20)
         outward = 50
-        self._add_axe_to_plot(axe,'TDGP1_Avg (mmHg)','darkorange','-',outward*2)
-        press_axe = self._add_axe_to_plot(axe,'Pression_bridge (psi)','red')
+        self._add_axe_to_plot(axe, 'TDGP1_Avg (mmHg)', 'darkorange', '-', outward * 2)
+        press_axe = self._add_axe_to_plot(axe, 'Pression_bridge (psi)', 'red')
         press_axe.grid(True)
-        
-        press_axe_avg = self._add_axe_to_plot(axe,'Pression_bridge_Avg (psi)','black','--', outward, linewidth=0.7)
 
-        press_axe_avg.set_ylim(self.records['Pression_bridge (psi)'].min()-15,self.records['Pression_bridge (psi)'].max()+10)
-        press_axe.set_ylim(self.records['Pression_bridge (psi)'].min()-15,self.records['Pression_bridge (psi)'].max()+10)
+        press_axe_avg = self._add_axe_to_plot(axe, 'Pression_bridge_Avg (psi)', 'black', '--', outward, linewidth=0.7)
+
+        press_axe_avg.set_ylim(self.records['Pression_bridge (psi)'].min() - 15,
+                               self.records['Pression_bridge (psi)'].max() + 10)
+        press_axe.set_ylim(self.records['Pression_bridge (psi)'].min() - 15,
+                           self.records['Pression_bridge (psi)'].max() + 10)
 
         self._set_date_time_plot_format(axe)
         fig.legend(loc='upper left')
 
 
-
-
-
-
-
 if __name__ == '__main__':
     import os
-    import pprint
 
     path = os.getcwd()
     while os.path.split(path)[1] != "scientific_file_reader":
