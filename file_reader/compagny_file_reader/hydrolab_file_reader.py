@@ -5,10 +5,6 @@ __date__ = '2018-04-08'
 __description__ = " "
 __version__ = '1.0'
 
-import datetime
-import re
-
-import matplotlib.pyplot as plt
 import pandas as pd
 
 from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
@@ -20,17 +16,26 @@ class TXTHydrolabFileReader(TimeSeriesFileReader):
         super().__init__(file_name, header_length)
         self.data_header_index = 0
 
+    @property
+    def data_as_list(self) -> list:
+        datas = self.file_content[self.data_header_index + 3:]
+        return [i.split(',') for i in datas]
+
     def _get_date_list(self) -> date_list:
-        for i in self.file_content[15:]:
-            print(i)
-        return super()._get_date_list()
+        dates = []
+        for i in self.data_as_list:
+            dates.append(pd.Timestamp("{} {}".format(i[0], i[1])))
+        return dates
 
     def plot(self, *args, **kwargs):
         super().plot(*args, **kwargs)
 
     def read_file(self):
+        self._read_file_header()
+        self._read_file_data_header()
         self._get_date_list()
-        super().read_file()
+        self._read_file_data()
+
 
     def _read_file_header(self):
         for row in self.file_reader.get_file_header:
@@ -67,21 +72,19 @@ class TXTHydrolabFileReader(TimeSeriesFileReader):
                 break
             else:
                 self.data_header_index += 1
-        data_head = self.file_content[self.data_header_index].replace('"', '').split(',')
-        data_unit = self.file_content[self.data_header_index + 1].replace('"', '').split(',')
-        data_header = zip((data_head, data_unit))
-
+        data_head = self.file_content[self.data_header_index].replace('"', '').split(' : ')
+        data_unit = self.file_content[self.data_header_index + 1].replace('"', '').split(' : ')
+        data_header = zip(data_head, data_unit)
         self.header_content['data_header'] = ["{} ({})".format(i, j)
                                               for i, j in data_header]
 
     def _read_file_data(self):
-        self.
-        self.sites.records  = pd.DataFrame()
+        values = 0
+        self.sites.records = pd.DataFrame()
 
 
 if __name__ == '__main__':
     import os
-    import pprint
 
     path = os.getcwd()
     while os.path.split(path)[1] != "scientific_file_reader":
