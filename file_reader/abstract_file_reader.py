@@ -6,6 +6,7 @@ from abc import abstractmethod, ABCMeta
 from collections import defaultdict
 from typing import Dict, List, Union
 from xml.etree import ElementTree as ET
+import matplotlib.axes as mp_axe
 
 import bs4
 from pandas import DataFrame
@@ -182,6 +183,12 @@ class TimeSeriesFileReader(AbstractFileReader):
         new_axis.spines["right"].set_color(color)
         if outward != 0:
             new_axis.spines["right"].set_position(("outward", outward))
+
+    def _add_first_axis(self, main_axis: mp_axe.Axes, parameter: str = None, color: str = 'blue'):
+        main_axis.plot(self.records[parameter], color=color)
+        main_axis.set_ylabel(parameter, color='blue')
+        main_axis.spines['left'].set_color('blue')
+        main_axis.set_title(self.sites.site_name + " - Visit date: " + str(self.sites.visit_date))
 
 class GeochemistryFileReader(AbstractFileReader):
     def __init__(self, file_name: str = None,
