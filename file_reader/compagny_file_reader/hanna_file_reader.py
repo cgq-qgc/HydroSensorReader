@@ -20,9 +20,7 @@ class XLSHannaFileReader(TimeSeriesFileReader):
 
     def read_file(self):
         self._date_list = self._get_date_list()
-        self._read_file_header()
-        self._read_file_data_header()
-        self._read_file_data()
+        super(XLSHannaFileReader, self).read_file()
 
     @property
     def header_info(self):
