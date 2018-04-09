@@ -77,18 +77,23 @@ class DATCampbellCRFileReader(TimeSeriesFileReader):
 
 
     def plot(self, *args, **kwargs):
-        fig, axe = plt.subplots(figsize=(20, 10))
+        fig, axe = plt.subplots(figsize=(20, 10),**kwargs)
+        #
+        self.records['Bat_Volt_mean (volt)'] = self.records['Bat_Volt (volt)'].resample('D').mean()
+        self.records['Bat_Volt_mean (volt)'] = self.records['Bat_Volt_mean (volt)'].interpolate()
 
-        bat_axe = self._add_first_axis(axe,'Bat_Volt (volt)',color='green')
-        bat_axe.set_ylim(0,15)
+        bat_axe = self._add_first_axis(axe,'Bat_Volt (volt)',color='green', linewidth=0.5)
+        bat_axe_mean = self._add_first_axis(axe,'Bat_Volt_mean (volt)','blue')
+        bat_axe.set_ylim(0,20)
         outward = 50
-        self._add_axe_to_plot(axe,'TDGP1_Avg (mmHg)','orange','-',outward*2)
-
+        self._add_axe_to_plot(axe,'TDGP1_Avg (mmHg)','darkorange','-',outward*2)
         press_axe = self._add_axe_to_plot(axe,'Pression_bridge (psi)','red')
-        new_axis = press_axe.twinx()
-        new_axis.plot(self.records['Pression_bridge_Avg (psi)'], color='black', linestyle='--')
-        new_axis.set_axis_off()
-        press_axe.set_ylabel('Pression (meas.=red; avg.=black) (psi)', color='black',labelpad=35)
+
+        press_axe_avg = self._add_axe_to_plot(axe,'Pression_bridge_Avg (psi)','black','--', outward, linewidth=0.7)
+
+        press_axe_avg.set_ylim(self.records['Pression_bridge (psi)'].min()-15,self.records['Pression_bridge (psi)'].max()+10)
+        press_axe.set_ylim(self.records['Pression_bridge (psi)'].min()-15,self.records['Pression_bridge (psi)'].max()+10)
+
         self._set_date_time_plot_format(axe)
         fig.legend(loc='upper left')
 
@@ -117,4 +122,5 @@ if __name__ == '__main__':
     # print(campbell_file.records.head())
     # print(campbell_file.records.describe())
     campbell_file.plot()
+
     plt.show(block=True)
