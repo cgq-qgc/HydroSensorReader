@@ -22,7 +22,7 @@ _START_DATA_WO_DATES = 2
 class TXTHydrolabFileReader(TimeSeriesFileReader):
 
     def __init__(self, file_name: str = None, header_length: int = 11):
-        super().__init__(file_name, header_length)
+        super().__init__(file_name, header_length, encoding='cp1252')
         self.data_header_index = 0
 
     @property
@@ -109,7 +109,7 @@ class TXTHydrolabFileReader(TimeSeriesFileReader):
                             row_content.append(float(val))
                         else:
                             row_content.append(np.nan)
-                datas.append(row_content[:9])
+                datas.append(row_content[:len(self.data_header[_START_DATA_WO_DATES:])])
             except:
                 pass
         self._site_of_interest.records = pd.DataFrame(data=datas,
@@ -120,7 +120,18 @@ class TXTHydrolabFileReader(TimeSeriesFileReader):
     def plot(self, *args, **kwargs):
         fig, temp_axe = plt.subplots(figsize=(20, 10))
 
-        self.records.plot(*args, **kwargs)
+        temp_axe.plot(self.records['Temp (°C)'], color='blue', )
+        temp_axe.set_ylabel('Temp (°C)', color='blue')
+        temp_axe.spines['left'].set_color('blue')
+        temp_axe.set_title(self.sites.site_name)
+
+        outward = 50
+        TDG_PSI = 'TDG (psia)'
+        self._add_axe_to_plot(temp_axe, TDG_PSI, 'red')
+        i_batt = 'IBatt (Volts)'
+        self._add_axe_to_plot(temp_axe, i_batt, 'green', outward=outward)
+
+        fig.legend(loc='upper left')
 
 
 if __name__ == '__main__':
@@ -131,7 +142,7 @@ if __name__ == '__main__':
     while os.path.split(path)[1] != "scientific_file_reader":
         path = os.path.split(path)[0]
     file_loc = os.path.join(path, 'file_example')
-    file_name = 'hydrolab_file.txt'
+    file_name = 'F2_XM20170505 [HYDROLAB MS5 - 65376].txt'
     file = os.path.join(file_loc, file_name)
     print(file)
 
@@ -142,5 +153,5 @@ if __name__ == '__main__':
 
     print(hydro_file.records.head())
     print(hydro_file.records.describe())
-    hydro_file.plot(subplots=True, title=hydro_file.sites.site_name)
+    hydro_file.plot()
     plt.show(block=True)
