@@ -7,7 +7,7 @@ from collections import defaultdict
 from typing import Dict, List, Union
 from xml.etree import ElementTree as ET
 import matplotlib.axes as mp_axe
-
+import matplotlib.dates as mdates
 import bs4
 from pandas import DataFrame
 
@@ -176,19 +176,26 @@ class TimeSeriesFileReader(AbstractFileReader):
     def plot(self, *args, **kwargs):
         self._site_of_interest.records.plot(*args, **kwargs)
 
-    def _add_axe_to_plot(self, parent_plot, element, color, linestyle='-', outward=0):
+    def _add_axe_to_plot(self, parent_plot, element, color, linestyle='-', outward=0) -> mp_axe.Axes:
         new_axis = parent_plot.twinx()
         new_axis.plot(self.records[element], color=color, linestyle=linestyle)
         new_axis.set_ylabel(element, color=color)
         new_axis.spines["right"].set_color(color)
         if outward != 0:
             new_axis.spines["right"].set_position(("outward", outward))
+        return new_axis
 
     def _add_first_axis(self, main_axis: mp_axe.Axes, parameter: str = None, color: str = 'blue'):
         main_axis.plot(self.records[parameter], color=color)
         main_axis.set_ylabel(parameter, color='blue')
         main_axis.spines['left'].set_color('blue')
         main_axis.set_title(self.sites.site_name + " - Visit date: " + str(self.sites.visit_date))
+
+    def _set_date_time_plot_format(self, axis: mp_axe.Axes):
+        myFmt = mdates.DateFormatter('(%Y-%m-%d) %H:%M')
+        axis.xaxis.set_major_formatter(myFmt)
+        axis.grid(True, axis='x')
+
 
 class GeochemistryFileReader(AbstractFileReader):
     def __init__(self, file_name: str = None,
