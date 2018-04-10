@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from matplotlib import pyplot as plt
+
 __author__ = 'Laptop$'
 __date__ = '2017-07-16$'
 __description__ = "Permet de lire des fichiers provenant de l'interface" \
@@ -7,9 +9,9 @@ __description__ = "Permet de lire des fichiers provenant de l'interface" \
 __version__ = '1.0'
 import datetime
 from abc import abstractmethod
-from typing import Union
+from typing import Union, List, Tuple
 
-from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
+from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
 from site_and_records import StationSite, geographical_coordinates, StreamFlowStation
 
 WHAT_METEO_FILES_HEADER_LENGTH = 10
@@ -67,15 +69,16 @@ class AbstractWhatFileReader(TimeSeriesFileReader):
     def _make_station_coordinates_from_file(self) -> None:
         geo_coordinates = [0, 0, 0]
         for data in self.file_reader.get_file_header:
-            if 'Longitude' in data[0]:
-                geo_coordinates[0] = float(data[1])
-            if 'Latitude' in data[0]:
-                geo_coordinates[1] = float(data[1])
-            if 'Elevation' in data[0]:
-                try:
-                    geo_coordinates[2] = float(data[1])
-                except:
-                    geo_coordinates[2] = data[1]
+            if len(data) == 2:
+                if 'Longitude' in data[0]:
+                    geo_coordinates[0] = float(data[1])
+                if 'Latitude' in data[0]:
+                    geo_coordinates[1] = float(data[1])
+                if 'Elevation' in data[0]:
+                    try:
+                        geo_coordinates[2] = float(data[1])
+                    except:
+                        geo_coordinates[2] = data[1]
         self._site_of_interest.coordinates_x_y_z = geographical_coordinates(*geo_coordinates)
 
     @abstractmethod
@@ -95,15 +98,19 @@ class AbstractWhatFileReader(TimeSeriesFileReader):
 
     def _set_station_attribute(self, attribute, what_to_search):
         for data in self.file_reader.get_file_header:
-            if what_to_search in data[0]:
-                self._site_of_interest.__dict__[attribute] = data[1]
-                break
+            try:
+                if what_to_search in data[0]:
+                    self._site_of_interest.__dict__[attribute] = data[1]
+                    break
+            except IndexError:
+                pass
 
     def _make_station_id(self, what_to_search):
         self._set_station_attribute('site_name', what_to_search)
 
     def _make_station_other_name(self, what_to_search):
         self._set_station_attribute('other_identifier', what_to_search)
+
 
 
 class WhatMeteorologicalDataFileReader(AbstractWhatFileReader):
@@ -137,6 +144,12 @@ class WhatWaterLevelDataFileReader(AbstractWhatFileReader):
     def _get_date_list(self) -> date_list:
         return self._make_date_list(1, 2, 3)
 
+    def plot(self, *args, **kwargs) -> Tuple[
+        plt.Figure, List[plt.Axes]]:
+        water_level_line_def = LineDefinition('Water level_masl', make_grid=True)
+        water_temp_line_def = LineDefinition('Water temperature_degC', 'red')
+        return super().plot(water_level_line_def, [water_temp_line_def], *args, **kwargs)
+
 
 class WhatStreamAndLevelDataFileReader(AbstractWhatFileReader):
     def __init__(self, file_path: str = None,
@@ -167,6 +180,14 @@ class WhatStreamAndLevelDataFileReader(AbstractWhatFileReader):
     def _get_date_list(self) -> date_list:
         return self._make_date_list(1, 2, 3)
 
+    def plot(self, *args, **kwargs) -> Tuple[
+        plt.Figure, List[plt.Axes]]:
+        level_line_def = LineDefinition('Level_m', make_grid=True)
+        flow_line_def = LineDefinition('Flow_m3/s', 'red')
+
+        return super().plot(level_line_def, [flow_line_def], *args, **kwargs)
+
+
 
 if __name__ == '__main__':
     import os
@@ -178,11 +199,10 @@ if __name__ == '__main__':
     file_loc = os.path.join(path, 'file_example')
 
     # POUR LES STATIONS PIEZOMETRIQUE
-
     files = "Brome (03030011).csv"
-
     # POUR LES STATION HYDROMETRIQUE
     # files = "011704_1972-1974.csv"
+
     file_location = os.path.join(file_loc, files)
     print(file_location)
     # level = WhatStreamAndLevelDataFileReader(file_location)
@@ -192,6 +212,6 @@ if __name__ == '__main__':
 
     params = [t for t in level.sites.get_records]
     print(level.records)
-    level.records.plot(subplots=True)
     print(level.records.describe())
+    level.plot(dpi=300)
     plt.show(block=True)
