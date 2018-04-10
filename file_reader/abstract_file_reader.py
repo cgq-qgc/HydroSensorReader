@@ -6,9 +6,10 @@ from abc import abstractmethod, ABCMeta
 from collections import defaultdict
 from typing import Dict, List, Union
 from xml.etree import ElementTree as ET
+
+import bs4
 import matplotlib.axes as mp_axe
 import matplotlib.dates as mdates
-import bs4
 from pandas import DataFrame
 
 import file_parser
@@ -19,7 +20,26 @@ sample_dict = Dict[str, sample_ana_type]
 date_list = List[datetime.datetime]
 
 
-class AbstractFileReader(object , metaclass=ABCMeta):
+class LineDefinition(object):
+    """
+    Line definition element to pass to the plot method
+    """
+
+    def __init__(self, parameter,
+                 color: str = 'blue',
+                 linestyle: str = '-',
+                 outward: int = 0,
+                 linewidth: float = 1,
+                 make_grid: bool = False) -> None:
+        self.param = parameter
+        self.linestyle = linestyle
+        self.color = color
+        self.outward = outward
+        self.linewidth = linewidth
+        self.make_grid = make_grid
+
+
+class AbstractFileReader(object, metaclass=ABCMeta):
     """Interface permettant de lire un fichier provenant d'un datalogger quelconque
     classe permettant d'extraire des données d'un fichier quelconque.
     Un fichier de donnée est en général composé de :
@@ -74,7 +94,7 @@ class AbstractFileReader(object , metaclass=ABCMeta):
         try:
             if file_ext in self.TXT_FILE_TYPES:
                 file_reader = file_parser.TXTFileParser(file_path=self._file,
-                                                        header_length=self._header_length,encoding=self._encoding)
+                                                        header_length=self._header_length, encoding=self._encoding)
             elif file_ext in self.XLS_FILES_TYPES:
                 file_reader = file_parser.EXCELFileParser(file_path=self._file,
                                                           header_length=self._header_length)
@@ -163,8 +183,6 @@ class TimeSeriesFileReader(AbstractFileReader):
         self._date_list = []
         self.header_content = {}
 
-
-
     @property
     def time_series_dates(self):
         return self._date_list
@@ -192,19 +210,25 @@ class TimeSeriesFileReader(AbstractFileReader):
         self.records = self.records.drop_duplicates()
         return self.records
 
-    def _add_axe_to_plot(self, parent_plot, element, color, linestyle='-', outward=0, **kwargs) -> mp_axe.Axes:
+    def _add_axe_to_plot(self, parent_plot, new_line_def: LineDefinition, **kwargs) -> mp_axe.Axes:
         new_axis = parent_plot.twinx()
-        new_axis.plot(self.records[element], color=color, linestyle=linestyle,**kwargs)
-        new_axis.set_ylabel(element, color=color)
-        new_axis.spines["right"].set_color(color)
-        if outward != 0:
-            new_axis.spines["right"].set_position(("outward", outward))
+        new_axis.plot(self.records[new_line_def.param],
+                      color=new_line_def.color, linestyle=new_line_def.linestyle,
+                      linewidth=new_line_def.linewidth, **kwargs)
+        new_axis.set_ylabel(new_line_def.param, color=new_line_def.color)
+        new_axis.spines["right"].set_color(new_line_def.color)
+        if new_line_def.outward != 0:
+            new_axis.spines["right"].set_position(("outward", new_line_def.outward))
         return new_axis
 
-    def _add_first_axis(self, main_axis: mp_axe.Axes, parameter: str = None, color: str = 'blue',**kwargs) -> mp_axe.Axes:
-        main_axis.plot(self.records[parameter], color=color,**kwargs)
-        main_axis.set_ylabel(parameter, color=color)
-        main_axis.spines['left'].set_color(color)
+    def _add_first_axis(self, main_axis: mp_axe.Axes, line_def: LineDefinition, **kwargs) -> mp_axe.Axes:
+        main_axis.plot(self.records[line_def.param],
+                       color=line_def.color,
+                       linestyle=line_def.linestyle,
+                       linewidth=line_def.linewidth, **kwargs)
+
+        main_axis.set_ylabel(line_def.param, color=line_def.color)
+        main_axis.spines['left'].set_color(line_def.color)
         main_axis.set_title(self.sites.site_name + " - Visit date: " + str(self.sites.visit_date))
         return main_axis
 
@@ -430,4 +454,3 @@ class DrillingFileReader(AbstractFileReader):
                                      drilling_diameter=drilling_diameter)
         self._site_of_interest[site_name] = drilling_site
         return self._site_of_interest[site_name]
-
