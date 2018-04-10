@@ -5,7 +5,7 @@ __date__ = '2018-04-08'
 __description__ = " "
 __version__ = '1.0'
 
-from typing import List
+from typing import List, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -120,19 +120,7 @@ class TXTHydrolabFileReader(TimeSeriesFileReader):
                                                       columns=self.data_header[_START_DATA_WO_DATES:])
         print(self.records.dtypes)
 
-    def plot(self, main_axis_def: LineDefinition, other_axis: List[LineDefinition], *args, **kwargs) -> [plt.Figure,
-                                                                                                         List[
-                                                                                                             plt.Axes]]:
-        fig, main_axis = plt.subplots(figsize=(20, 10))
 
-        self._add_first_axis(main_axis, main_axis_def)
-        for lines in other_axis:
-            self._add_axe_to_plot(main_axis, lines)
-
-        self._set_date_time_plot_format(main_axis)
-
-        fig.legend(loc='upper left')
-        return fig, main_axis
 
 
 class CGC_HydrolabFiles(TXTHydrolabFileReader):
@@ -140,8 +128,8 @@ class CGC_HydrolabFiles(TXTHydrolabFileReader):
     def __init__(self, file_path: str = None, header_length: int = 11):
         super().__init__(file_path, header_length)
 
-    def plot(self, *args, **kwargs) -> [plt.Figure,
-                                        plt.Axes]:
+    def plot(self, *args, **kwargs) -> Tuple[
+        plt.Figure, List[plt.Axes]]:
         main_axis = LineDefinition('Temp (°C)')
         TDG_PSI = LineDefinition('TDG (psia)', 'red', make_grid=True)
         i_batt = LineDefinition('IBatt (Volts)', 'green', outward=50, linewidth=0.7)
