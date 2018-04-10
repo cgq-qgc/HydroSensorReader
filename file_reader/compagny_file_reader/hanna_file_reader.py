@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from typing import List, Tuple
+
 __author__ = 'Laptop$'
 __date__ = '2017-07-16'
 __description__ = " "
@@ -10,7 +12,7 @@ import re
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
+from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
 
 
 class XLSHannaFileReader(TimeSeriesFileReader):
@@ -63,23 +65,20 @@ class XLSHannaFileReader(TimeSeriesFileReader):
         self.sites.instrument_serial_number = self.header_content['Instrument Serial No.']
         self.sites.visit_date = self.header_content['Started Date and Time']
 
-    def plot(self, **kwargs):
-        fig, axe = plt.subplots(figsize=(20, 10))
-
-        temperature_text = 'Temp.[°C]'
-        self._add_first_axis(axe, temperature_text)
-
-        ph_text = 'pH '
-        self._add_axe_to_plot(axe, ph_text, 'black', '--')
+    def plot(self, *args, **kwargs) -> Tuple[
+        plt.Figure, List[plt.Axes]]:
+        main_temperature_line_def = LineDefinition('Temp.[°C]')
+        ph_line_def = LineDefinition('pH ', 'black', '--')
         outward = 50
-        do_text = 'D.O.[%]'
-        self._add_axe_to_plot(axe, do_text, 'red', outward=outward)
-        orp_text = 'ORP[mV]'
-        self._add_axe_to_plot(axe, orp_text, 'green', outward=2 * outward)
+        do_line_Def = LineDefinition('D.O.[%]', 'red', outward=outward)
+        orp_line_def = LineDefinition('ORP[mV]', 'green', outward=2 * outward)
+        other_axis = [ph_line_def, do_line_Def, orp_line_def]
 
-        self._set_date_time_plot_format(axe)
+        fig, axes = super().plot(main_temperature_line_def, other_axis, *args, **kwargs)
+        return fig, axes
 
-        fig.legend(loc='upper left')
+
+
 
 
 if __name__ == '__main__':
