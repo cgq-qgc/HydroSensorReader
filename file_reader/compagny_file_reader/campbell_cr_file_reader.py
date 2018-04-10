@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from typing import List, Tuple
 
 __author__ = 'Laptop$'
 __date__ = '2018-04-09'
@@ -9,7 +10,7 @@ __version__ = '1.0'
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
+from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
 
 VALUES_START = 4
 COL_HEADER = 'col_header'
@@ -70,29 +71,39 @@ class DATCampbellCRFileReader(TimeSeriesFileReader):
         self.sites.visit_date = dates[-1]
         return dates
 
-    def plot(self, *args, **kwargs):
-        fig, axe = plt.subplots(figsize=(20, 10), **kwargs)
-        #
+
+class CR1000withTDGprobe(DATCampbellCRFileReader):
+
+    def __init__(self, file_path: str = None, header_length: int = 4):
+        super().__init__(file_path, header_length)
+
+    def plot(self, *args, **kwargs) -> Tuple[
+        plt.Figure, List[plt.Axes]]:
         self.records['Bat_Volt_mean (volt)'] = self.records['Bat_Volt (volt)'].resample('D').mean()
         self.records['Bat_Volt_mean (volt)'] = self.records['Bat_Volt_mean (volt)'].interpolate()
 
-        bat_axe = self._add_first_axis(axe, 'Bat_Volt (volt)', color='green', linewidth=0.5)
-        bat_axe_mean = self._add_first_axis(axe, 'Bat_Volt_mean (volt)', 'blue')
-        bat_axe.set_ylim(0, 20)
+        bat_line_def = LineDefinition('Bat_Volt (volt)', 'green', linewidth=0.5)
         outward = 50
-        self._add_axe_to_plot(axe, 'TDGP1_Avg (mmHg)', 'darkorange', '-', outward * 2)
-        press_axe = self._add_axe_to_plot(axe, 'Pression_bridge (psi)', 'red')
-        press_axe.grid(True)
+        tdgp_avg_line_def = LineDefinition('TDGP1_Avg (mmHg)', 'darkorange', '-', outward * 2)
+        press_line_def = LineDefinition('Pression_bridge (psi)', 'red', make_grid=True)
+        press_avg_line_def = LineDefinition('Pression_bridge_Avg (psi)', 'black', '--', outward, linewidth=0.7)
 
-        press_axe_avg = self._add_axe_to_plot(axe, 'Pression_bridge_Avg (psi)', 'black', '--', outward, linewidth=0.7)
+        lines_definition = [tdgp_avg_line_def, press_line_def, press_avg_line_def]
 
-        press_axe_avg.set_ylim(self.records['Pression_bridge (psi)'].min() - 15,
-                               self.records['Pression_bridge (psi)'].max() + 10)
-        press_axe.set_ylim(self.records['Pression_bridge (psi)'].min() - 15,
-                           self.records['Pression_bridge (psi)'].max() + 10)
-
-        self._set_date_time_plot_format(axe)
+        fig, all_axis = super().plot(bat_line_def, lines_definition, *args, **kwargs)
+        bat_mean_line_def = LineDefinition('Bat_Volt_mean (volt)')
+        bat_mean_axe = self._add_first_axis(all_axis[0], bat_mean_line_def)
+        all_axis.append(bat_mean_axe)
+        all_axis[0].set_ylim(0, 20)
+        # set limite for press_line_def
+        all_axis[2].set_ylim(self.records['Pression_bridge (psi)'].min() - 15,
+                             self.records['Pression_bridge (psi)'].max() + 10)
+        # set limite for press_avg_line_def
+        all_axis[3].set_ylim(self.records['Pression_bridge (psi)'].min() - 15,
+                             self.records['Pression_bridge (psi)'].max() + 10)
+        all_axis[0].set_ylabel('Bat_Volt (volt)', color='black')
         fig.legend(loc='upper left')
+        return fig, all_axis
 
 
 if __name__ == '__main__':
@@ -106,7 +117,7 @@ if __name__ == '__main__':
     file = os.path.join(file_loc, file_name)
     print(file)
 
-    campbell_file = DATCampbellCRFileReader(file)
+    campbell_file = CR1000withTDGprobe(file)
     campbell_file.read_file()
     print(campbell_file.sites)
 

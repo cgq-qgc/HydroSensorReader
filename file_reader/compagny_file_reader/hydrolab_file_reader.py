@@ -5,11 +5,13 @@ __date__ = '2018-04-08'
 __description__ = " "
 __version__ = '1.0'
 
-import pandas as pd
-import numpy as np
+from typing import List, Tuple
+
 import matplotlib.pyplot as plt
-import re
-from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
+import numpy as np
+import pandas as pd
+
+from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
 
 DATA_HEADER = 'data_header'
 PROBE_ID = 'probe_id'
@@ -18,6 +20,7 @@ SETUP_DATE = 'Setup Date (YYYY-MM-DD)'
 SETUP_TIME = 'Setup Time (HH:MM:SS)'
 
 _START_DATA_WO_DATES = 2
+
 
 class TXTHydrolabFileReader(TimeSeriesFileReader):
 
@@ -103,9 +106,9 @@ class TXTHydrolabFileReader(TimeSeriesFileReader):
             try:
                 row_content = []
                 # iterate through values
-                for val in [i.replace('"','') for i in row[_START_DATA_WO_DATES:]]:
+                for val in [i.replace('"', '') for i in row[_START_DATA_WO_DATES:]]:
                     if val != '':
-                        if val not in ['#','NAN']:
+                        if val not in ['#', 'NAN']:
                             row_content.append(float(val))
                         else:
                             row_content.append(np.nan)
@@ -117,22 +120,21 @@ class TXTHydrolabFileReader(TimeSeriesFileReader):
                                                       columns=self.data_header[_START_DATA_WO_DATES:])
         print(self.records.dtypes)
 
-    def plot(self, *args, **kwargs):
-        fig, main_axis = plt.subplots(figsize=(20, 10))
-
-        temperature_text = 'Temp (°C)'
-        self._add_first_axis(main_axis, temperature_text)
 
 
-        TDG_PSI = 'TDG (psia)'
-        tdg_axe = self._add_axe_to_plot(main_axis, TDG_PSI, 'red')
-        tdg_axe.grid(True)
-        outward = 50
-        i_batt = 'IBatt (Volts)'
-        self._add_axe_to_plot(main_axis, i_batt, 'green', outward=outward)
-        self._set_date_time_plot_format(main_axis)
 
-        fig.legend(loc='upper left')
+class CGC_HydrolabFiles(TXTHydrolabFileReader):
+
+    def __init__(self, file_path: str = None, header_length: int = 11):
+        super().__init__(file_path, header_length)
+
+    def plot(self, *args, **kwargs) -> Tuple[
+        plt.Figure, List[plt.Axes]]:
+        main_axis = LineDefinition('Temp (°C)')
+        TDG_PSI = LineDefinition('TDG (psia)', 'red', make_grid=True)
+        i_batt = LineDefinition('IBatt (Volts)', 'green', outward=50, linewidth=0.7)
+        other_lines = [TDG_PSI, i_batt]
+        return super().plot(main_axis, other_lines, *args, **kwargs)
 
 
 if __name__ == '__main__':
@@ -147,7 +149,7 @@ if __name__ == '__main__':
     file = os.path.join(file_loc, file_name)
     print(file)
 
-    hydro_file = TXTHydrolabFileReader(file)
+    hydro_file = CGC_HydrolabFiles(file)
     hydro_file.read_file()
     print(hydro_file.sites)
     pprint.pprint(hydro_file.file_reader.get_file_header, width=250)

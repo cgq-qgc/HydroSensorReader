@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from matplotlib import pyplot as plt
+
 __author__ = 'Laptop$'
 __date__ = '2017-07-16$'
 __description__ = " "
@@ -9,11 +11,11 @@ import datetime
 import re
 import warnings
 from collections import defaultdict
-from typing import List
+from typing import List, Tuple
 
 from pandas import Timestamp
 
-from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list
+from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
 
 
 class SolinstFileReader(TimeSeriesFileReader):
@@ -54,6 +56,23 @@ class SolinstFileReader(TimeSeriesFileReader):
 
     def _read_file_data(self):
         pass
+
+    def plot(self, other_axis: List[LineDefinition] = list(), *args, **kwargs) -> Tuple[
+        plt.Figure, List[plt.Axes]]:
+        temperature_line_def = LineDefinition('TEMPERATURE_°C', 'red')
+        temperature_values = self.records['TEMPERATURE_°C']
+        all_axis = other_axis
+        if len(other_axis) == 0:
+            level_param = [i for i in solinst_file.records.dtypes.index if 'TEMP' not in i]
+            if len(level_param) > 0:
+                colors = ['blue', 'orange', 'green', 'purple', 'black']
+                for color_index, param in enumerate(level_param):
+                    level_line_def = LineDefinition(param, colors[color_index], make_grid=True)
+                    all_axis.append(level_line_def)
+        fig, axis = super().plot(temperature_line_def, all_axis, *args, **kwargs)
+        if len([i for i in solinst_file.records.dtypes.index if 'kpa' in i.lower()]) == 0:
+            axis[0].set_ylim(temperature_values.mean() - 1, temperature_values.mean() + 1)
+        return fig, axis
 
 
 class LEVSolinstFileReader(TimeSeriesFileReader):
@@ -98,7 +117,8 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
                 _date = lines.split(":")[1].replace(" ", "")
             if re.search(r"^time.*", lines, re.IGNORECASE):
                 _time = lines.split(" :")[1].replace(" ", "")
-        to_datetime = datetime.datetime.strptime("{} {}".format(_date, _time), self.MONTH_S_DAY_S_YEAR_HMS_DATE_STRING_FORMAT)
+        to_datetime = datetime.datetime.strptime("{} {}".format(_date, _time),
+                                                 self.MONTH_S_DAY_S_YEAR_HMS_DATE_STRING_FORMAT)
         return to_datetime
 
     def _update_header_lentgh(self):
@@ -148,7 +168,7 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
                     row_offset = 1
                     while not (re.search(self.DATA_CHANNEL_STRING.format(channel_num + 2),
                                          self.file_content[row_num + row_offset]) or
-                                   re.search(r".*data.*", self.file_content[row_num + row_offset].lower())):
+                               re.search(r".*data.*", self.file_content[row_num + row_offset].lower())):
                         row_with_offset = str(self.file_content[row_num + row_offset])
                         if re.search(r".*identification.*", row_with_offset.lower()):
                             parameter = row_with_offset.split("=")[1]
@@ -273,12 +293,12 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
         super().__init__(file_path, header_length)
         self._params_dict = defaultdict(dict)
         self._start_of_data_row_index = 0
+
     def _read_file_header(self):
         """
         implementation of the base class abstract method
         """
         self._get_file_header_data()
-
 
     def _read_file_data(self):
         """
@@ -297,21 +317,21 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
         i = 0
         while i < self._header_length:
             current_line = self.file_content[i][0]
-            if re.search(r"[sS]erial.number.*]",current_line):
+            if re.search(r"[sS]erial.number.*]", current_line):
                 i += 1
                 current_line = self.file_content[i][0]
                 self._site_of_interest.instrument_serial_number = current_line
-            if re.search(r"[pP]roject.[idID].*",current_line):
+            if re.search(r"[pP]roject.[idID].*", current_line):
                 i += 1
                 current_line = self.file_content[i][0]
                 self._site_of_interest.project_name = current_line
-            if re.search(r"[lL]ocation.*",current_line):
+            if re.search(r"[lL]ocation.*", current_line):
                 i += 1
                 current_line = self.file_content[i][0]
                 self._site_of_interest.site_name = current_line
             i += 1
 
-    def _get_date_list(self) ->list :
+    def _get_date_list(self) -> list:
         date_times = []
         cells_to_check = 2
         # "{} {}:{}".format(_data.Date.string,
@@ -320,7 +340,7 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
         date_format_string = "{} {}"
         strptime_string = self.YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT
         if 'ms' in self.file_content[self._start_of_data_row_index]:
-            cells_to_check +=1
+            cells_to_check += 1
             strptime_string = self.YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT
             date_format_string += ".{}"
         for line in self.file_content[self._start_of_data_row_index + 1:]:
@@ -334,21 +354,20 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
             date_times.append(_date_datetime)
         return date_times
 
-
     def _get_parameter_data(self):
         row = 0
         while row < self._header_length:
             current_row = self.file_content[row]
             if len(current_row) > 1 and (current_row[0].lower() == 'date'
-                and current_row[1].lower() == 'time'):
+                                         and current_row[1].lower() == 'time'):
                 self._start_of_data_row_index = row
                 for i, cells in enumerate(current_row):
-                    if cells.lower() not in ['date','ms','time']:
+                    if cells.lower() not in ['date', 'ms', 'time']:
                         parameter = cells
                         parameter_col_index = i
                         for i in range(self._header_length):
                             if self.file_content[i][0] == parameter:
-                                parameter_unit = self.file_content[i+1][0].split(": ")[1]
+                                parameter_unit = self.file_content[i + 1][0].split(": ")[1]
                                 self._params_dict[parameter][self.UNIT] = parameter_unit
                                 self._params_dict[parameter][self.PARAMETER_COL_INDEX] = parameter_col_index
                                 break
@@ -360,9 +379,6 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
             param_col_index = self._params_dict[parameter][self.PARAMETER_COL_INDEX]
             values = [float(val[param_col_index]) for val in self.file_content[self._start_of_data_row_index + 1:]]
             self._site_of_interest.create_time_serie(parameter, param_unit, self._date_list, values)
-
-
-
 
 
 if __name__ == '__main__':
@@ -378,10 +394,10 @@ if __name__ == '__main__':
 
     if teste_all:
         # file_name = "F21_logger_20160224_20160621.csv"
-        file_name = "slug_PO-05_20160729_1600.csv"
+        # file_name = "slug_PO-05_20160729_1600.csv"
         # file_name = "2029499_F7_NordChamp_PL20150925_2015_09_25.xle"
         # file_name = "2041929_PO-06_XM20170307_2017_03_07.lev"
-        # file_name = "2056794_PO-05_baro_CB20161109_2016_11_09.lev"
+        file_name = "2056794_PO-05_baro_CB20161109_2016_11_09.lev"
         file_location = os.path.join(file_loc, file_name)
         print(file_location)
         # t = ET.parse(open(file_location))
@@ -391,6 +407,6 @@ if __name__ == '__main__':
         print(solinst_file.file_reader)
         solinst_file.read_file()
         print(solinst_file.sites)
-
-        solinst_file.records.plot()
+        # print(len([i for i in solinst_file.records.dtypes.index if 'kpa' in i.lower()]) > 0)
+        solinst_file.plot()
         plt.show(block=True)
