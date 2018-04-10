@@ -4,12 +4,13 @@ import datetime
 import warnings
 from abc import abstractmethod, ABCMeta
 from collections import defaultdict
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Tuple
 from xml.etree import ElementTree as ET
 
 import bs4
 import matplotlib.axes as mp_axe
 import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
 from pandas import DataFrame
 
 import file_parser
@@ -29,7 +30,7 @@ class LineDefinition(object):
                  color: str = 'blue',
                  linestyle: str = '-',
                  outward: int = 0,
-                 linewidth: float = 1,
+                 linewidth: float = 2,
                  make_grid: bool = False) -> None:
         self.param = parameter
         self.linestyle = linestyle
@@ -203,8 +204,21 @@ class TimeSeriesFileReader(AbstractFileReader):
     def records(self, value: DataFrame):
         self._site_of_interest.records = value
 
-    def plot(self, *args, **kwargs):
-        self._site_of_interest.records.plot(*args, **kwargs)
+    def plot(self, main_axis_def: LineDefinition, other_axis: List[LineDefinition], *args, **kwargs) \
+            -> Tuple[plt.Figure, List[plt.Axes]]:
+        fig, main_axis = plt.subplots(figsize=(20, 10))
+
+        main_axis = self._add_first_axis(main_axis, main_axis_def)
+        all_axis = [main_axis]
+        for lines in other_axis:
+            new_axis = self._add_axe_to_plot(main_axis, lines)
+            all_axis.append(new_axis)
+
+        self._set_date_time_plot_format(main_axis)
+
+        fig.legend(loc='upper left')
+        return fig, all_axis
+
 
     def remove_duplicates(self) -> DataFrame:
         self.records = self.records.drop_duplicates()
@@ -215,10 +229,12 @@ class TimeSeriesFileReader(AbstractFileReader):
         new_axis.plot(self.records[new_line_def.param],
                       color=new_line_def.color, linestyle=new_line_def.linestyle,
                       linewidth=new_line_def.linewidth, **kwargs)
+        new_axis.grid(new_line_def.make_grid)
         new_axis.set_ylabel(new_line_def.param, color=new_line_def.color)
         new_axis.spines["right"].set_color(new_line_def.color)
         if new_line_def.outward != 0:
             new_axis.spines["right"].set_position(("outward", new_line_def.outward))
+
         return new_axis
 
     def _add_first_axis(self, main_axis: mp_axe.Axes, line_def: LineDefinition, **kwargs) -> mp_axe.Axes:
@@ -230,9 +246,12 @@ class TimeSeriesFileReader(AbstractFileReader):
         main_axis.set_ylabel(line_def.param, color=line_def.color)
         main_axis.spines['left'].set_color(line_def.color)
         main_axis.set_title(self.sites.site_name + " - Visit date: " + str(self.sites.visit_date))
+        main_axis.grid(line_def.make_grid)
+
         return main_axis
 
-    def _set_date_time_plot_format(self, axis: mp_axe.Axes):
+    @staticmethod
+    def _set_date_time_plot_format(axis: mp_axe.Axes):
         myFmt = mdates.DateFormatter('(%Y-%m-%d) %H:%M')
         axis.xaxis.set_major_formatter(myFmt)
         axis.grid(True, axis='x')
