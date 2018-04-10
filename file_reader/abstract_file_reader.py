@@ -217,7 +217,6 @@ class TimeSeriesFileReader(AbstractFileReader):
         self._set_date_time_plot_format(main_axis)
 
         fig.legend(loc='upper left')
-        fig.align_ylabels(all_axis)
         return fig, all_axis
 
 
