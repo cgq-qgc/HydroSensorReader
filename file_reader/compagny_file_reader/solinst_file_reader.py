@@ -57,7 +57,7 @@ class SolinstFileReader(TimeSeriesFileReader):
     def _read_file_data(self):
         pass
 
-    def plot(self, other_axis: List[LineDefinition] = list(), *args, **kwargs) -> Tuple[
+    def plot(self, other_axis: List[LineDefinition] = list(), reformat_temp=True, *args, **kwargs) -> Tuple[
         plt.Figure, List[plt.Axes]]:
         temperature_line_def = LineDefinition('TEMPERATURE_°C', 'red')
         temperature_values = self.records['TEMPERATURE_°C']
@@ -70,7 +70,8 @@ class SolinstFileReader(TimeSeriesFileReader):
                     level_line_def = LineDefinition(param, colors[color_index], make_grid=True)
                     all_axis.append(level_line_def)
         fig, axis = super().plot(temperature_line_def, all_axis, *args, **kwargs)
-        if len([i for i in solinst_file.records.dtypes.index if 'kpa' in i.lower()]) == 0:
+
+        if len([i for i in solinst_file.records.dtypes.index if 'kpa' in i.lower()]) == 0 and reformat_temp:
             axis[0].set_ylim(temperature_values.mean() - 1, temperature_values.mean() + 1)
         return fig, axis
 
@@ -393,11 +394,11 @@ if __name__ == '__main__':
     teste_all = True
 
     if teste_all:
-        # file_name = "F21_logger_20160224_20160621.csv"
+        file_name = "F21_logger_20160224_20160621.csv"
         # file_name = "slug_PO-05_20160729_1600.csv"
         # file_name = "2029499_F7_NordChamp_PL20150925_2015_09_25.xle"
         # file_name = "2041929_PO-06_XM20170307_2017_03_07.lev"
-        file_name = "2056794_PO-05_baro_CB20161109_2016_11_09.lev"
+        # file_name = "2056794_PO-05_baro_CB20161109_2016_11_09.lev"
         file_location = os.path.join(file_loc, file_name)
         print(file_location)
         # t = ET.parse(open(file_location))
@@ -407,6 +408,7 @@ if __name__ == '__main__':
         print(solinst_file.file_reader)
         solinst_file.read_file()
         print(solinst_file.sites)
+        print(solinst_file.records)
         # print(len([i for i in solinst_file.records.dtypes.index if 'kpa' in i.lower()]) > 0)
-        solinst_file.plot()
+        solinst_file.plot(reformat_temp=False)
         plt.show(block=True)
