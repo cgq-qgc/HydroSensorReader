@@ -204,7 +204,8 @@ class TimeSeriesFileReader(AbstractFileReader):
     def records(self, value: DataFrame):
         self._site_of_interest.records = value
 
-    def plot(self, main_axis_def: LineDefinition, other_axis: List[LineDefinition], *args, **kwargs) \
+    def plot(self, main_axis_def: LineDefinition, other_axis: List[LineDefinition], legend_loc='upper left', *args,
+             **kwargs) \
             -> Tuple[plt.Figure, List[plt.Axes]]:
         fig, main_axis = plt.subplots(figsize=(20, 10))
 
@@ -216,7 +217,7 @@ class TimeSeriesFileReader(AbstractFileReader):
 
         self._set_date_time_plot_format(main_axis)
 
-        fig.legend(loc='upper left')
+        fig.legend(loc=legend_loc)
         return fig, all_axis
 
 

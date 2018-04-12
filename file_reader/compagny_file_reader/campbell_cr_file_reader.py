@@ -109,9 +109,10 @@ class DATCampbellCRFileReader(TimeSeriesFileReader):
                     ax.set_ylim(0, 105)
         return all_axis
 
-    def plot(self, main_axis_def: LineDefinition = None, other_axis: List[LineDefinition] = None, *args, **kwargs) -> \
+    def plot(self, main_axis_def: LineDefinition = None, other_axis: List[LineDefinition] = None,
+             legend_loc='upper left', *args, **kwargs) -> \
             Tuple[
-        plt.Figure, List[plt.Axes]]:
+                plt.Figure, List[plt.Axes]]:
         self.records['Bat_Volt_mean (volt)'] = self.records['Bat_Volt (volt)'].resample('D').mean()
         self.records['Bat_Volt_mean (volt)'] = self.records['Bat_Volt_mean (volt)'].interpolate()
         if main_axis_def is None:
@@ -119,10 +120,10 @@ class DATCampbellCRFileReader(TimeSeriesFileReader):
         if other_axis is None:
             other_axis = self._add_common_subplots()
 
-        fig, all_axis = super().plot(main_axis_def, other_axis, *args, **kwargs)
+        fig, all_axis = super().plot(main_axis_def, other_axis, legend_loc, *args, **kwargs)
         all_axis = self._add_mean_batt_voltage(all_axis)
         all_axis = self._define_axis_limite_for_pressure_and_ch4(all_axis)
-        fig.legend(loc='upper left')
+
         return fig, all_axis
 
 
@@ -143,5 +144,6 @@ if __name__ == '__main__':
 
     # print(campbell_file.records.head())
     print(campbell_file.records.describe())
-    campbell_file.plot()
+    fig, ax = campbell_file.plot(legend_loc='lower right')
+
     plt.show(block=True)
