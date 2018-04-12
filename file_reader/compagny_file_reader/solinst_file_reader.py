@@ -65,8 +65,10 @@ class SolinstFileReader(TimeSeriesFileReader):
         if len(other_axis) == 0:
             level_param = [i for i in solinst_file.records.dtypes.index if 'TEMP' not in i]
             if len(level_param) > 0:
-                colors = ['blue', 'orange', 'green', 'purple', 'black']
+                colors = ['blue', 'orange', 'green', 'purple', 'black', 'brown', 'darkorange', 'cyan']
                 for color_index, param in enumerate(level_param):
+                    if color_index > len(colors):
+                        color_index = color_index - len(colors)
                     level_line_def = LineDefinition(param, colors[color_index], make_grid=True)
                     all_axis.append(level_line_def)
         fig, axis = super().plot(temperature_line_def, all_axis, *args, **kwargs)
