@@ -9,7 +9,7 @@ __version__ = '1.0'
 
 import matplotlib.pyplot as plt
 import pandas as pd
-
+import numpy as np
 from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
 
 VALUES_START = 4
@@ -46,7 +46,10 @@ class DATCampbellCRFileReader(TimeSeriesFileReader):
         for row in self.datas:
             row_content = []
             for val in row[2:]:
-                row_content.append(float(val))
+                if val == '"NAN"':
+                    row_content.append(np.nan)
+                else:
+                    row_content.append(float(val))
             datas.append(row_content)
         self.records = pd.DataFrame(data=datas,
                                     index=self._date_list,
@@ -71,37 +74,54 @@ class DATCampbellCRFileReader(TimeSeriesFileReader):
         self.sites.visit_date = dates[-1]
         return dates
 
+    def _add_common_subplots(self) -> List[LineDefinition]:
+        outward = 0
+        out_linedef = []
+        params_list = [LineDefinition('TDGP1_Avg (mmHg)', 'darkorange', '-'),
+                       LineDefinition('Pression_bridge (psi)', 'red', make_grid=True),
+                       LineDefinition('Pression_bridge_Avg (psi)', 'black', '--', linewidth=0.7),
+                       LineDefinition('CH4 (%)', 'orange', '-', ),
+                       LineDefinition('CH4_Avg (%)', 'brown', '--'),
+                       LineDefinition('Ptot (mbar)', 'blue', '-.', linewidth=0.7)]
 
-class CR1000withTDGprobe(DATCampbellCRFileReader):
+        for i in params_list:
+            if i.param in self.records.dtypes.index:
+                i.outward = outward
+                out_linedef.append(i)
+                outward += 50
+        return out_linedef
 
-    def __init__(self, file_path: str = None, header_length: int = 4):
-        super().__init__(file_path, header_length)
-
-    def plot(self, *args, **kwargs) -> Tuple[
-        plt.Figure, List[plt.Axes]]:
-        self.records['Bat_Volt_mean (volt)'] = self.records['Bat_Volt (volt)'].resample('D').mean()
-        self.records['Bat_Volt_mean (volt)'] = self.records['Bat_Volt_mean (volt)'].interpolate()
-
-        bat_line_def = LineDefinition('Bat_Volt (volt)', 'green', linewidth=0.5)
-        outward = 50
-        tdgp_avg_line_def = LineDefinition('TDGP1_Avg (mmHg)', 'darkorange', '-', outward * 2)
-        press_line_def = LineDefinition('Pression_bridge (psi)', 'red', make_grid=True)
-        press_avg_line_def = LineDefinition('Pression_bridge_Avg (psi)', 'black', '--', outward, linewidth=0.7)
-
-        lines_definition = [tdgp_avg_line_def, press_line_def, press_avg_line_def]
-
-        fig, all_axis = super().plot(bat_line_def, lines_definition, *args, **kwargs)
+    def _add_mean_batt_voltage(self, all_axis: List[plt.Axes]) -> List[plt.Axes]:
         bat_mean_line_def = LineDefinition('Bat_Volt_mean (volt)')
         bat_mean_axe = self._add_first_axis(all_axis[0], bat_mean_line_def)
         all_axis.append(bat_mean_axe)
         all_axis[0].set_ylim(0, 20)
-        # set limite for press_line_def
-        all_axis[2].set_ylim(self.records['Pression_bridge (psi)'].min() - 15,
-                             self.records['Pression_bridge (psi)'].max() + 10)
-        # set limite for press_avg_line_def
-        all_axis[3].set_ylim(self.records['Pression_bridge (psi)'].min() - 15,
-                             self.records['Pression_bridge (psi)'].max() + 10)
         all_axis[0].set_ylabel('Bat_Volt (volt)', color='black')
+        return all_axis
+
+    def _define_axis_limite_for_pressure_and_ch4(self, all_axis: List[plt.Axes]) -> List[plt.Axes]:
+        for ax in all_axis:
+            for lines in ax.lines:
+                if lines._label in ['Pression_bridge (psi)', 'Pression_bridge_Avg (psi)']:
+                    ax.set_ylim(self.records['Pression_bridge (psi)'].min() - 15,
+                                self.records['Pression_bridge (psi)'].max() + 10)
+                if lines._label in ['CH4 (%)', 'CH4_Avg (%)']:
+                    ax.set_ylim(0, 105)
+        return all_axis
+
+    def plot(self, main_axis_def: LineDefinition = None, other_axis: List[LineDefinition] = None, *args, **kwargs) -> \
+            Tuple[
+        plt.Figure, List[plt.Axes]]:
+        self.records['Bat_Volt_mean (volt)'] = self.records['Bat_Volt (volt)'].resample('D').mean()
+        self.records['Bat_Volt_mean (volt)'] = self.records['Bat_Volt_mean (volt)'].interpolate()
+        if main_axis_def is None:
+            main_axis_def = LineDefinition('Bat_Volt (volt)', 'green', linewidth=0.5)
+        if other_axis is None:
+            other_axis = self._add_common_subplots()
+
+        fig, all_axis = super().plot(main_axis_def, other_axis, *args, **kwargs)
+        all_axis = self._add_mean_batt_voltage(all_axis)
+        all_axis = self._define_axis_limite_for_pressure_and_ch4(all_axis)
         fig.legend(loc='upper left')
         return fig, all_axis
 
@@ -113,16 +133,15 @@ if __name__ == '__main__':
     while os.path.split(path)[1] != "scientific_file_reader":
         path = os.path.split(path)[0]
     file_loc = os.path.join(path, 'file_example')
-    file_name = "cr_file_example.dat"
+    file_name = "PO-03_F2_XM20170222.dat"
     file = os.path.join(file_loc, file_name)
     print(file)
 
-    campbell_file = CR1000withTDGprobe(file)
+    campbell_file = DATCampbellCRFileReader(file)
     campbell_file.read_file()
     print(campbell_file.sites)
 
     # print(campbell_file.records.head())
-    # print(campbell_file.records.describe())
+    print(campbell_file.records.describe())
     campbell_file.plot()
-
     plt.show(block=True)
