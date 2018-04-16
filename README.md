@@ -8,6 +8,12 @@ HydroSensorReader
 This project aim to provide a simple way to read a scientific file provided by any
 kind of probe, sensor, or anything used specificly in hydrogeology.
 
+## Installation
+
+You can directly install this package with the command:
+` pip install HydroSensorReader`
+
+
 Dependency
 ----------
 - [openpyxl](https://openpyxl.readthedocs.io/en/default/)
