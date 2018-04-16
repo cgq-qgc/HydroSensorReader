@@ -8,5 +8,8 @@ __version__ = '1.0'
 from hydsensread.file_reader.abstract_file_reader import AbstractFileReader, GeochemistryFileReader, \
     TimeSeriesFileReader, \
     TimeSeriesGeochemistryFileReader
-from .compagny_file_reader import SolinstFileReader, DATCampbellCRFileReader, XLSHannaFileReader, XSLMaxxamFileReader
-from .web_page_reader import GNB_WaterQualityStation
+from .compagny_file_reader import SolinstFileReader, \
+    DATCampbellCRFileReader, \
+    XLSHannaFileReader, \
+    XSLMaxxamFileReader
+from .web_page_reader import GNBWaterQualityStation, GNBCoreSamplesNTSMapSearchWebScrapper

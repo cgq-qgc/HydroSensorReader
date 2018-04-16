@@ -12,7 +12,7 @@ import re
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from ..abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
+from hydsensread.file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
 
 
 class XLSHannaFileReader(TimeSeriesFileReader):
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     import pprint
 
     path = os.getcwd()
-    while os.path.split(path)[1] != "scientific_file_reader":
+    while os.path.split(path)[1] != "hydsensread":
         path = os.path.split(path)[0]
     file_loc = os.path.join(path, 'file_example')
     file_name = 'LOG006_0621113447.xls'

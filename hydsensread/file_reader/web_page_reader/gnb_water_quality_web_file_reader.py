@@ -8,22 +8,25 @@ __version__ = '1.0'
 
 import datetime
 import json
+import warnings
 from collections import defaultdict
 
 import bs4
 import requests
 
-from ..abstract_file_reader import TimeSeriesGeochemistryFileReader
+from hydsensread.file_reader.abstract_file_reader import TimeSeriesGeochemistryFileReader
 
 
-class GNB_WaterQualityStation(TimeSeriesGeochemistryFileReader):
+class GNBWaterQualityStation(TimeSeriesGeochemistryFileReader):
     STATION_PARAMETER_URL_ADRESS = "http://www.elgegl.gnb.ca/WaterNB-NBEau/fr/Lieu%C3%89chantillonnage/%C3%A9chantillons/{station_name}"
     SATION_DATA_URL_ADRESS = "http://www.elgegl.gnb.ca/WaterNB-NBEau/en/SamplingLocation/SamplesData/"
 
     def __init__(self, station_name: str):
+        warnings.warn('Class needs to be re-implemented', DeprecationWarning)
+
         self.station_name = str(station_name)
         web_site_name = self.STATION_PARAMETER_URL_ADRESS.format(station_name=self.station_name)
-        super(GNB_WaterQualityStation, self).__init__(file_path=web_site_name)
+        super(GNBWaterQualityStation, self).__init__(file_path=web_site_name)
         self.station_parameters = defaultdict(dict)
         self.no_param = []
         self.get_time_series_data(self.station_name).site_name = self.station_name
@@ -134,23 +137,9 @@ class GNB_WaterQualityStation(TimeSeriesGeochemistryFileReader):
         return self._date_list
 
 if __name__ == '__main__':
-    x = GNB_WaterQualityStation('837')
+    x = GNBWaterQualityStation('837')
     x.read_file()
     print(x.time_series_dates)
-    # for ts in x.get_time_series_data().records:
-    #     print(ts)
-    x.makes_samples_with_time_series()
-    print('samples dones')
-    x.make_time_series_with_samples()
-    print('time series re-made')
-    for site in x.get_time_series_data():
-        for ts in x.get_time_series_data(site).get_records():
-            print(ts)
-    # for dates in x.get_geochemistry_data().keys():
-    #     for samp in x.get_geochemistry_data()[dates]:
-    #         print(x.get_sample_by_date(dates,samp))
 
-   
-    
     # GNB_WaterQualityStation('20122')
     # GNB_WaterQualityStation('470')

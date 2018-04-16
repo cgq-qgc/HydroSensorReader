@@ -13,8 +13,8 @@ from collections import defaultdict
 
 import bs4
 
+from hydsensread.file_reader.abstract_file_reader import DrillingFileReader, AbstractFileReader
 from hydsensread.site_and_records import DrillingSite
-from ..abstract_file_reader import DrillingFileReader, AbstractFileReader
 
 _GNB_MAIN_SEARCH_URL = "http://www1.gnb.ca/0078/geosciencedatabase/"
 _GNB_CORE_EXT = "core/"
@@ -91,6 +91,12 @@ class GNBCoreSamplesDataFactory(DrillingFileReader):
             r_dict[cols[0]] = cols[1]
         return r_dict
 
+    def _read_file_header(self):
+        pass
+
+    def _read_file_data_header(self):
+        pass
+
     def _read_file_data(self):
         self._read_general_information()
         self._read_location()
@@ -123,8 +129,9 @@ class GNBCoreSamplesDataFactory(DrillingFileReader):
                 r_dict['file-{}'.format(i)] = dict((k, v) for (k, v) in zip(header_data, cols))
         self._content[MAP_AVAILABLE] = r_dict
 
-    def get_url_content(self) ->dict:
+    def get_url_content(self) -> dict:
         return self._content
+
 
 class AbstractGNBElementListWebScrapper(DrillingFileReader):
     def __init__(self, request_params: dict, file_path: str,
@@ -156,6 +163,7 @@ class AbstractGNBElementListWebScrapper(DrillingFileReader):
 
     def get_sample_list(self):
         return self._site_of_interest.values()
+
 
 class GNBCoreSamplesListWebScrapper(AbstractGNBElementListWebScrapper):
     """
@@ -264,7 +272,7 @@ class Abstract_GNB_NTSMapSearchWebScrapper(AbstractFileReader):
         return self._site_of_interest
 
 
-class GNB_CoreSamples_NTSMapSearchWebScrapper(Abstract_GNB_NTSMapSearchWebScrapper):
+class GNBCoreSamplesNTSMapSearchWebScrapper(Abstract_GNB_NTSMapSearchWebScrapper):
     def __init__(self, file_path: str = GNB_CORE_SAMPLES_NTS_MAP_SEARCH_URL,
                  factory_class=GNBCoreSamplesListWebScrapper):
         super().__init__(file_path=file_path, factory_class=factory_class)
@@ -273,22 +281,23 @@ class GNB_CoreSamples_NTSMapSearchWebScrapper(Abstract_GNB_NTSMapSearchWebScrapp
         # with open('samples_location.csv','w'):
         for samp_list in self._site_of_interest.values():
             for cores in samp_list.get_sample_list():
-                print("="*50)
+                print("=" * 50)
                 pprint.pprint(cores)
                 try:
-                    print("-"*50)
+                    print("-" * 50)
                     pprint.pprint(cores['core_sample_data'].get_url_content())
                 except KeyError:
                     pass
 
-class GNB_OilAndGas_NTSMapSearchWebScrapper(Abstract_GNB_NTSMapSearchWebScrapper):
+
+class GNBOilAndGasNTSMapSearchWebScrapper(Abstract_GNB_NTSMapSearchWebScrapper):
     def __init__(self, file_path: str = GNB_OIL_GAS_NTS_MAP_SEARCH_URL,
                  factory_class=GNBOilAndGasWellsListWebScrapper):
         super().__init__(file_path=file_path, factory_class=factory_class)
 
 
 if __name__ == '__main__':
-    drill_cores = GNB_CoreSamples_NTSMapSearchWebScrapper()
-    drill_cores.write_file()
-    # boreholes = GNB_OilAndGas_NTSMapSearchWebScrapper()
+    # drill_cores = GNB_CoreSamples_NTSMapSearchWebScrapper()
+    # drill_cores.write_file()
+    boreholes = GNBOilAndGasNTSMapSearchWebScrapper()
     # GNBCoreSamplesWebScrapper(request_params={'NTS1': '21B', 'NTS2': '15'})

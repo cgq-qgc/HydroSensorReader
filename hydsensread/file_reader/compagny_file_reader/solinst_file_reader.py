@@ -15,7 +15,7 @@ from typing import List, Tuple
 
 from pandas import Timestamp
 
-from ..abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
+from hydsensread.file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
 
 
 class SolinstFileReader(TimeSeriesFileReader):
@@ -389,7 +389,7 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     path = os.getcwd()
-    while os.path.split(path)[1] != "scientific_file_reader":
+    while os.path.split(path)[1] != "hydsensread":
         path = os.path.split(path)[0]
     file_loc = os.path.join(path, 'file_example')
 

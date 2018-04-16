@@ -9,7 +9,7 @@ import datetime
 import re
 import warnings
 
-from ..abstract_file_reader import GeochemistryFileReader, Sample
+from hydsensread.file_reader.abstract_file_reader import GeochemistryFileReader, Sample
 
 
 class XSLMaxxamFileReader(GeochemistryFileReader):
@@ -73,15 +73,20 @@ class XSLMaxxamFileReader(GeochemistryFileReader):
 
         self._site_of_interest[sample_name][analysis_type] = sample
 
-    def _add_analysis_type_in_txt_database(self, analysis_type):
-        with open('maxxam_analysis_type.txt', 'r+', encoding='utf-8') as _file:
-            in_file = False
-            for line in _file:
-                if analysis_type in line:
-                    in_file = True
-                    break
-            if in_file == False and analysis_type not in self.IGNORE_CONTENT:
-                _file.writelines(analysis_type + "\n")
+    def _add_analysis_type_in_txt_database(self, analysis_type: str):
+        try:
+            with open('maxxam_analysis_type.txt', 'r+', encoding='utf-8') as _file:
+                in_file = False
+                for line in _file:
+                    if analysis_type in line:
+                        in_file = True
+                        break
+                if in_file == False and analysis_type not in self.IGNORE_CONTENT:
+                    _file.writelines(analysis_type + "\n")
+        except FileNotFoundError:
+            f = open('maxxam_analysis_type.txt', 'w')
+            f.close()
+            self._add_analysis_type_in_txt_database(analysis_type)
 
     def _get_analysis_type(self):
         for result_sheets in self.get_results_sheet():
@@ -196,7 +201,7 @@ if __name__ == '__main__':
     import os
 
     path = os.getcwd()
-    while os.path.split(path)[1] != "scientific_file_reader":
+    while os.path.split(path)[1] != "hydsensread":
         path = os.path.split(path)[0]
     file_loc = os.path.join(path, 'file_example')
 

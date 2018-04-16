@@ -10,7 +10,7 @@ __version__ = '1.0'
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from ..abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
+from hydsensread.file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
 
 VALUES_START = 4
 COL_HEADER = 'col_header'
@@ -131,7 +131,7 @@ if __name__ == '__main__':
     import os
 
     path = os.getcwd()
-    while os.path.split(path)[1] != "scientific_file_reader":
+    while os.path.split(path)[1] != "hydsensread":
         path = os.path.split(path)[0]
     file_loc = os.path.join(path, 'file_example')
     file_name = "PO-03_F2_XM20170222.dat"

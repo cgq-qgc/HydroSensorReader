@@ -11,7 +11,7 @@ import datetime
 from abc import abstractmethod
 from typing import Union, List, Tuple
 
-from ..abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition, StationSite, \
+from hydsensread.file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition, StationSite, \
     geographical_coordinates, StreamFlowStation
 
 WHAT_METEO_FILES_HEADER_LENGTH = 10
@@ -192,7 +192,7 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     path = os.getcwd()
-    while os.path.split(path)[1] != "scientific_file_reader":
+    while os.path.split(path)[1] != "hydsensread":
         path = os.path.split(path)[0]
     file_loc = os.path.join(path, 'file_example')
 

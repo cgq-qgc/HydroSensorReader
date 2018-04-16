@@ -58,7 +58,10 @@ class AbstractFileReader(object, metaclass=ABCMeta):
     YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT = YEAR_S_MONTH_S_DAY_HM_DATE_STRING_FORMAT + ":%S"
     YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT = YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT + ".%f"
 
-    def __init__(self, file_path: str = None, header_length: int = 10, request_params: dict = None, encoding='utf8',
+    def __init__(self, file_path: str = None,
+                 header_length: int = 10,
+                 request_params: dict = None,
+                 encoding='utf8',
                  wait_read=False):
         """
 
@@ -75,7 +78,7 @@ class AbstractFileReader(object, metaclass=ABCMeta):
         self._encoding = encoding
         self._site_of_interest = None
         self.file_reader = self._set_file_reader()
-        if wait_read == False:
+        if not wait_read:
             self.file_reader.read_file()
 
     @property
@@ -220,7 +223,6 @@ class TimeSeriesFileReader(AbstractFileReader):
         fig.legend(loc=legend_loc)
         return fig, all_axis
 
-
     def remove_duplicates(self) -> DataFrame:
         self.records = self.records.drop_duplicates()
         return self.records
@@ -260,12 +262,18 @@ class TimeSeriesFileReader(AbstractFileReader):
 
 class GeochemistryFileReader(AbstractFileReader):
     def __init__(self, file_path: str = None,
-                 header_length: int = 10):
+                 header_length: int = 10, **kwargs):
         super().__init__(file_path, header_length)
         self._site_of_interest = defaultdict(dict)  # dict of Samples
         self.project = None
         self.report_date = None
         self.analysis_methode = None
+
+    def _read_file_header(self):
+        pass
+
+    def _read_file_data_header(self):
+        pass
 
     def create_sample(self, sample_name: str):
         sample = Sample(site_name=sample_name)
@@ -285,7 +293,7 @@ class TimeSeriesGeochemistryFileReader(TimeSeriesFileReader, GeochemistryFileRea
     TIME_SERIES_DATA = 'timeSerie'
     GEOCHEMISTRY_DATA = 'samples'
 
-    def __init__(self, file_path: str = None, header_length: int = 10):
+    def __init__(self, file_path: str = None, header_length: int = 10, encoding='utf-8'):
         """
         class between TimeSeriesFileReader and GeochemistryFileReader.
         internal data structure is like:
@@ -303,8 +311,9 @@ class TimeSeriesGeochemistryFileReader(TimeSeriesFileReader, GeochemistryFileRea
                       Don't know if this class is still usefull if a pandas.Dataframe is used.
                       Maybe a MultiIndex can do the trick !
                       - 2018-04-03""", DeprecationWarning)
-
-        super().__init__(file_path, header_length)
+        # TimeSeriesFileReader.__init__(self, file_path, header_length, encoding=encoding)
+        # GeochemistryFileReader.__init__(self, file_path, header_length)
+        super().__init__(file_path, header_length, encoding=encoding)
         self._site_of_interest = defaultdict(dict)
         self._site_of_interest[self.TIME_SERIES_DATA] = defaultdict(SensorPlateform)
         self._site_of_interest[self.GEOCHEMISTRY_DATA] = defaultdict(dict)  # dict sorted by [samp_name][samp_date]

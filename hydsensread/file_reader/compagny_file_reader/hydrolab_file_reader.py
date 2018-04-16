@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from ..abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
+from hydsensread.file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
 
 DATA_HEADER = 'data_header'
 PROBE_ID = 'probe_id'
@@ -142,7 +142,7 @@ if __name__ == '__main__':
     import pprint
 
     path = os.getcwd()
-    while os.path.split(path)[1] != "scientific_file_reader":
+    while os.path.split(path)[1] != "hydsensread":
         path = os.path.split(path)[0]
     file_loc = os.path.join(path, 'file_example')
     file_name = 'hydrolab_file.txt'
