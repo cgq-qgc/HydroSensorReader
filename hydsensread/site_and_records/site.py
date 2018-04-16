@@ -126,6 +126,7 @@ class Sample(Site):
     Definition of a Sample as seen as a laboratory information. This represent the minimal informations
     given to/by the lab.
     """
+
     def __init__(self, site_name: str = None,
                  visit_date: datetime.datetime = None,  # sampling date
                  lab_sample_name: str = None,
