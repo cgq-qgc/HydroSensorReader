@@ -11,7 +11,47 @@ kind of probe, sensor, or anything used specificly in hydrogeology.
 ## Installation
 
 You can directly install this package with the command:
-` pip install HydroSensorReader`
+` pip install HydroSensorReader`.
+
+After the installation, you can use the package by using 
+```python
+import hydsensread as hsr
+
+# File based reader
+file_path = 'my_file_path'
+
+# Files Generating Timeseries results
+# =====================================
+
+# read CR1000 files
+r = hsr.DATCampbellCRFileReader(file_path)
+
+# read Hanna multiparameter probes 
+# - (model HI-9828 and HI-9829 tested)
+# - Supported extension : '.xls', '.xlsx'
+r = hsr.XLSHannaFileReader(file_path)
+
+# read Solinst Levelogger and Barologger files
+# - Supported extension : '.lev', '.xle', '.csv'
+r = hsr.SolinstFileReader(file_path)
+
+# Plot the results with
+r.plot()
+
+# Files Generating Generic results
+# =====================================
+# read Maxxam laboratory analysis files.
+# - Supported extension : '.xls', '.xlsx'
+r = hsr.XSLMaxxamFileReader(file_path)
+
+
+# Web data scrappers 
+# These data scrappers use the station name.
+station = 'StationName'
+r = hsr.GNBWaterQualityStation(station)
+
+
+```
 
 
 Dependency
