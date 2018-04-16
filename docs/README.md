@@ -2,6 +2,7 @@
 
 
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
+[![Coverage Status](https://coveralls.io/repos/github/x-malet/scientific_file_reader/badge.svg?branch=master)](https://coveralls.io/github/x-malet/scientific_file_reader?branch=master)
 
 [![Build Status](https://travis-ci.org/x-malet/scientific_file_reader.svg?branch=master)](https://travis-ci.org/x-malet/scientific_file_reader)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2818f21a4dcd493a83aeb8aa83885395)](https://www.codacy.com/app/maletxa/HydroSensorReader?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=x-malet/HydroSensorReader&amp;utm_campaign=Badge_Grade)
