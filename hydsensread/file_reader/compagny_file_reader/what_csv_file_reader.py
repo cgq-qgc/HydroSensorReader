@@ -11,8 +11,8 @@ import datetime
 from abc import abstractmethod
 from typing import Union, List, Tuple
 
-from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
-from site_and_records import StationSite, geographical_coordinates, StreamFlowStation
+from ..abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition, StationSite, \
+    geographical_coordinates, StreamFlowStation
 
 WHAT_METEO_FILES_HEADER_LENGTH = 10
 WHAT_WATER_LEVEL_FILES_HEADER_LENGTH = 8
@@ -23,7 +23,7 @@ station_possible = Union[StationSite, StreamFlowStation]
 
 class AbstractWhatFileReader(TimeSeriesFileReader):
     def __init__(self, file_path: str = None, header_length: int = WHAT_METEO_FILES_HEADER_LENGTH,
-                 station_type: station_possible=None):
+                 station_type: station_possible = None):
         # if file_name is None:
         #     pass
         # else:
@@ -112,7 +112,6 @@ class AbstractWhatFileReader(TimeSeriesFileReader):
         self._set_station_attribute('other_identifier', what_to_search)
 
 
-
 class WhatMeteorologicalDataFileReader(AbstractWhatFileReader):
     def __init__(self, file_path: str = None):
         super().__init__(file_path, WHAT_METEO_FILES_HEADER_LENGTH, StationSite())
@@ -186,7 +185,6 @@ class WhatStreamAndLevelDataFileReader(AbstractWhatFileReader):
         flow_line_def = LineDefinition('Flow_m3/s', 'red')
 
         return super().plot(level_line_def, [flow_line_def], *args, **kwargs)
-
 
 
 if __name__ == '__main__':

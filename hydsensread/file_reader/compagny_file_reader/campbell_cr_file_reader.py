@@ -10,7 +10,7 @@ __version__ = '1.0'
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
+from ..abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
 
 VALUES_START = 4
 COL_HEADER = 'col_header'

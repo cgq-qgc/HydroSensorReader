@@ -6,13 +6,14 @@ __description__ = "permet d'aller pomper les données du site du nouveau brunswi
                   "données d'eau de surface"
 __version__ = '1.0'
 
-from ..abstract_file_reader import TimeSeriesGeochemistryFileReader
 import datetime
 import json
+from collections import defaultdict
 
 import bs4
 import requests
-from collections import defaultdict
+
+from ..abstract_file_reader import TimeSeriesGeochemistryFileReader
 
 
 class GNB_WaterQualityStation(TimeSeriesGeochemistryFileReader):

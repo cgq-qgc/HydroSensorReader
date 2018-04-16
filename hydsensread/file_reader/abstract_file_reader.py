@@ -13,8 +13,7 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 
-import file_parser
-from site_and_records import *
+from hydsensread.site_and_records import *
 
 sample_ana_type = Dict[str, Sample]
 sample_dict = Dict[str, sample_ana_type]

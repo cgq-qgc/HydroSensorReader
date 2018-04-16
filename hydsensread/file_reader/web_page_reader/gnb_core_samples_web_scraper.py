@@ -13,8 +13,8 @@ from collections import defaultdict
 
 import bs4
 
-from file_reader.abstract_file_reader import DrillingFileReader, AbstractFileReader
-from site_and_records import DrillingSite
+from hydsensread.site_and_records import DrillingSite
+from ..abstract_file_reader import DrillingFileReader, AbstractFileReader
 
 _GNB_MAIN_SEARCH_URL = "http://www1.gnb.ca/0078/geosciencedatabase/"
 _GNB_CORE_EXT = "core/"

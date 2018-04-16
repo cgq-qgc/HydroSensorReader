@@ -12,8 +12,8 @@ from typing import List
 import numpy as np
 import pandas as pd
 
-from site_and_records.records import ChemistryRecord
-from site_and_records.records import TimeSeriesRecords
+from .records import ChemistryRecord
+from .records import TimeSeriesRecords
 
 geographical_coordinates = namedtuple('XYZPoint', ['x', 'y', 'z'])
 

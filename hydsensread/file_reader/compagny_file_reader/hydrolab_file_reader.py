@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
+from ..abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
 
 DATA_HEADER = 'data_header'
 PROBE_ID = 'probe_id'

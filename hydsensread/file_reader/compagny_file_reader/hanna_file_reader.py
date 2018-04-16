@@ -12,7 +12,7 @@ import re
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
+from ..abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
 
 
 class XLSHannaFileReader(TimeSeriesFileReader):

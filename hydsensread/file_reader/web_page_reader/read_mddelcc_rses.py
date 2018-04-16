@@ -6,11 +6,12 @@ Created on Tue Jun 13 14:29:29 2017
 
 # Standard library imports :
 
-import urllib.parse as urlparse
-import urllib
-from urllib.request import urlopen, urlretrieve, quote
-from bs4 import BeautifulSoup, CData
 import re
+import urllib
+import urllib.parse as urlparse
+from urllib.request import urlopen
+
+from bs4 import BeautifulSoup, CData
 
 
 # =============================================================================

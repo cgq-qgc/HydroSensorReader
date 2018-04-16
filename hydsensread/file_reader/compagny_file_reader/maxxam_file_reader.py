@@ -7,10 +7,10 @@ __version__ = '1.0'
 
 import datetime
 import re
-
-from site_and_records import Sample
-from file_reader.abstract_file_reader import GeochemistryFileReader
 import warnings
+
+from ..abstract_file_reader import GeochemistryFileReader, Sample
+
 
 class XSLMaxxamFileReader(GeochemistryFileReader):
     IGNORE_CONTENT = ["LDR = Limite de détection rapportée",
