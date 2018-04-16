@@ -25,7 +25,7 @@ def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 
-setup(name='HydroSensorsReader',
+setup(name='HydroSensorReader',
       version=__version__,
       description='Contain files readers for specific sensors files',
       author=__author__,

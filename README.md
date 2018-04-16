@@ -1,5 +1,9 @@
-Scientific File Reader
+HydroSensorReader
 ======================
+
+[![Build Status](https://travis-ci.org/x-malet/scientific_file_reader.svg?branch=master)](https://travis-ci.org/x-malet/scientific_file_reader)
+[![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 This project aim to provide a simple way to read a scientific file provided by any
 kind of probe, sensor, or anything used specificly in hydrogeology.
@@ -8,21 +12,16 @@ Dependency
 ----------
 - [openpyxl](https://openpyxl.readthedocs.io/en/default/)
 - [xlrd](http://www.python-excel.org/)
-- [bs4](https://www.crummy.com/software/BeautifulSoup/)
+- [xlwt](http://www.python-excel.org/)
+- [beautifulsoup4](https://www.crummy.com/software/BeautifulSoup/)
 - [requests](http://docs.python-requests.org/en/master/)
+- [pandas](https://pandas.pydata.org/)
 
 
 
 Main entry point
 -----
 The main entry point for this project is the `file_reader` package. You can choose between the readers available and do your work.
-
-Work To Do
-----------
--   Add a `.LAS` reader to take care of __borehole geophysics__ files
--   Add a `.LAS` reader to take care of __LiDar__ data
--   Create a Strategy class so you can input a file and the strategy class select the correct `file_reader` class
--   Continue documentation...always...
 
 
 Main package definition
@@ -78,6 +77,14 @@ This package contain classes defining the domain elements and carry the data des
 
 You have several files examples in this folder used a tests
     
+    
+Work To Do
+----------
+-   Add a `.LAS` reader to take care of __borehole geophysics__ files
+-   Add a `.LAS` reader to take care of __LiDar__ data
+-   Create a Strategy class so you can input a file and the strategy class select the correct `file_reader` class
+-   Continue documentation...always...
+
     
 
    
