@@ -3,7 +3,7 @@
 __author__ = 'Laptop'
 __date__ = '2018-04-15'
 __description__ = " "
-__version__ = '1.7.1.3'
+__version__ = '1.7.1.5'
 
 import os
 from distutils.core import setup
@@ -17,9 +17,18 @@ print(this_dir)
 DATA_PATH = os.path.join(this_dir, 'hydsensread', "file_example", '*.*')
 print(DATA_PATH)
 
-with open('requirements.txt', 'r') as f:
-    for lines in f.readlines():
-        install_reqs.append(lines.replace('\n', ''))
+try:
+    with open('requirements.txt', 'r') as f:
+        for lines in f.readlines():
+            install_reqs.append(lines.replace('\n', ''))
+except:
+    install_reqs = [
+        'beautifulsoup4>=4.6.0',
+        'requests>=2.18.4',
+        'openpyxl>=2.4.8',
+        'xlrd>=1.1.0',
+        'xlwt>=1.3.0',
+        'pandas>=0.22.0']
 
 
 def read(fname):
