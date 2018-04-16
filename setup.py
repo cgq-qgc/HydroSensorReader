@@ -3,7 +3,7 @@
 __author__ = 'Laptop'
 __date__ = '2018-04-15'
 __description__ = " "
-__version__ = '1.7.1.8'
+__version__ = '1.7.1.9'
 
 import os
 from distutils.core import setup
@@ -28,7 +28,7 @@ except:
         'openpyxl>=2.4.8',
         'xlrd>=1.1.0',
         'xlwt>=1.3.0',
-        'pandas>=0.22.0']
+        'pandas>=0.22.0', 'matplotlib>=2.2.2', 'numpy>=1.14.2']
 
 
 def read(fname):
