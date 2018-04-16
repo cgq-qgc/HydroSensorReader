@@ -1,10 +1,14 @@
 # HydroSensorReader
 
 
-[![Build Status](https://travis-ci.org/x-malet/scientific_file_reader.svg?branch=master)](https://travis-ci.org/x-malet/scientific_file_reader)
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
+[![Build Status](https://travis-ci.org/x-malet/scientific_file_reader.svg?branch=master)](https://travis-ci.org/x-malet/scientific_file_reader)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2818f21a4dcd493a83aeb8aa83885395)](https://www.codacy.com/app/maletxa/HydroSensorReader?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=x-malet/HydroSensorReader&amp;utm_campaign=Badge_Grade)
 [![Documentation Status](https://readthedocs.org/projects/hydrosensorreader/badge/?version=latest)](http://hydrosensorreader.readthedocs.io/en/latest/?badge=latest)
+
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
 
 This project aim to provide a simple way to read a scientific file provided by any
 kind of probe, sensor, or anything used specificly in hydrogeology.
