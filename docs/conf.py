@@ -11,4 +11,5 @@ source_parsers = {
     '.md': CommonMarkParser,
 }
 
+print(source_parsers)
 source_suffix = ['.rst', '.md']
