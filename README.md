@@ -62,7 +62,8 @@ Dependency
 - [beautifulsoup4](https://www.crummy.com/software/BeautifulSoup/)
 - [requests](http://docs.python-requests.org/en/master/)
 - [pandas](https://pandas.pydata.org/)
-
+- [matplotlib](https://matplotlib.org/)
+- [numpy](http://www.numpy.org/)
 
 
 Main entry point
