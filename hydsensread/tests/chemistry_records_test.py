@@ -9,7 +9,7 @@ import itertools
 import math
 import unittest
 
-from ..site_and_records.records import ChemistryRecord
+from hydsensread.site_and_records.records import ChemistryRecord
 
 
 class ChemistryRecordsTest(unittest.TestCase):

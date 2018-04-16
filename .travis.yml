@@ -2,8 +2,11 @@ language: python
 python: "3.6"
 install:
   - pip install -r requirements.txt
+  - pip install python-coveralls  # Add me to install python-coveralls
   - python setup.py build_ext --inplace
 script:
   pytest
+after_success:
+  - coveralls
 
 

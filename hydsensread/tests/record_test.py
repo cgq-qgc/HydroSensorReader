@@ -8,7 +8,7 @@ __version__ = '1.0'
 import datetime
 import unittest
 
-from ..site_and_records.records import Record
+from hydsensread.site_and_records.records import Record
 
 
 class Recordtest(unittest.TestCase):
