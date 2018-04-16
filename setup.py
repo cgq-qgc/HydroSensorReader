@@ -8,13 +8,7 @@ __version__ = '1.7.1.3'
 import os
 from distutils.core import setup
 
-import pypandoc
 from setuptools import find_packages
-
-try:
-    description = pypandoc.convert('README.md', 'rst')
-except (IOError, ImportError):
-    description = open('README.md').read()
 
 install_reqs = []
 
