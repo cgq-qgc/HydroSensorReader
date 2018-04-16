@@ -26,8 +26,9 @@ class Recordtest(unittest.TestCase):
         self.assertEqual(self.rec.value,12)
 
     def test_set_record_date(self):
-        self.rec.record_date = datetime.datetime.now()
-        self.assertEqual(self.rec.record_date,datetime.datetime.now())
+        now = datetime.datetime.now()
+        self.rec.record_date = now
+        self.assertEqual(self.rec.record_date, now)
 
 suite = unittest.TestLoader().loadTestsFromTestCase(Recordtest)
 unittest.TextTestRunner(verbosity=2).run(suite)
