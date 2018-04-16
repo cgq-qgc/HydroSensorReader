@@ -6,7 +6,8 @@ import unittest
 
 import numpy as np
 import pandas as pd
-from site_and_records.records import TimeSeriesRecords
+
+from ..site_and_records.records import TimeSeriesRecords
 
 
 class TimeSeriesRecordsTest(unittest.TestCase):
