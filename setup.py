@@ -3,7 +3,7 @@
 __author__ = 'Laptop'
 __date__ = '2018-04-15'
 __description__ = " "
-__version__ = '1.7.1.10'
+__version__ = '1.7.1.12'
 
 import os
 from distutils.core import setup

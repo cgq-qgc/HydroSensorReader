@@ -1,5 +1,5 @@
-HydroSensorReader
-======================
+# HydroSensorReader
+
 
 [![Build Status](https://travis-ci.org/x-malet/scientific_file_reader.svg?branch=master)](https://travis-ci.org/x-malet/scientific_file_reader)
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
@@ -55,8 +55,8 @@ r = hsr.GNBWaterQualityStation(station)
 ```
 
 
-Dependency
-----------
+##Dependency
+
 - [openpyxl](https://openpyxl.readthedocs.io/en/default/)
 - [xlrd](http://www.python-excel.org/)
 - [xlwt](http://www.python-excel.org/)
@@ -67,16 +67,11 @@ Dependency
 - [numpy](http://www.numpy.org/)
 
 
-Main entry point
------
-The main entry point for this project is the `file_reader` package. You can choose between the readers available and do your work.
 
+##Main package definition
 
-Main package definition
-=============
+### `file_reader`
 
-`file_reader`
-----
 Implementation of diffenrents files readers. _Each python files contain a main laucher to the the class._
 
 * __compagny_file_reader__
@@ -84,8 +79,8 @@ _- Reader of generated files comming from different probes or labs._
 * __web_page_reader__
 _- Web crawlers in charge of extracting the datas from web sites_
 
-`file_parser`
---------
+### `file_parser`
+
 
 This package contain the classes responsible of the different files reading. More information abouts these package is available into them
 * __abstract_file_parser.py__
@@ -97,8 +92,8 @@ This package contain the classes responsible of the different files reading. Mor
     * __EXCELFileParser__
     * __WEB_XMLFileParser__
 
-`site_and_records`
-------
+### `site_and_records`
+
 This package contain classes defining the domain elements and carry the data describing them
 * __site.py__
     * __Site__
@@ -120,14 +115,14 @@ This package contain classes defining the domain elements and carry the data des
     * __ChemistryRecord__
     _-A chemistry record have a detection limit a report date and an analysis type and all the attributes of a __Record___
         
-`file_example`
-------------
+### `file_example`
+
 
 You have several files examples in this folder used a tests
     
     
-Work To Do
-----------
+## Work To Do
+
 -   Add a `.LAS` reader to take care of __borehole geophysics__ files
 -   Add a `.LAS` reader to take care of __LiDar__ data
 -   Create a Strategy class so you can input a file and the strategy class select the correct `file_reader` class
