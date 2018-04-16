@@ -5,9 +5,9 @@ install:
   - pip install python-coveralls
   - pip install coveralls
   - pip install coverage
-  - coverage run setup.py test
   - python setup.py build_ext --inplace
 script:
+  - coverage run setup.py test
   - pytest
 after_success:
   - coveralls
