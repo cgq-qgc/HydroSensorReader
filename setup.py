@@ -3,7 +3,7 @@
 __author__ = 'Laptop'
 __date__ = '2018-04-15'
 __description__ = " "
-__version__ = '1.7.1.9'
+__version__ = '1.7.1.10'
 
 import os
 from distutils.core import setup
@@ -44,7 +44,7 @@ setup(name='HydroSensorReader',
       packages=find_packages(),
       package_data={'hydsensread': [DATA_PATH]},
       install_requires=install_reqs,
-      long_description=read('README.md'),
+      long_description=read('docs/README.md'),
       long_description_content_type='text/markdown',
       license='GPLv3',
       classifiers=['Development Status :: 3 - Alpha',
