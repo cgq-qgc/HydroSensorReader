@@ -19,8 +19,9 @@ HISTORICAL_STATION_LIST_URL = "https://eau.ec.gc.ca/search/historical_results_e.
 HISTORICAL_DATA_KEY = 'historic_data'
 REAL_TIME_DATA_KEY = 'real_time_data'
 
-WEATHER_STATION_LIST_URL =      "http://climate.weather.gc.ca/historical_data/search_historic_data_stations_e.html"
+WEATHER_STATION_LIST_URL = "http://climate.weather.gc.ca/historical_data/search_historic_data_stations_e.html"
 WEATHER_STATION_PROVINCE_LIST = "http://climate.weather.gc.ca/historical_data/search_historic_data_e.html"
+
 
 class StationList(metaclass=ABCMeta):
     def __init__(self, province=None, mainURL=''):
@@ -145,7 +146,7 @@ class WeatherStationList(StationList):
             'selRowPerPage': 100
         }
 
-    def makeRequestDictForProvinceSearch(self, startRow = '001'):
+    def makeRequestDictForProvinceSearch(self, startRow='001'):
 
         self.dict_url = {
             'searchType': "stnProv",
@@ -157,8 +158,8 @@ class WeatherStationList(StationList):
             'Year': str(datetime.datetime.now().year),
             'Month': str(datetime.datetime.now().month),
             'Day': str(datetime.datetime.now().day),
-            'selRowPerPage':100,
-            'startRow':startRow
+            'selRowPerPage': 100,
+            'startRow': startRow
         }
 
     def getStationList(self):
@@ -170,7 +171,7 @@ class WeatherStationList(StationList):
         number_result = bsFile.find('h1').find_next('p').contents[0].split(' ')[0]
         print("Total number of results : {}".format(number_result))
         for i in range((int(number_result) // 100) + 1):
-            print('Getting page '+ str(i+1))
+            print('Getting page ' + str(i + 1))
             self.makeRequestDictForProvinceSearch(startRow=str(i) + '01')
             r1 = requests.get(WEATHER_STATION_LIST_URL,
                               params=self.dict_url)
@@ -179,11 +180,11 @@ class WeatherStationList(StationList):
             while item != None:
                 if item.find('input', {'name': 'StationID'})['value'] not in \
                         self._webSiteContent['station_list'].keys() and \
-                    [int(v['value'])
-                     for v in item.find('select', {'name': 'timeframe'}).find_all('option')
-                     if int(v['value']) in [1, 2]] != []:
-                        stationID = item.find('input', {'name': 'StationID'})['value']
-                        self._webSiteContent['station_list'][stationID] = {}
+                        [int(v['value'])
+                         for v in item.find('select', {'name': 'timeframe'}).find_all('option')
+                         if int(v['value']) in [1, 2]] != []:
+                    stationID = item.find('input', {'name': 'StationID'})['value']
+                    self._webSiteContent['station_list'][stationID] = {}
 
                 item = item.find_next('form', {'action': '/climate_data/interform_e.html'})
 
@@ -191,4 +192,3 @@ class WeatherStationList(StationList):
 if __name__ == '__main__':
     wst = WeatherStationList('Quebec')
     print(len(wst.station_list))
-

@@ -5,9 +5,9 @@ __date__ = '2017-01-23'
 __description__ = " "
 __version__ = '1.0'
 
-from web_crawler.abstractstation import AbstractHydrometricStation
-from web_crawler.hydrometric_station import HistoricalHydrometricStation, RealTimeHydrometricStation
-from web_crawler.station_list import *
+from gc_hydrometricdata.web_crawler.abstractstation import AbstractHydrometricStation
+from gc_hydrometricdata.web_crawler.hydrometric_station import HistoricalHydrometricStation, RealTimeHydrometricStation
+from gc_hydrometricdata.web_crawler.station_list import *
 
 import requests.packages.urllib3
 requests.packages.urllib3.disable_warnings()
