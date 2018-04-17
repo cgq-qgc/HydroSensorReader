@@ -9,7 +9,7 @@ import bs4
 import datetime
 import requests
 from re import search, split
-from web_crawler.abstractstation import AbstractWeatherStation
+from gc_hydrometricdata.web_crawler.abstractstation import AbstractWeatherStation
 
 # WIP
 
