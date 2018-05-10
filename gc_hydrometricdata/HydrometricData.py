@@ -10,8 +10,8 @@ from gc_hydrometricdata.web_crawler.hydrometric_station import HistoricalHydrome
 from gc_hydrometricdata.web_crawler.station_list import *
 
 import requests.packages.urllib3
-requests.packages.urllib3.disable_warnings()
 
+requests.packages.urllib3.disable_warnings()
 
 
 class HydrometricDataInterface(object):
@@ -41,7 +41,7 @@ class HydrometricDataInterface(object):
 
                     self._stationData[stationNumber][REAL_TIME_DATA_KEY] = RealTimeHydrometricStation(stationNumber)
         else:
-            raise AttributeError('Station not in the station list')
+            raise AttributeError('Station {} not in the station list'.format(stationNumber))
 
     def isStationPresent(self, stationNumber) -> bool:
         return stationNumber in self.allStationList
@@ -65,8 +65,10 @@ class HydrometricDataInterface(object):
 
     def getStation(self, stationNumber) -> dict:
         if stationNumber not in self._stationData.keys():
-            self._extractStationData(stationNumber)
-
+            try:
+                self._extractStationData(stationNumber)
+            except AssertionError as e:
+                print(e)
         return self._stationData[stationNumber]
 
     def _getDataTypeForStation(self, stationNumber, dataType) -> AbstractHydrometricStation:
@@ -81,14 +83,14 @@ class HydrometricDataInterface(object):
     def getRealTimeStation(self, stationNumber) -> AbstractHydrometricStation:
         return self._getDataTypeForStation(stationNumber, REAL_TIME_DATA_KEY)
 
-    def getStationInfo(self, stationNumber) -> dict:
-        if self.isStationPresent(stationNumber):
-            if stationNumber in self.historicStationList:
-                return self.getHistoricalStation(stationNumber).stationInformation
+    def getStationInfo(self, station_number:str) -> dict:
+        if self.isStationPresent(station_number):
+            if station_number in self.historicStationList:
+                return self.getHistoricalStation(station_number).stationInformation
             else:
-                return self.getRealTimeStation(stationNumber).stationInformation
+                return self.getRealTimeStation(station_number).stationInformation
         else:
-            raise AttributeError('Station not in the station list')
+            raise AttributeError('Station {} not in the station list'.format(station_number))
 
     def getStationCoordinates(self, stationNumber) -> tuple:
         if self.isStationPresent(stationNumber):
@@ -106,9 +108,9 @@ if __name__ == '__main__':
     webStation.getStationsForProvince('New Brunswick')
 
     for station in webStation.historicStationList.items():
-        for name in ['pollet','apoha', 'petitco']:
-            if  name in station[1].lower():
-                print("="*25)
+        for name in ['pollet', 'apoha', 'petitco']:
+            if name in station[1].lower():
+                print("=" * 25)
                 print(station)
                 print(webStation.getStationInfo(station[0]))
                 break
