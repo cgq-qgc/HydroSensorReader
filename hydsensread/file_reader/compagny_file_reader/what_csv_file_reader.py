@@ -15,7 +15,7 @@ from hydsensread.file_reader.abstract_file_reader import TimeSeriesFileReader, d
     geographical_coordinates, StreamFlowStation
 
 WHAT_METEO_FILES_HEADER_LENGTH = 10
-WHAT_WATER_LEVEL_FILES_HEADER_LENGTH = 8
+WHAT_WATER_LEVEL_FILES_HEADER_LENGTH = 10
 WHAT_STREAM_FLOW_STATION_HEADER_LENGTH = 19
 
 station_possible = Union[StationSite, StreamFlowStation]
@@ -192,12 +192,12 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     path = os.getcwd()
-    while os.path.split(path)[1] != "hydsensread":
-        path = os.path.split(path)[0]
-    file_loc = os.path.join(path, 'file_example')
-
+    #while os.path.split(path)[1] != "hydsensread":
+    #    path = os.path.split(path)[0]
+    #file_loc = os.path.join(path, 'file_example')
+    file_loc = "C:\\Users\\Laptop\\PycharmProjects\\qc_serie_temporelle\\input_files\\Waterlvl"
     # POUR LES STATIONS PIEZOMETRIQUE
-    files = "Brome (03030011).csv"
+    files = "Elgin (03090019).csv"
     # POUR LES STATION HYDROMETRIQUE
     # files = "011704_1972-1974.csv"
 
@@ -207,9 +207,11 @@ if __name__ == '__main__':
     level = WhatWaterLevelDataFileReader(file_location)
 
     print(level.sites.site_name)
-
-    params = [t for t in level.sites.get_records]
-    print(level.records)
-    print(level.records.describe())
-    level.plot(dpi=300)
-    plt.show(block=True)
+    print(level.sites.other_identifier)
+    #params = [t for t in level.sites.get_records]
+    #print(params)
+    #for date, val in zip(level.sites.records['Water level_masl'].index, level.sites.get_time_serie_by_param('Water level_masl')):
+    #    print(date, val)
+    #print(level.records.describe())
+    #level.plot(dpi=300)
+    #plt.show(block=True)
