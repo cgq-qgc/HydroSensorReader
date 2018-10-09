@@ -11,13 +11,13 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 
-This project aim to provide a simple way to read a scientific file provided by any
-kind of probe, sensor, or anything used specificly in hydrogeology.
+This project aims to provide a simple way to read scientific files produced by
+any kind of probe, sensor, or anything used specifically in hydrogeology.
 
 ## Installation
 
 You can directly install this package with the command:
-` pip install HydroSensorReader`.
+`pip install HydroSensorReader`.
 
 After the installation, you can use the package by using 
 ```python
@@ -55,8 +55,6 @@ r = hsr.XSLMaxxamFileReader(file_path)
 # These data scrappers use the station name.
 station = 'StationName'
 r = hsr.GNBWaterQualityStation(station)
-
-
 ```
 
 
@@ -73,21 +71,23 @@ r = hsr.GNBWaterQualityStation(station)
 
 
 
-##Main package definition
+## Main package definition
 
 ### `file_reader`
 
-Implementation of diffenrents files readers. _Each python files contain a main laucher to the the class._
+Implementation of different file readers.
+_Each python file contains a main launcher to the class._
 
 * __compagny_file_reader__
 _- Reader of generated files comming from different probes or labs._
 * __web_page_reader__
-_- Web crawlers in charge of extracting the datas from web sites_
+_- Web crawlers in charge of extracting data from web sites_
 
 ### `file_parser`
 
 
-This package contain the classes responsible of the different files reading. More information abouts these package is available into them
+This package contains the classes in charge of reading the different files.
+More information about these packages is available in the code.
 * __abstract_file_parser.py__
     * __AbstractFileParser__
     _- Abstract class used as an interface to implement the others_
@@ -99,31 +99,30 @@ This package contain the classes responsible of the different files reading. Mor
 
 ### `site_and_records`
 
-This package contain classes defining the domain elements and carry the data describing them
+This package contains classes defining the domain elements and the data describing them
 * __site.py__
     * __Site__
         _- A basic site class with the site name a the visited date_
     * __SensorPlateform__
-        _- A Plateform is an that can take measurement as
-                                 a standalone object_
+        _- A Plateform is an object that can take measurements as a standalone object_
     * __Sample__
         _- Sample as an object manipulated by a laboratory_
     * __StationSite__ - Modelisation of a station object
     * __StreamFlowStation__ - This specialized class was created to store the information of the [ECCC website](http://climate.weather.gc.ca/historical_data/search_historic_data_e.html)
 * __records.py__
-    * __Parameter__ - Class acting as a structure to store parameter (what is observed) and its associated unit
+    * __Parameter__ - Class acting as a structure to store a parameter value (what is observed) and its associated unit
     * __Record__ 
-    _- A record must have a date, a parameter, an unit and a value._
+    _- A record must have a date, a parameter, a unit, and a value._
     * __TimeSeriesRecords__ 
-    _- The record_date correspond to the first date of the values list. Values are stored as a Dict as following :_
+    _- The record_date corresponds to the first date of the list of values. Values are stored as a Dict as follows :_
         - { date1: value1, date2: value2,...}
     * __ChemistryRecord__
-    _-A chemistry record have a detection limit a report date and an analysis type and all the attributes of a __Record___
+    _-A chemistry record has a detection limit, a report date, an analysis type and all the attributes of a __Record___
         
 ### `file_example`
 
 
-You have several files examples in this folder used a tests
+This folder contains several examples of files for testing.
     
     
 ## Work To Do
@@ -131,7 +130,7 @@ You have several files examples in this folder used a tests
 -   Add a `.LAS` reader to take care of __borehole geophysics__ files
 -   Add a `.LAS` reader to take care of __LiDar__ data
 -   Create a Strategy class so you can input a file and the strategy class select the correct `file_reader` class
--   Continue documentation...always...
+-   Continue documentation... always...
 
     
 
