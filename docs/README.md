@@ -12,7 +12,7 @@
 
 
 This project aims to provide a simple way to read scientific files produced by
-any kind of probe, sensor, or anything used specifically in hydrogeology.
+any kind of probe, sensor, or anything used in hydrogeology.
 
 ## Installation
 
