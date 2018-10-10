@@ -9,7 +9,7 @@ import bs4
 import datetime
 import requests
 from re import search, split
-from gc_hydrometricdata.web_crawler.abstractstation import AbstractHydrometricStation
+from hydsensread.file_reader.web_page_reader.gc_hydrometric_weather_data.web_crawler.abstractstation import AbstractHydrometricStation
 
 
 HISTORICAL_STATION_DATA = "https://eau.ec.gc.ca/report/historical_e.html"

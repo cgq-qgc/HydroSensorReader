@@ -5,10 +5,10 @@ __date__ = '2017-01-23'
 __description__ = " "
 __version__ = '1.0'
 
-from gc_hydrometricdata.web_crawler.abstractstation import AbstractHydrometricStation
-from gc_hydrometricdata.web_crawler.hydrometric_station import HistoricalHydrometricStation, RealTimeHydrometricStation
-from gc_hydrometricdata.web_crawler.station_list import *
-
+from hydsensread.file_reader.web_page_reader.gc_hydrometric_weather_data.web_crawler.abstractstation import AbstractHydrometricStation
+from hydsensread.file_reader.web_page_reader.gc_hydrometric_weather_data.web_crawler import HistoricalHydrometricStation, RealTimeHydrometricStation
+from hydsensread.file_reader.web_page_reader.gc_hydrometric_weather_data.web_crawler import RealTimeHydrometricStationList, HistoricalHydrometricStationList
+from hydsensread.file_reader.web_page_reader.gc_hydrometric_weather_data.web_crawler import HISTORICAL_DATA_KEY, REAL_TIME_DATA_KEY
 import requests.packages.urllib3
 
 requests.packages.urllib3.disable_warnings()
