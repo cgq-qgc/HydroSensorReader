@@ -38,33 +38,35 @@ class AbstractHydrometricStation(AbstractStation, metaclass=ABCMeta):
         self.getStationInfo()
 
     def getStationInfo(self):
-        if self.dataURL == None:
+        if self.dataURL is None:
             raise AttributeError('invalid dataURL')
-        r = requests.get(self.dataURL,
-                         params={'stn': self.stationNumber},
-                         cookies={'disclaimer': 'agree'},
-                         verify=False)
-        stationDataInWebSite = bs4.BeautifulSoup(r.text, "html.parser")
+        if self.stationInformation is None:
+            r = requests.get(self.dataURL,
+                             params={'stn': self.stationNumber},
+                             cookies={'disclaimer': 'agree'},
+                             verify=False)
+            stationDataInWebSite = bs4.BeautifulSoup(r.text, "html.parser")
 
-        station_information = {}
-        currentWebID = ""
-        for ele in stationDataInWebSite.find('div', {'class': 'metadata'}) \
-                .find_all('div', {'class': 'col-md-6 col-sm-6 col-xs-6'}):
-            try:
-                # get the row id
-                currentWebID = ele['id']
-            except KeyError:
-                # if no ID on the row, take the data
-                if ele['aria-labelledby'] == currentWebID:
-                    # transform location data from deg, min,sec to deg
-                    if len(ele.contents) > 2:
-                        station_information[currentWebID] = float(ele.contents[0]) + \
-                                                            float(ele.contents[2].string) / 60 + \
-                                                            float(ele.contents[4].string) / 3600
-                    else:
-                        station_information[currentWebID] = ele.contents[0].string
-        self.stationInformation = station_information
+            station_information = {}
+            currentWebID = ""
+            for ele in stationDataInWebSite.find('div', {'class': 'metadata'}) \
+                    .find_all('div', {'class': 'col-md-6 col-sm-6 col-xs-6'}):
+                try:
+                    # get the row id
+                    currentWebID = ele['id']
+                except KeyError:
+                    # if no ID on the row, take the data
+                    if ele['aria-labelledby'] == currentWebID:
+                        # transform location data from deg, min,sec to deg
+                        if len(ele.contents) > 2:
+                            station_information[currentWebID] = float(ele.contents[0]) + \
+                                                                float(ele.contents[2].string) / 60 + \
+                                                                float(ele.contents[4].string) / 3600
+                        else:
+                            station_information[currentWebID] = ele.contents[0].string
 
+            self.stationInformation = station_information
+        return self.stationInformation
     @property
     def coordinates(self):
         return (self.stationInformation['latitude'], self.stationInformation['longitude'])
