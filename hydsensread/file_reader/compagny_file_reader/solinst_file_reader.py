@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 __author__ = 'Laptop$'
 __date__ = '2017-07-16$'
 __description__ = " "
-__version__ = '1.0'
+__version__ = '1.3'
 
 import datetime
 import re
