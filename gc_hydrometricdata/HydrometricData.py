@@ -107,26 +107,29 @@ if __name__ == '__main__':
     webStation = HydrometricDataInterface()
     webStation.getStationsForProvince('New Brunswick')
 
-    for station in webStation.historicStationList.items():
-        for name in ['pollet', 'apoha', 'petitco']:
-            if name in station[1].lower():
-                print("=" * 25)
-                print(station)
-                print(webStation.getStationInfo(station[0]))
-                break
+    # for station in webStation.historicStationList.items():
+    #     for name in ['pollet', 'apoha', 'petitco']:
+    #         if name in station[1].lower():
+    #             print("=" * 25)
+    #             print(station)
+    #             print(webStation.getStationInfo(station[0]))
+    #             break
 
-    stationName = "01BF004"
+    stationName = "01BU001"
     print("=" * 15)
     print("Example of how to use the interface")
     print("=" * 15)
     print("getting station info")
     print(webStation.getStationInfo(stationName))
     print("=" * 15)
-    # print("getting station coordinates")
-    # print("=" * 15)
-    # print(webStation.getStationCoordinates(stationName))
-    # print("=" * 15)
-    # print("getting station data")
-    # print("=" * 15)
+    print("getting station coordinates")
+    print("=" * 15)
+    print(webStation.getStationCoordinates(stationName))
+    print("=" * 15)
+    print("getting station data")
+    print("=" * 15)
     # webStation.getHistoricalStation(stationName).getData()
     # print(webStation.getHistoricalStation(stationName).data)
+    # print(webStation.realTimeStationList.keys())
+    for i,j in zip(range(4),webStation.realTimeStationList.keys()):
+        print(webStation.getRealTimeStation(j).getStationInfo())
