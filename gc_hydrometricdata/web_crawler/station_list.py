@@ -185,7 +185,7 @@ class WeatherStationList(StationList):
                          if int(v['value']) in [1, 2]] != []:
                     stationID = item.find('input', {'name': 'StationID'})['value']
                     self._webSiteContent['station_list'][stationID] = {}
-
+                    print('Station ID',stationID)
                 item = item.find_next('form', {'action': '/climate_data/interform_e.html'})
 
 
