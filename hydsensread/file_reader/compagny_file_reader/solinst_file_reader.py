@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 __author__ = 'Laptop$'
 __date__ = '2017-07-16$'
 __description__ = " "
-__version__ = '1.0'
+__version__ = '1.3'
 
 import datetime
 import re
@@ -57,24 +57,41 @@ class SolinstFileReader(TimeSeriesFileReader):
     def _read_file_data(self):
         pass
 
-    def plot(self, other_axis: List[LineDefinition] = list(), reformat_temp=True, *args, **kwargs) -> Tuple[
-        plt.Figure, List[plt.Axes]]:
+    def plot(self, other_axis: List[LineDefinition] = list(),
+             reformat_temperature=True, *args, **kwargs) -> \
+            Tuple[plt.Figure, List[plt.Axes]]:
+        """
+        Plot function overriding the TimeSeriesFileReader method.
+        :param other_axis: if other axis needs to be added to the plot, use this parameter
+        :param reformat_temperature: if the temperature axis needs to be reformated or not.
+        :param args:
+        :param kwargs:
+        :return:
+        """
         temperature_line_def = LineDefinition('TEMPERATURE_°C', 'red')
         temperature_values = self.records['TEMPERATURE_°C']
         all_axis = other_axis
-        if len(other_axis) == 0:
-            level_param = [i for i in solinst_file.records.dtypes.index if 'TEMP' not in i]
+        # This part produce the axis to be plotted
+        if len(all_axis) == 0:
+            # Get the records for the current station
+            level_param = [
+                i for i in self.records.dtypes.index if 'TEMP' not in i]
             if len(level_param) > 0:
-                colors = ['blue', 'orange', 'green', 'purple', 'black', 'brown', 'darkorange', 'cyan']
+                colors = ['blue', 'orange', 'green', 'purple', 'black',
+                          'brown', 'darkorange', 'cyan']
                 for color_index, param in enumerate(level_param):
                     if color_index > len(colors):
                         color_index = color_index - len(colors)
-                    level_line_def = LineDefinition(param, colors[color_index], make_grid=True)
+                    level_line_def = LineDefinition(param, colors[color_index],
+                                                    make_grid=True)
                     all_axis.append(level_line_def)
-        fig, axis = super().plot(temperature_line_def, all_axis, *args, **kwargs)
-
-        if len([i for i in solinst_file.records.dtypes.index if 'kpa' in i.lower()]) == 0 and reformat_temp:
-            axis[0].set_ylim(temperature_values.mean() - 1, temperature_values.mean() + 1)
+        fig, axis = super().plot(temperature_line_def, all_axis,
+                                 *args, **kwargs)
+        # This is for barometric data.
+        n = len([i for i in self.records.dtypes.index if 'kpa' in i.lower()])
+        if n == 0 and reformat_temperature:
+            axis[0].set_ylim(temperature_values.mean() - 1,
+                             temperature_values.mean() + 1)
         return fig, axis
 
 
@@ -394,9 +411,10 @@ if __name__ == '__main__':
     file_loc = os.path.join(path, 'file_example')
 
     teste_all = True
-
+    file_loc = "C:\\Users\\Laptop\\Documents\\McCully_slugTest_XM20180608"
     if teste_all:
-        file_name = "F21_logger_20160224_20160621.csv"
+        # file_name = "F21_logger_20160224_20160621.csv"
+        file_name = "PO-12_slug_3_XM20180608.lev"
         # file_name = "slug_PO-05_20160729_1600.csv"
         # file_name = "2029499_F7_NordChamp_PL20150925_2015_09_25.xle"
         # file_name = "2041929_PO-06_XM20170307_2017_03_07.lev"
@@ -412,5 +430,5 @@ if __name__ == '__main__':
         print(solinst_file.sites)
         print(solinst_file.records)
         # print(len([i for i in solinst_file.records.dtypes.index if 'kpa' in i.lower()]) > 0)
-        solinst_file.plot(reformat_temp=False)
+        solinst_file.plot(reformat_temperature=False)
         plt.show(block=True)
