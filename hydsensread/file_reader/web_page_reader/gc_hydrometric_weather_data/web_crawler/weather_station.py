@@ -6,10 +6,7 @@ __description__ = " "
 __version__ = '1.0'
 
 import bs4
-import datetime
 import requests
-from re import search, split
-from gc_hydrometricdata.web_crawler.abstractstation import AbstractWeatherStation
 
 # WIP
 
