@@ -210,6 +210,15 @@ class TimeSeriesFileReader(AbstractFileReader):
     def plot(self, main_axis_def: LineDefinition, other_axis: List[LineDefinition], legend_loc='upper left', *args,
              **kwargs) \
             -> Tuple[plt.Figure, List[plt.Axes]]:
+        """
+
+        :param main_axis_def:
+        :param other_axis:
+        :param legend_loc:
+        :param args:
+        :param kwargs:
+        :return:
+        """
         fig, main_axis = plt.subplots(figsize=(20, 10))
 
         main_axis = self._add_first_axis(main_axis, main_axis_def)
