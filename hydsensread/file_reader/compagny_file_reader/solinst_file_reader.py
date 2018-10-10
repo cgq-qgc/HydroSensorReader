@@ -57,7 +57,8 @@ class SolinstFileReader(TimeSeriesFileReader):
     def _read_file_data(self):
         pass
 
-    def plot(self, other_axis: List[LineDefinition] = list(), reformat_temperature=True, *args, **kwargs) -> \
+    def plot(self, other_axis: List[LineDefinition] = list(),
+             reformat_temperature=True, *args, **kwargs) -> \
             Tuple[plt.Figure, List[plt.Axes]]:
         """
         Plot function overriding the TimeSeriesFileReader method.
@@ -70,21 +71,27 @@ class SolinstFileReader(TimeSeriesFileReader):
         temperature_line_def = LineDefinition('TEMPERATURE_°C', 'red')
         temperature_values = self.records['TEMPERATURE_°C']
         all_axis = other_axis
-        # this part produce the axis to be plotted
+        # This part produce the axis to be plotted
         if len(all_axis) == 0:
-            # get the records for the current station
-            level_param = [i for i in solinst_file.records.dtypes.index if 'TEMP' not in i]
+            # Get the records for the current station
+            level_param = [
+                i for i in self.records.dtypes.index if 'TEMP' not in i]
             if len(level_param) > 0:
-                colors = ['blue', 'orange', 'green', 'purple', 'black', 'brown', 'darkorange', 'cyan']
+                colors = ['blue', 'orange', 'green', 'purple', 'black',
+                          'brown', 'darkorange', 'cyan']
                 for color_index, param in enumerate(level_param):
                     if color_index > len(colors):
                         color_index = color_index - len(colors)
-                    level_line_def = LineDefinition(param, colors[color_index], make_grid=True)
+                    level_line_def = LineDefinition(param, colors[color_index],
+                                                    make_grid=True)
                     all_axis.append(level_line_def)
-        fig, axis = super().plot(temperature_line_def, all_axis, *args, **kwargs)
-        # this is for barometric data.
-        if len([i for i in solinst_file.records.dtypes.index if 'kpa' in i.lower()]) == 0 and reformat_temperature:
-            axis[0].set_ylim(temperature_values.mean() - 1, temperature_values.mean() + 1)
+        fig, axis = super().plot(temperature_line_def, all_axis,
+                                 *args, **kwargs)
+        # This is for barometric data.
+        n = len([i for i in self.records.dtypes.index if 'kpa' in i.lower()])
+        if n == 0 and reformat_temperature:
+            axis[0].set_ylim(temperature_values.mean() - 1,
+                             temperature_values.mean() + 1)
         return fig, axis
 
 
