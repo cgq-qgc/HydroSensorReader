@@ -73,7 +73,8 @@ class SolinstFileReader(TimeSeriesFileReader):
         # this part produce the axis to be plotted
         if len(all_axis) == 0:
             # get the records for the current station
-            level_param = [i for i in solinst_file.records.dtypes.index if 'TEMP' not in i]
+            level_param = [
+                i for i in self.records.dtypes.index if 'TEMP' not in i]
             if len(level_param) > 0:
                 colors = ['blue', 'orange', 'green', 'purple', 'black', 'brown', 'darkorange', 'cyan']
                 for color_index, param in enumerate(level_param):
@@ -83,8 +84,8 @@ class SolinstFileReader(TimeSeriesFileReader):
                     all_axis.append(level_line_def)
         fig, axis = super().plot(temperature_line_def, all_axis, *args, **kwargs)
         # this is for barometric data.
-        if len([i for i in solinst_file.records.dtypes.index if 'kpa' in i.lower()]) == 0 and reformat_temperature:
-            axis[0].set_ylim(temperature_values.mean() - 1, temperature_values.mean() + 1)
+        n = len([i for i in self.records.dtypes.index if 'kpa' in i.lower()])
+        if n == 0 and reformat_temperature:
         return fig, axis
 
 
