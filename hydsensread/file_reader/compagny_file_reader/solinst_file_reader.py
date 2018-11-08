@@ -42,7 +42,6 @@ class SolinstFileReader(TimeSeriesFileReader):
             self.__main_reader = XLESolinstFileReader(self._file)
         else:
             warnings.warn("Unknown file extension for this compagny")
-        print(self.__main_reader)
         self._site_of_interest = self.__main_reader._site_of_interest
 
     def read_file(self):
