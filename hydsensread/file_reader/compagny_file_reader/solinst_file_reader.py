@@ -15,7 +15,8 @@ from typing import List, Tuple
 
 from pandas import Timestamp
 
-from hydsensread.file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
+from hydsensread.file_reader.abstract_file_reader import (
+    TimeSeriesFileReader, date_list, LineDefinition)
 
 
 class SolinstFileReader(TimeSeriesFileReader):
