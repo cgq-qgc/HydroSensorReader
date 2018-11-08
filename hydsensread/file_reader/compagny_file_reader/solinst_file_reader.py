@@ -20,8 +20,10 @@ from hydsensread.file_reader.abstract_file_reader import (
 
 
 class SolinstFileReader(TimeSeriesFileReader):
-    def __init__(self, file_path: str = None, header_length: int = 10):
-        super().__init__(file_path, header_length, encoding='cp1252', wait_read=True)
+    def __init__(self, file_path: str = None, header_length: int = 10,
+                 wait_read: bool = False):
+        super().__init__(file_path, header_length, encoding='cp1252',
+                         wait_read=True)
         self.__main_reader = None
         self.__set_reader()
 
