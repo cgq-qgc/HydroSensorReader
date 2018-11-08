@@ -181,11 +181,15 @@ class AbstractFileReader(object, metaclass=ABCMeta):
 
 
 class TimeSeriesFileReader(AbstractFileReader):
-    def __init__(self, file_path: str = None, header_length: int = 10, encoding='utf8', wait_read=False):
-        super().__init__(file_path, header_length, encoding=encoding, wait_read=wait_read)
+    def __init__(self, file_path: str = None, header_length: int = 10,
+                 encoding='utf8', wait_read: bool = False):
+        super().__init__(file_path, header_length, encoding=encoding,
+                         wait_read=wait_read)
         self._site_of_interest = SensorPlateform()
         self._date_list = []
         self.header_content = {}
+        if not wait_read:
+            self.read_file()
 
     @property
     def time_series_dates(self):
