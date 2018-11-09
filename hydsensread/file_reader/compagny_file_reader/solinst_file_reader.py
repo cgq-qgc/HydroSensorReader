@@ -346,22 +346,28 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
         self._date_list = self._get_date_list()
 
     def _get_file_header_data(self):
-        i = 0
-        while i < self._header_length:
-            current_line = self.file_content[i][0]
-            if re.search(r"[sS]erial.number.*", current_line):
-                i += 1
-                current_line = self.file_content[i][0]
-                self._site_of_interest.instrument_serial_number = current_line
-            if re.search(r"[pP]roject.[idID].*", current_line):
-                i += 1
-                current_line = self.file_content[i][0]
-                self._site_of_interest.project_name = current_line
-            if re.search(r"[lL]ocation.*", current_line):
-                i += 1
-                current_line = self.file_content[i][0]
-                self._site_of_interest.site_name = current_line
-            i += 1
+        """
+        Retrieve metadata from the header and determine the lenght of the
+        header.
+        """
+        # Retrieve the info from the data header.
+        for i, line in enumerate(self.file_content):
+            line = ''.join(line)
+            if re.search(r"[sS]erial.[nN]umber.*", line):
+                self._site_of_interest.instrument_serial_number = (
+                    self.file_content[i + 1][0].strip())
+            elif re.search(r"[pP]roject.[idID].*", line):
+                self._site_of_interest.project_name = (
+                    self.file_content[i + 1][0].strip())
+            elif re.search(r"[lL]ocation.*", line):
+                self._site_of_interest.site_name = (
+                    self.file_content[i + 1][0].strip())
+            elif 'Date' in line and 'Time' in line:
+                self._start_of_data_row_index = i
+                self._header_length = i
+                break
+        else:
+            raise TypeError("The data are not formatted correctly.")
 
     def _get_date_list(self) -> list:
         date_times = []
