@@ -346,7 +346,7 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
         i = 0
         while i < self._header_length:
             current_line = self.file_content[i][0]
-            if re.search(r"[sS]erial.number.*]", current_line):
+            if re.search(r"[sS]erial.number.*", current_line):
                 i += 1
                 current_line = self.file_content[i][0]
                 self._site_of_interest.instrument_serial_number = current_line
