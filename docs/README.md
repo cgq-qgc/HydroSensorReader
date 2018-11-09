@@ -8,8 +8,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/2818f21a4dcd493a83aeb8aa83885395)](https://www.codacy.com/app/maletxa/HydroSensorReader?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=x-malet/HydroSensorReader&amp;utm_campaign=Badge_Grade)
 [![Documentation Status](https://readthedocs.org/projects/hydrosensorreader/badge/?version=latest)](http://hydrosensorreader.readthedocs.io/en/latest/?badge=latest)
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 This project aims to provide a simple way to read scientific files produced by
 any kind of probe, sensor, or anything used in hydrogeology.
