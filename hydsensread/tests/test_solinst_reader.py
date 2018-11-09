@@ -23,7 +23,7 @@ def test_files_dir():
     'testfile',
     ["2XXXXXX_solinst_levelogger_edge_testfile.csv",
      "2XXXXXX_solinst_levelogger_edge_testfile.xle"])
-def test_solinst_levelogger_edge_csv(test_files_dir, testfile):
+def test_solinst_levelogger_edge(test_files_dir, testfile):
     """Test reading Solinst Edge Levelogger files."""
 
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
