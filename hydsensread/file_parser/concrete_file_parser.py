@@ -163,9 +163,12 @@ class EXCELFileParser(AbstractFileParser):
 
 
 class XMLFileParser(AbstractFileParser):
-    def __init__(self, file_path: str = None, header_length: int = None):
+    def __init__(self, file_path: str = None, header_length: int = None,
+                 encoding: str = 'iso-8859-1'):
         super().__init__(file_path, header_length)
-        self._file_content = ET.parse(open(self._file))
+        self._encoding = encoding
+        self._file_content = ET.parse(open(
+            self._file, encoding=self._encoding))
 
     def read_file(self):
         pass
