@@ -370,27 +370,23 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
             raise TypeError("The data are not formatted correctly.")
 
     def _get_date_list(self) -> list:
-        date_times = []
-        cells_to_check = 2
-        # "{} {}:{}".format(_data.Date.string,
-        #                   _data.Time.string,
-        #                   _data.ms.string),
-        date_format_string = "{} {}"
-        strptime_string = self.YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT
-        if 'ms' in self.file_content[self._start_of_data_row_index]:
-            cells_to_check += 1
-            strptime_string = self.YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT
-            date_format_string += ".{}"
-        for line in self.file_content[self._start_of_data_row_index + 1:]:
-            _date_datetime = None
-            try:
-                _date_datetime = Timestamp(date_format_string.format(*line[:cells_to_check]))
-            except ValueError as e:
-                # warnings.warn('bad datetime format string. date string = '+ str(line[:cells_to_check]), e)
-                raise e
+        """Retrieve the datetime data from the file content."""
+        data_header = self.file_content[self._start_of_data_row_index]
+        istart = data_header.index('Date')
+        iend = istart + 1
+        fmt = "{} {}"
+        if 'ms' in ''.join(data_header):
+            iend += 1
+            fmt += ".{}"
 
-            date_times.append(_date_datetime)
-        return date_times
+        datetimes = []
+        for line in self.file_content[self._start_of_data_row_index + 1:]:
+            try:
+                _datetime = Timestamp(fmt.format(*line[istart:iend + 1]))
+            except ValueError:
+                break
+            datetimes.append(_datetime)
+        return datetimes
 
     def _get_parameter_data(self):
         """
