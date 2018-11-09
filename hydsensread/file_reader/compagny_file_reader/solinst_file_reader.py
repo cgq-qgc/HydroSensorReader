@@ -324,7 +324,6 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
                  wait_read: bool = False):
         self._params_dict = defaultdict(dict)
         self._start_of_data_row_index = header_length
-        self._header_length = header_length
         super().__init__(file_path, header_length, wait_read=wait_read)
 
     def _read_file_header(self):
