@@ -64,13 +64,14 @@ class AbstractFileReader(object, metaclass=ABCMeta):
                  encoding='utf8',
                  wait_read=False):
         """
-
         :param file_path: path to the file to treat
         :param header_length: header length
         :param request_params: request parameter for web element
         :param encoding: encoding type :default = 'utf-8'
-        :param wait_read: if wait_read is False, will wait to read the file content. This is usefull for hierarchi-class
-        see file_reader.compagny_file_reader.solinst_file_reader.py for an example
+        :param wait_read: if wait_read is True, will wait to read the file
+        content. This is usefull for hierarchi-class.
+        See file_reader.compagny_file_reader.solinst_file_reader.py
+        for an example
         """
         self.request_params = request_params
         self._file = file_path
