@@ -15,16 +15,19 @@ from typing import List, Tuple
 
 from pandas import Timestamp
 
-from hydsensread.file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition
+from hydsensread.file_reader.abstract_file_reader import (
+    TimeSeriesFileReader, date_list, LineDefinition)
 
 
 class SolinstFileReader(TimeSeriesFileReader):
-    def __init__(self, file_path: str = None, header_length: int = 10):
-        super().__init__(file_path, header_length, encoding='cp1252', wait_read=True)
+    def __init__(self, file_path: str = None, header_length: int = 10,
+                 wait_read: bool = False):
+        super().__init__(file_path, header_length, encoding='cp1252',
+                         wait_read=True)
         self.__main_reader = None
-        self.__set_reader()
+        self.__set_reader(wait_read)
 
-    def __set_reader(self):
+    def __set_reader(self, wait_read):
         """
         set the correct file reader for the solinst file
         :return:
@@ -32,14 +35,16 @@ class SolinstFileReader(TimeSeriesFileReader):
         file_ext = self.file_extension
 
         if file_ext in self.CSV_FILES_TYPES:
-            self.__main_reader = CSVSolinstFileReader(self._file)
+            self.__main_reader = CSVSolinstFileReader(
+                self._file, wait_read=wait_read)
         elif file_ext == 'lev':
-            self.__main_reader = LEVSolinstFileReader(self._file)
+            self.__main_reader = LEVSolinstFileReader(
+                self._file, wait_read=wait_read)
         elif file_ext == 'xle':
-            self.__main_reader = XLESolinstFileReader(self._file)
+            self.__main_reader = XLESolinstFileReader(
+                self._file, wait_read=wait_read)
         else:
             warnings.warn("Unknown file extension for this compagny")
-        print(self.__main_reader)
         self._site_of_interest = self.__main_reader._site_of_interest
 
     def read_file(self):
@@ -98,15 +103,16 @@ class SolinstFileReader(TimeSeriesFileReader):
 class LEVSolinstFileReader(TimeSeriesFileReader):
     DATA_CHANNEL_STRING = ".*CHANNEL {} from data header.*"
 
-    def __init__(self, file_path: str = None, header_length: int = 10):
-        super().__init__(file_path, header_length, encoding='cp1252')
-        self._update_header_lentgh()
-        self._date_list = self._get_date_list()
+    def __init__(self, file_path: str = None, header_length: int = 10,
+                 wait_read: bool = False):
+        super().__init__(file_path, header_length, encoding='cp1252',
+                         wait_read=wait_read)
 
     def _read_file_header(self):
         """
         implementation of the base class abstract method
         """
+        self._update_header_lentgh()
         self._update_plateform_attributes()
 
     def _read_file_data(self):
@@ -119,7 +125,7 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
         """
         implementation of the base class abstract method
         """
-        pass
+        self._date_list = self._get_date_list()
 
     def _update_plateform_attributes(self):
         self._site_of_interest.visit_date = self._create_visited_date()
@@ -206,9 +212,14 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
 class XLESolinstFileReader(TimeSeriesFileReader):
     CHANNEL_DATA_HEADER = "Ch{}_data_header"
 
-    def __init__(self, file_path: str = None, header_length: int = 10):
-        super().__init__(file_path, header_length)
+    def __init__(self, file_path: str = None, header_length: int = 10,
+                 wait_read: bool = False):
+        super().__init__(file_path, header_length, wait_read=wait_read)
+
+    def read_file(self):
+        """Extension of the base class abstract method."""
         self.file_root = self.file_content.getroot()
+        super().read_file()
 
     def _read_file_header(self):
         """
@@ -309,10 +320,12 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
     UNIT = 'unit'
     PARAMETER_COL_INDEX = 'col_index'
 
-    def __init__(self, file_path: str = None, header_length: int = 12):
-        super().__init__(file_path, header_length)
+    def __init__(self, file_path: str = None, header_length: int = 12,
+                 wait_read: bool = False):
         self._params_dict = defaultdict(dict)
-        self._start_of_data_row_index = 0
+        self._start_of_data_row_index = header_length
+        self._header_length = header_length
+        super().__init__(file_path, header_length, wait_read=wait_read)
 
     def _read_file_header(self):
         """
@@ -337,7 +350,7 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
         i = 0
         while i < self._header_length:
             current_line = self.file_content[i][0]
-            if re.search(r"[sS]erial.number.*]", current_line):
+            if re.search(r"[sS]erial.number.*", current_line):
                 i += 1
                 current_line = self.file_content[i][0]
                 self._site_of_interest.instrument_serial_number = current_line

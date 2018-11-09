@@ -64,13 +64,14 @@ class AbstractFileReader(object, metaclass=ABCMeta):
                  encoding='utf8',
                  wait_read=False):
         """
-
         :param file_path: path to the file to treat
         :param header_length: header length
         :param request_params: request parameter for web element
         :param encoding: encoding type :default = 'utf-8'
-        :param wait_read: if wait_read is False, will wait to read the file content. This is usefull for hierarchi-class
-        see file_reader.compagny_file_reader.solinst_file_reader.py for an example
+        :param wait_read: if wait_read is True, will wait to read the file
+        content. This is usefull for hierarchi-class.
+        See file_reader.compagny_file_reader.solinst_file_reader.py
+        for an example
         """
         self.request_params = request_params
         self._file = file_path
@@ -181,11 +182,15 @@ class AbstractFileReader(object, metaclass=ABCMeta):
 
 
 class TimeSeriesFileReader(AbstractFileReader):
-    def __init__(self, file_path: str = None, header_length: int = 10, encoding='utf8', wait_read=False):
-        super().__init__(file_path, header_length, encoding=encoding, wait_read=wait_read)
+    def __init__(self, file_path: str = None, header_length: int = 10,
+                 encoding='utf8', wait_read: bool = False):
+        super().__init__(file_path, header_length, encoding=encoding,
+                         wait_read=wait_read)
         self._site_of_interest = SensorPlateform()
         self._date_list = []
         self.header_content = {}
+        if not wait_read:
+            self.read_file()
 
     @property
     def time_series_dates(self):
