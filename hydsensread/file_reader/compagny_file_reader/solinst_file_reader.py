@@ -393,23 +393,25 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
         return date_times
 
     def _get_parameter_data(self):
-        row = 0
-        while row < self._header_length:
-            current_row = self.file_content[row]
-            if len(current_row) > 1 and (current_row[0].lower() == 'date'
-                                         and current_row[1].lower() == 'time'):
-                self._start_of_data_row_index = row
-                for i, cells in enumerate(current_row):
-                    if cells.lower() not in ['date', 'ms', 'time']:
-                        parameter = cells
-                        parameter_col_index = i
-                        for i in range(self._header_length):
-                            if self.file_content[i][0] == parameter:
-                                parameter_unit = self.file_content[i + 1][0].split(": ")[1]
-                                self._params_dict[parameter][self.UNIT] = parameter_unit
-                                self._params_dict[parameter][self.PARAMETER_COL_INDEX] = parameter_col_index
-                                break
-            row += 1
+        """
+        Retrieve the parameters name, units, and column index from the file
+        content.
+        """
+        data_header = self.file_content[self._start_of_data_row_index]
+        params = [p for p in data_header if p
+                  not in ('', 'Date', 'ms', '100 ms', 'Time')]
+        for i, row in enumerate(self.file_content[:self._header_length]):
+            if row[0] in params:
+                param = row[0]
+                self._params_dict[param][self.PARAMETER_COL_INDEX] = (
+                    data_header.index(param))
+                if "UNIT: " in self.file_content[i + 1][0]:
+                    # For Solinst Edge logger files.
+                    units = self.file_content[i + 1][0].split(": ")[1]
+                else:
+                    # For Solinst Gold logger files.
+                    units = self.file_content[i + 2][0]
+                self._params_dict[param][self.UNIT] = units
 
     def _get_data(self):
         for parameter in list(self._params_dict.keys()):
