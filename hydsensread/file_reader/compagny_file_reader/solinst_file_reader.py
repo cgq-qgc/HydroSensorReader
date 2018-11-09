@@ -215,7 +215,11 @@ class XLESolinstFileReader(TimeSeriesFileReader):
     def __init__(self, file_path: str = None, header_length: int = 10,
                  wait_read: bool = False):
         super().__init__(file_path, header_length, wait_read=wait_read)
+
+    def read_file(self):
+        """Extension of the base class abstract method."""
         self.file_root = self.file_content.getroot()
+        super().read_file()
 
     def _read_file_header(self):
         """
