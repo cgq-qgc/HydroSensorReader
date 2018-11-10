@@ -178,12 +178,17 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
         return int(self._get_instrument_info(r" *Channel *=.*"))
 
     def _get_date_list(self) -> List[datetime.datetime]:
+        """Retrieve the datetime data from the file content."""
+        sep = self.file_content[self._header_length + 1][4]
         datetime_list = []
         for lines in self.file_content[self._header_length + 1:-1]:
             sep_line = lines.split(" ")
-            _date_time = datetime.datetime.strptime("{} {}".format(sep_line[0],
-                                                                   sep_line[1]),
-                                                    self.YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT)
+            try:
+                _date_time = datetime.datetime.strptime(
+                    "{} {}".format(sep_line[0], sep_line[1]),
+                    '%Y{}%m{}%d %H:%M:%S.%f'.format(sep, sep))
+            except ValueError:
+                break
             datetime_list.append(_date_time)
         return datetime_list
 
