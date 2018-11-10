@@ -152,6 +152,8 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
             if re.search('^.data.*', lines.lower()):
                 self._header_length = i + 1
                 break
+        else:
+            raise TypeError("The data are not formatted correctly.")
 
     def _get_instrument_info(self, regex_: str) -> str:
         str_to_find = None
@@ -166,7 +168,7 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
 
     def _get_serial_number(self):
         serial_string = self._get_instrument_info(r".*(S|s)erial.number.*")
-        serial_numb = re.split(r"[ -]", serial_string)[1]
+        serial_numb = serial_string.split('-')[1].split(' ')[0]
         return serial_numb
 
     def _get_project_name(self):
@@ -176,12 +178,17 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
         return int(self._get_instrument_info(r" *Channel *=.*"))
 
     def _get_date_list(self) -> List[datetime.datetime]:
+        """Retrieve the datetime data from the file content."""
+        sep = self.file_content[self._header_length + 1][4]
         datetime_list = []
         for lines in self.file_content[self._header_length + 1:-1]:
             sep_line = lines.split(" ")
-            _date_time = datetime.datetime.strptime("{} {}".format(sep_line[0],
-                                                                   sep_line[1]),
-                                                    self.YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT)
+            try:
+                _date_time = datetime.datetime.strptime(
+                    "{} {}".format(sep_line[0], sep_line[1]),
+                    '%Y{}%m{}%d %H:%M:%S.%f'.format(sep, sep))
+            except ValueError:
+                break
             datetime_list.append(_date_time)
         return datetime_list
 
@@ -324,7 +331,6 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
                  wait_read: bool = False):
         self._params_dict = defaultdict(dict)
         self._start_of_data_row_index = header_length
-        self._header_length = header_length
         super().__init__(file_path, header_length, wait_read=wait_read)
 
     def _read_file_header(self):
@@ -347,64 +353,68 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
         self._date_list = self._get_date_list()
 
     def _get_file_header_data(self):
-        i = 0
-        while i < self._header_length:
-            current_line = self.file_content[i][0]
-            if re.search(r"[sS]erial.number.*", current_line):
-                i += 1
-                current_line = self.file_content[i][0]
-                self._site_of_interest.instrument_serial_number = current_line
-            if re.search(r"[pP]roject.[idID].*", current_line):
-                i += 1
-                current_line = self.file_content[i][0]
-                self._site_of_interest.project_name = current_line
-            if re.search(r"[lL]ocation.*", current_line):
-                i += 1
-                current_line = self.file_content[i][0]
-                self._site_of_interest.site_name = current_line
-            i += 1
+        """
+        Retrieve metadata from the header and determine the lenght of the
+        header.
+        """
+        # Retrieve the info from the data header.
+        for i, line in enumerate(self.file_content):
+            line = ''.join(line)
+            if re.search(r"[sS]erial.[nN]umber.*", line):
+                self._site_of_interest.instrument_serial_number = (
+                    self.file_content[i + 1][0].strip())
+            elif re.search(r"[pP]roject.[idID].*", line):
+                self._site_of_interest.project_name = (
+                    self.file_content[i + 1][0].strip())
+            elif re.search(r"[lL]ocation.*", line):
+                self._site_of_interest.site_name = (
+                    self.file_content[i + 1][0].strip())
+            elif 'Date' in line and 'Time' in line:
+                self._start_of_data_row_index = i
+                self._header_length = i
+                break
+        else:
+            raise TypeError("The data are not formatted correctly.")
 
     def _get_date_list(self) -> list:
-        date_times = []
-        cells_to_check = 2
-        # "{} {}:{}".format(_data.Date.string,
-        #                   _data.Time.string,
-        #                   _data.ms.string),
-        date_format_string = "{} {}"
-        strptime_string = self.YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT
-        if 'ms' in self.file_content[self._start_of_data_row_index]:
-            cells_to_check += 1
-            strptime_string = self.YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT
-            date_format_string += ".{}"
-        for line in self.file_content[self._start_of_data_row_index + 1:]:
-            _date_datetime = None
-            try:
-                _date_datetime = Timestamp(date_format_string.format(*line[:cells_to_check]))
-            except ValueError as e:
-                # warnings.warn('bad datetime format string. date string = '+ str(line[:cells_to_check]), e)
-                raise e
+        """Retrieve the datetime data from the file content."""
+        data_header = self.file_content[self._start_of_data_row_index]
+        istart = data_header.index('Date')
+        iend = istart + 1
+        fmt = "{} {}"
+        if 'ms' in ''.join(data_header):
+            iend += 1
+            fmt += ".{}"
 
-            date_times.append(_date_datetime)
-        return date_times
+        datetimes = []
+        for line in self.file_content[self._start_of_data_row_index + 1:]:
+            try:
+                _datetime = Timestamp(fmt.format(*line[istart:iend + 1]))
+            except ValueError:
+                break
+            datetimes.append(_datetime)
+        return datetimes
 
     def _get_parameter_data(self):
-        row = 0
-        while row < self._header_length:
-            current_row = self.file_content[row]
-            if len(current_row) > 1 and (current_row[0].lower() == 'date'
-                                         and current_row[1].lower() == 'time'):
-                self._start_of_data_row_index = row
-                for i, cells in enumerate(current_row):
-                    if cells.lower() not in ['date', 'ms', 'time']:
-                        parameter = cells
-                        parameter_col_index = i
-                        for i in range(self._header_length):
-                            if self.file_content[i][0] == parameter:
-                                parameter_unit = self.file_content[i + 1][0].split(": ")[1]
-                                self._params_dict[parameter][self.UNIT] = parameter_unit
-                                self._params_dict[parameter][self.PARAMETER_COL_INDEX] = parameter_col_index
-                                break
-            row += 1
+        """
+        Retrieve the parameters name, units, and column index from the file
+        content.
+        """
+        data_header = self.file_content[self._start_of_data_row_index]
+        params = [p for p in data_header if p
+                  not in ('', 'Date', 'ms', '100 ms', 'Time')]
+        for i, row in enumerate(self.file_content[:self._header_length]):
+            if row[0] in params:
+                param = row[0]
+                self._params_dict[param][self.PARAMETER_COL_INDEX] = (
+                    data_header.index(param))
+                if "UNIT: " in self.file_content[i + 1][0]:
+                    # For Solinst Edge logger files.
+                    units = self.file_content[i + 1][0].split(": ")[1]
+                else:
+                    # For Solinst Gold logger files.
+                    units = self.file_content[i + 2][0]
+                self._params_dict[param][self.UNIT] = units
 
     def _get_data(self):
         for parameter in list(self._params_dict.keys()):
