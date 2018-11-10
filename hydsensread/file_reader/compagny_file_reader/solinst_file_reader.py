@@ -152,6 +152,8 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
             if re.search('^.data.*', lines.lower()):
                 self._header_length = i + 1
                 break
+        else:
+            raise TypeError("The data are not formatted correctly.")
 
     def _get_instrument_info(self, regex_: str) -> str:
         str_to_find = None
