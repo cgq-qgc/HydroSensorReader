@@ -168,7 +168,7 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
 
     def _get_serial_number(self):
         serial_string = self._get_instrument_info(r".*(S|s)erial.number.*")
-        serial_numb = re.split(r"[ -]", serial_string)[1]
+        serial_numb = serial_string.split('-')[1].split(' ')[0]
         return serial_numb
 
     def _get_project_name(self):
