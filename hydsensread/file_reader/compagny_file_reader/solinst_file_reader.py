@@ -393,6 +393,7 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
             except ValueError:
                 break
             datetimes.append(_datetime)
+        self.sites.visit_date = datetimes[-1]
         return datetimes
 
     def _get_parameter_data(self):
