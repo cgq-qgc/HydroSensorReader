@@ -1,0 +1,2 @@
+# HydroSensorReader
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/e5d43e29ae3047d7b784c394fbd0ea49)](https://app.codacy.com/app/jnsebgosselin/HydroSensorReader?utm_source=github.com&utm_medium=referral&utm_content=cgq-qgc/HydroSensorReader&utm_campaign=Badge_Grade_Settings)
