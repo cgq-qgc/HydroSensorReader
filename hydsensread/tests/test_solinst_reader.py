@@ -38,6 +38,8 @@ def test_solinst_levelogger_edge(test_files_dir, testfile):
     assert records.iloc[-1].iloc[0] == 1906.33
     assert records.iloc[-1].iloc[1] == 8.275
 
+    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_°C"]
+
     sites = solinst_file.sites
     assert sites.instrument_serial_number == "2010143"
     assert sites.project_name == "03040018"
@@ -59,6 +61,8 @@ def test_solinst_levelogger_edge_lev(test_files_dir):
     assert records.index.tolist()[-1] == Timestamp('2017-06-22 15:15:00')
     assert records.iloc[-1].iloc[0] == 10.1788
     assert records.iloc[-1].iloc[1] == 11.844
+
+    assert list(records.columns) == ["LEVEL_m", "TEMPERATURE_°C"]
 
     sites = solinst_file.sites
     assert sites.instrument_serial_number == "2041929"
@@ -88,6 +92,8 @@ def test_solinst_levelogger_gold(test_files_dir, testfile):
     assert records.index.tolist()[-1] == Timestamp('2017-11-21 09:30:00')
     assert records.iloc[-1].iloc[0] == 912.308
     assert records.iloc[-1].iloc[1] == 9.204
+
+    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_Deg C"]
 
     sites = solinst_file.sites
     assert sites.instrument_serial_number == "1062280"

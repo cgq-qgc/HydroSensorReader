@@ -143,8 +143,9 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
                 _date = lines.split(":")[1].replace(" ", "")
             if re.search(r"^time.*", lines, re.IGNORECASE):
                 _time = lines.split(" :")[1].replace(" ", "")
-        to_datetime = datetime.datetime.strptime("{} {}".format(_date, _time),
-                                                 self.MONTH_S_DAY_S_YEAR_HMS_DATE_STRING_FORMAT)
+        to_datetime = datetime.datetime.strptime(
+            "{} {}".format(_date, _time),
+            self.MONTH_S_DAY_S_YEAR_HMS_DATE_STRING_FORMAT)
         return to_datetime
 
     def _update_header_lentgh(self):
@@ -415,7 +416,7 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
                 else:
                     # For Solinst Gold logger files.
                     units = self.file_content[i + 2][0]
-                self._params_dict[param][self.UNIT] = units
+                self._params_dict[param][self.UNIT] = units.strip()
 
     def _get_data(self):
         for parameter in list(self._params_dict.keys()):
