@@ -414,7 +414,7 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
                 else:
                     # For Solinst Gold logger files.
                     units = self.file_content[i + 2][0]
-                self._params_dict[param][self.UNIT] = units
+                self._params_dict[param][self.UNIT] = units.strip()
 
     def _get_data(self):
         for parameter in list(self._params_dict.keys()):
