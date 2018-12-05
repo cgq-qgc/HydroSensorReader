@@ -26,6 +26,7 @@ class CSVFileParser(AbstractFileParser):
         self.encoding_style = encoding_style
 
     def read_file(self):
+        """Read and parse the content of the csv in a list."""
         with open(self._file, 'r', encoding=self.encoding_style) as csvfile:
             file_reader = csv.reader(csvfile,
                                      delimiter=',',
