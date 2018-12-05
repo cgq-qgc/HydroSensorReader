@@ -426,12 +426,18 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
                 self._params_dict[param][self.UNIT] = units.strip()
 
     def _get_data(self):
+        """Retrieve the level and temperature data from the file content."""
         for parameter in list(self._params_dict.keys()):
             param_unit = self._params_dict[parameter][self.UNIT]
             param_col_index = self._params_dict[parameter][self.PARAMETER_COL_INDEX]
-            values = [float(val[param_col_index]) for val in self.file_content[self._start_of_data_row_index + 1:]]
+            data = self.file_content[self._start_of_data_row_index + 1:]
+            try:
+                values = [float(val[param_col_index]) for val in data]
+            except ValueError:
+                # This probably means that a coma is used as decimal separator.
+                values = [float(val[param_col_index].replace(',', '.')) for
+                          val in data]
             self._site_of_interest.create_time_serie(parameter, param_unit, self._date_list, values)
-        """Retrieve the level and temperature data from the file content."""
 
 
 if __name__ == '__main__':
