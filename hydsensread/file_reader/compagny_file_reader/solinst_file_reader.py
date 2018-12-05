@@ -332,7 +332,8 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
                  wait_read: bool = False):
         self._params_dict = defaultdict(dict)
         self._start_of_data_row_index = header_length
-        super().__init__(file_path, header_length, wait_read=wait_read)
+        super().__init__(file_path, header_length, wait_read=wait_read,
+                         csv_delim_regex="date([;,\t])time")
 
     def _read_file_header(self):
         """
