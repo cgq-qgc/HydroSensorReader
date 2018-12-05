@@ -101,5 +101,37 @@ def test_solinst_levelogger_gold(test_files_dir, testfile):
     assert sites.site_name == "Saint-Guillaume_P14A"
 
 
+@pytest.mark.parametrize(
+    'testfile',
+    ["2XXXXXX_solinst_colon_as_decimalsep.csv",
+     "2XXXXXX_solinst_colon_as_decimalsep.xle"])
+def test_solinst_colon_decimalsep(test_files_dir, testfile):
+    """
+    Test that level data can be read correctly from the Solinst data files when
+    a colon is used as decimal separator instead of the dot.
+
+    Regression test for Issue #33.
+    """
+    solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
+
+    records = solinst_file.records
+    assert len(records) == 10
+
+    assert records.index.tolist()[0] == Timestamp('2016-11-23 19:00:00')
+    assert records.iloc[0].iloc[0] == 1813.03
+    assert records.iloc[0].iloc[1] == 9.182
+
+    assert records.index.tolist()[-1] == Timestamp('2016-11-23 21:15:00')
+    assert records.iloc[-1].iloc[0] == 1812.59
+    assert records.iloc[-1].iloc[1] == 9.179
+
+    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_°C"]
+
+    sites = solinst_file.sites
+    assert sites.instrument_serial_number == "2048469"
+    assert sites.project_name == "03040008"
+    assert sites.site_name == "Rougemont_Plus profond"
+    
+
 if __name__ == "__main__":
     pytest.main(['-x', os.path.basename(__file__), '-v', '-rw'])
