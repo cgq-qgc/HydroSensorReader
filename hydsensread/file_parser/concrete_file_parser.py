@@ -32,12 +32,6 @@ class CSVFileParser(AbstractFileParser):
     def read_file(self):
         """Read and parse the content of the csv in a list."""
         with open(self._file, 'r', encoding=self.encoding_style) as csvfile:
-            file_reader = csv.reader(csvfile,
-                                     delimiter=',',
-                                     lineterminator='\n')
-
-            for row in file_reader:
-                self._file_content.append(row)
             if self.csv_delim_regex is None:
                 delimiter = ','
             else:
@@ -45,6 +39,8 @@ class CSVFileParser(AbstractFileParser):
                                       csvfile.read(),
                                       flags=re.IGNORECASE).group(1)
                 csvfile.seek(0)
+            self._file_content = list(
+                csv.reader(csvfile, delimiter=delimiter, lineterminator='\n'))
 
     def read_file_header(self):
         try:
