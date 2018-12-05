@@ -131,7 +131,7 @@ def test_solinst_colon_decimalsep(test_files_dir, testfile):
     assert sites.instrument_serial_number == "2048469"
     assert sites.project_name == "03040008"
     assert sites.site_name == "Rougemont_Plus profond"
-    
+
 
 if __name__ == "__main__":
     pytest.main(['-x', os.path.basename(__file__), '-v', '-rw'])
