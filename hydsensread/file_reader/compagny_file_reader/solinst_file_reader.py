@@ -323,7 +323,7 @@ class XLESolinstFileReader(TimeSeriesFileReader):
                 # This probably means that a coma is used as decimal separator.
                 values = [float(d.find(ch_selector).text.replace(',', '.'))
                           for d in self.file_root.iter('Log')]
-                
+
             self._site_of_interest. \
                 create_time_serie(channel_parammeter,
                                   channel_unit, self._date_list,
