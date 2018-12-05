@@ -30,7 +30,7 @@ class CSVFileParser(AbstractFileParser):
         self.csv_delim_regex = csv_delim_regex
 
     def read_file(self):
-        """Read and parse the content of the csv in a list."""
+        """Read and save the content of the csv in a list."""
         with open(self._file, 'r', encoding=self.encoding_style) as csvfile:
             if self.csv_delim_regex is None:
                 delimiter = ','
