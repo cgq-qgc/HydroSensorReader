@@ -189,9 +189,10 @@ class AbstractFileReader(object, metaclass=ABCMeta):
 
 class TimeSeriesFileReader(AbstractFileReader):
     def __init__(self, file_path: str = None, header_length: int = 10,
-                 encoding='utf8', wait_read: bool = False):
+                 encoding='utf8', wait_read: bool = False,
+                 csv_delim_regex: str = None):
         super().__init__(file_path, header_length, encoding=encoding,
-                         wait_read=wait_read)
+                         wait_read=wait_read, csv_delim_regex=csv_delim_regex)
         self._site_of_interest = SensorPlateform()
         self._date_list = []
         self.header_content = {}
