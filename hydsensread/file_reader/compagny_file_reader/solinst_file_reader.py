@@ -425,6 +425,7 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
             param_col_index = self._params_dict[parameter][self.PARAMETER_COL_INDEX]
             values = [float(val[param_col_index]) for val in self.file_content[self._start_of_data_row_index + 1:]]
             self._site_of_interest.create_time_serie(parameter, param_unit, self._date_list, values)
+        """Retrieve the level and temperature data from the file content."""
 
 
 if __name__ == '__main__':
