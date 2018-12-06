@@ -57,7 +57,7 @@ r = hsr.GNBWaterQualityStation(station)
 ```
 
 
-## Dependency
+## Dependencies
 
 - [openpyxl](https://openpyxl.readthedocs.io/en/default/)
 - [xlrd](http://www.python-excel.org/)
