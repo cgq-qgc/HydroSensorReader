@@ -1,0 +1,118 @@
+<?xml version="1.0" ?>
+<Body_xle>
+    <File_info>
+        <Company></Company>
+        <LICENCE></LICENCE>
+        <Date>2017/05/01</Date>
+        <Time>16:18:55</Time>
+        <FileName></FileName>
+        <Created_by>Version 4.1.1</Created_by>
+    </File_info>
+    <Instrument_info>
+        <Instrument_type>LT_EDGE</Instrument_type>
+        <Model_number>M10     </Model_number>
+        <Instrument_state>Stopped</Instrument_state>
+        <Serial_number>2048469</Serial_number>
+        <Battery_level>100</Battery_level>
+        <Channel>2</Channel>
+        <Firmware>3,003</Firmware>
+    </Instrument_info>
+    <Instrument_info_data_header>
+        <Project_ID>03040008</Project_ID>
+        <Location>Rougemont_Plus profond</Location>
+        <Latitude>0,000</Latitude>
+        <Longtitude>0,000</Longtitude>
+        <Sample_rate>90000</Sample_rate>
+        <Sample_mode>0</Sample_mode>
+        <Event_ch>0</Event_ch>
+        <Event_threshold>-999999,000000</Event_threshold>
+        <Schedule />
+        <Start_time>2016/11/23 19:00:00</Start_time>
+        <Stop_time>2017/05/01 15:16:05</Stop_time>
+        <Num_log>15250</Num_log>
+    </Instrument_info_data_header>
+    <Ch1_data_header>
+        <Identification>LEVEL</Identification>
+        <Unit>cm</Unit>
+        <Parameters>
+            <Offset Val="0,00" Unit="cm" />
+        </Parameters>
+    </Ch1_data_header>
+    <Ch2_data_header>
+        <Identification>TEMPERATURE</Identification>
+        <Unit>°C</Unit>
+        <Parameters />
+    </Ch2_data_header>
+    <Data>
+        <Log id="1">
+            <Date>2016/11/23</Date>
+            <Time>19:00:00</Time>
+            <ms>0</ms>
+            <ch1>1813,03</ch1>
+            <ch2>9,182</ch2>
+        </Log>
+        <Log id="2">
+            <Date>2016/11/23</Date>
+            <Time>19:15:00</Time>
+            <ms>0</ms>
+            <ch1>1812,96</ch1>
+            <ch2>9,182</ch2>
+        </Log>
+        <Log id="3">
+            <Date>2016/11/23</Date>
+            <Time>19:30:00</Time>
+            <ms>0</ms>
+            <ch1>1812,71</ch1>
+            <ch2>9,182</ch2>
+        </Log>
+        <Log id="4">
+            <Date>2016/11/23</Date>
+            <Time>19:45:00</Time>
+            <ms>0</ms>
+            <ch1>1812,66</ch1>
+            <ch2>9,182</ch2>
+        </Log>
+        <Log id="5">
+            <Date>2016/11/23</Date>
+            <Time>20:00:00</Time>
+            <ms>0</ms>
+            <ch1>1812,69</ch1>
+            <ch2>9,181</ch2>
+        </Log>
+        <Log id="6">
+            <Date>2016/11/23</Date>
+            <Time>20:15:00</Time>
+            <ms>0</ms>
+            <ch1>1812,63</ch1>
+            <ch2>9,181</ch2>
+        </Log>
+        <Log id="7">
+            <Date>2016/11/23</Date>
+            <Time>20:30:00</Time>
+            <ms>0</ms>
+            <ch1>1812,62</ch1>
+            <ch2>9,180</ch2>
+        </Log>
+        <Log id="8">
+            <Date>2016/11/23</Date>
+            <Time>20:45:00</Time>
+            <ms>0</ms>
+            <ch1>1812,56</ch1>
+            <ch2>9,180</ch2>
+        </Log>
+        <Log id="9">
+            <Date>2016/11/23</Date>
+            <Time>21:00:00</Time>
+            <ms>0</ms>
+            <ch1>1812,46</ch1>
+            <ch2>9,181</ch2>
+        </Log>
+        <Log id="10">
+            <Date>2016/11/23</Date>
+            <Time>21:15:00</Time>
+            <ms>0</ms>
+            <ch1>1812,59</ch1>
+            <ch2>9,179</ch2>
+        </Log>
+    </Data>
+</Body_xle>

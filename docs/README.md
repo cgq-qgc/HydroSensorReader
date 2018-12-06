@@ -2,13 +2,13 @@
 
 
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
-[![Coverage Status](https://coveralls.io/repos/github/x-malet/HydroSensorReader/badge.svg?branch=master)](https://coveralls.io/github/x-malet/HydroSensorReader?branch=master)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[![Build Status](https://travis-ci.org/x-malet/HydroSensorReader.svg?branch=master)](https://travis-ci.org/x-malet/HydroSensorReader)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/2818f21a4dcd493a83aeb8aa83885395)](https://www.codacy.com/app/maletxa/HydroSensorReader?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=x-malet/HydroSensorReader&amp;utm_campaign=Badge_Grade)
+[![Build Status](https://travis-ci.org/cgq-qgc/HydroSensorReader.svg?branch=master)](https://travis-ci.org/cgq-qgc/HydroSensorReader)
+[![Coverage Status](https://coveralls.io/repos/github/cgq-qgc/HydroSensorReader/badge.svg)](https://coveralls.io/github/cgq-qgc/HydroSensorReader)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f305b1763bf647c0b7342e4699c5f5db)](https://www.codacy.com/app/jnsebgosselin/HydroSensorReader?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cgq-qgc/HydroSensorReader&amp;utm_campaign=Badge_Grade)
 [![Documentation Status](https://readthedocs.org/projects/hydrosensorreader/badge/?version=latest)](http://hydrosensorreader.readthedocs.io/en/latest/?badge=latest)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 This project aims to provide a simple way to read scientific files produced by
 any kind of probe, sensor, or anything used in hydrogeology.
@@ -57,7 +57,7 @@ r = hsr.GNBWaterQualityStation(station)
 ```
 
 
-## Dependency
+## Dependencies
 
 - [openpyxl](https://openpyxl.readthedocs.io/en/default/)
 - [xlrd](http://www.python-excel.org/)

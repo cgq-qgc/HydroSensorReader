@@ -11,6 +11,7 @@ import bs4
 import matplotlib.axes as mp_axe
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
+
 from pandas import DataFrame
 
 from hydsensread import file_parser
@@ -62,7 +63,8 @@ class AbstractFileReader(object, metaclass=ABCMeta):
                  header_length: int = 10,
                  request_params: dict = None,
                  encoding='utf8',
-                 wait_read=False):
+                 wait_read=False,
+                 csv_delim_regex: str = None):
         """
         :param file_path: path to the file to treat
         :param header_length: header length
@@ -70,6 +72,8 @@ class AbstractFileReader(object, metaclass=ABCMeta):
         :param encoding: encoding type :default = 'utf-8'
         :param wait_read: if wait_read is True, will wait to read the file
         content. This is usefull for hierarchi-class.
+        :param csv_delim_regex: a regex used to determine the delimiter of
+        csv files when parsing the data
         See file_reader.compagny_file_reader.solinst_file_reader.py
         for an example
         """
@@ -77,6 +81,7 @@ class AbstractFileReader(object, metaclass=ABCMeta):
         self._file = file_path
         self._header_length = header_length
         self._encoding = encoding
+        self._csv_delim_regex = csv_delim_regex
         self._site_of_interest = None
         self.file_reader = self._set_file_reader()
         if not wait_read:
@@ -104,8 +109,10 @@ class AbstractFileReader(object, metaclass=ABCMeta):
                 file_reader = file_parser.EXCELFileParser(file_path=self._file,
                                                           header_length=self._header_length)
             elif file_ext in self.CSV_FILES_TYPES:
-                file_reader = file_parser.CSVFileParser(file_path=self._file,
-                                                        header_length=self._header_length)
+                file_reader = file_parser.CSVFileParser(
+                    file_path=self._file,
+                    header_length=self._header_length,
+                    csv_delim_regex=self._csv_delim_regex)
             elif file_ext in self.WEB_XML_FILES_TYPES or 'http' in self._file:
                 file_reader = file_parser.WEBFileParser(file_path=self._file,
                                                         requests_params=self.request_params)
@@ -183,9 +190,10 @@ class AbstractFileReader(object, metaclass=ABCMeta):
 
 class TimeSeriesFileReader(AbstractFileReader):
     def __init__(self, file_path: str = None, header_length: int = 10,
-                 encoding='utf8', wait_read: bool = False):
+                 encoding='utf8', wait_read: bool = False,
+                 csv_delim_regex: str = None):
         super().__init__(file_path, header_length, encoding=encoding,
-                         wait_read=wait_read)
+                         wait_read=wait_read, csv_delim_regex=csv_delim_regex)
         self._site_of_interest = SensorPlateform()
         self._date_list = []
         self.header_content = {}
