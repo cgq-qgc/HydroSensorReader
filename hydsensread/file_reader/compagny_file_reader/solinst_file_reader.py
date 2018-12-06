@@ -316,8 +316,14 @@ class XLESolinstFileReader(TimeSeriesFileReader):
             channel_unit = self.file_root.find(channel_name).find('Unit').text
             ch_selector = "ch{}".format(channels + 1)
             print(ch_selector)
-            values = [float(d.find(ch_selector).text) for d in
-                      self.file_root.iter('Log')]
+            try:
+                values = [float(d.find(ch_selector).text)
+                          for d in self.file_root.iter('Log')]
+            except ValueError:
+                # This probably means that a coma is used as decimal separator.
+                values = [float(d.find(ch_selector).text.replace(',', '.'))
+                          for d in self.file_root.iter('Log')]
+
             self._site_of_interest. \
                 create_time_serie(channel_parammeter,
                                   channel_unit, self._date_list,
@@ -332,7 +338,8 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
                  wait_read: bool = False):
         self._params_dict = defaultdict(dict)
         self._start_of_data_row_index = header_length
-        super().__init__(file_path, header_length, wait_read=wait_read)
+        super().__init__(file_path, header_length, wait_read=wait_read,
+                         csv_delim_regex="date([;,\t])time")
 
     def _read_file_header(self):
         """
@@ -419,11 +426,20 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
                 self._params_dict[param][self.UNIT] = units.strip()
 
     def _get_data(self):
+        """Retrieve the level and temperature data from the file content."""
         for parameter in list(self._params_dict.keys()):
             param_unit = self._params_dict[parameter][self.UNIT]
-            param_col_index = self._params_dict[parameter][self.PARAMETER_COL_INDEX]
-            values = [float(val[param_col_index]) for val in self.file_content[self._start_of_data_row_index + 1:]]
-            self._site_of_interest.create_time_serie(parameter, param_unit, self._date_list, values)
+            param_col_index = (
+                self._params_dict[parameter][self.PARAMETER_COL_INDEX])
+            data = self.file_content[self._start_of_data_row_index + 1:]
+            try:
+                values = [float(val[param_col_index]) for val in data]
+            except ValueError:
+                # This probably means that a coma is used as decimal separator.
+                values = [float(val[param_col_index].replace(',', '.')) for
+                          val in data]
+            self._site_of_interest.create_time_serie(
+                parameter, param_unit, self._date_list, values)
 
 
 if __name__ == '__main__':

@@ -21,18 +21,26 @@ from .abstract_file_parser import AbstractFileParser
 
 
 class CSVFileParser(AbstractFileParser):
-    def __init__(self, file_path: str = None, header_length: int = 10, encoding_style: str = 'iso-8859-1'):
+    def __init__(self, file_path: str = None,
+                 header_length: int = 10,
+                 encoding_style: str = 'iso-8859-1',
+                 csv_delim_regex: str = None):
         super().__init__(file_path, header_length)
         self.encoding_style = encoding_style
+        self.csv_delim_regex = csv_delim_regex
 
     def read_file(self):
+        """Read and save the content of the csv in a list."""
         with open(self._file, 'r', encoding=self.encoding_style) as csvfile:
-            file_reader = csv.reader(csvfile,
-                                     delimiter=',',
-                                     lineterminator='\n')
-
-            for row in file_reader:
-                self._file_content.append(row)
+            if self.csv_delim_regex is None:
+                delimiter = ','
+            else:
+                delimiter = re.search(self.csv_delim_regex,
+                                      csvfile.read(),
+                                      flags=re.IGNORECASE).group(1)
+                csvfile.seek(0)
+            self._file_content = list(
+                csv.reader(csvfile, delimiter=delimiter, lineterminator='\n'))
 
     def read_file_header(self):
         try:
