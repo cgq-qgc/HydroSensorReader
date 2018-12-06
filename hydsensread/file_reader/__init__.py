@@ -12,4 +12,7 @@ from .compagny_file_reader import SolinstFileReader, \
     DATCampbellCRFileReader, \
     XLSHannaFileReader, \
     XSLMaxxamFileReader
-from .web_page_reader import GNBWaterQualityStation, GNBCoreSamplesNTSMapSearchWebScrapper
+try:
+    from .web_page_reader import GNBWaterQualityStation, GNBCoreSamplesNTSMapSearchWebScrapper
+except:
+    pass

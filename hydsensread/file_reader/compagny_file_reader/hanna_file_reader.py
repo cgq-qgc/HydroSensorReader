@@ -16,8 +16,8 @@ from hydsensread.file_reader.abstract_file_reader import TimeSeriesFileReader, d
 
 
 class XLSHannaFileReader(TimeSeriesFileReader):
-    def __init__(self, file_path: str = None, header_length: int = 10):
-        super().__init__(file_path, header_length)
+    def __init__(self, file_path: str = None, header_length: int = 10,wait_read:bool = False):
+        super().__init__(file_path, header_length,wait_read=wait_read)
 
     def read_file(self):
         self._date_list = self._get_date_list()
