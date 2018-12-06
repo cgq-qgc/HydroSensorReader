@@ -10,7 +10,8 @@ from collections import namedtuple
 from typing import List
 
 import numpy as np
-import pandas as pd
+
+from pandas import  DataFrame, Series
 
 from .records import ChemistryRecord
 from .records import TimeSeriesRecords
@@ -55,17 +56,17 @@ class SensorPlateform(Site):
         """
         super().__init__(site_name, visit_date, project_name)
         self.instrument_serial_number = instrument_serial_number
-        self.records = pd.DataFrame()
+        self.records = DataFrame()
         self.batterie_level = None
         self.model_number = None
         self.longest_time_series = None
         self._datetime_not_in_longest_time_series = []
 
     @property
-    def get_records(self) -> pd.DataFrame:
+    def get_records(self) -> DataFrame:
         return self.records
 
-    def get_time_serie_by_param(self, p_parameter) -> pd.Series:
+    def get_time_serie_by_param(self, p_parameter) -> Series:
         if p_parameter in self.records.columns.values:
             return self.records[p_parameter]
 
@@ -89,7 +90,7 @@ class SensorPlateform(Site):
 
         if len(self.records.index) == 0:
             # create a new dataframe
-            self.records = pd.DataFrame(data=time_serie.value, index=time_serie.get_dates,
+            self.records = DataFrame(data=time_serie.value, index=time_serie.get_dates,
                                         columns=[time_serie.parameter_as_string])
         elif False in (time_serie.get_dates == self.records.index):
             # If dates differs
@@ -103,7 +104,7 @@ class SensorPlateform(Site):
         Create a new dataframe by appending a new TimeSeriesRecords
         :param new_time_serie: TimeSeriesRecords to append
         """
-        new_data_frame = pd.DataFrame(data=new_time_serie.value,
+        new_data_frame = DataFrame(data=new_time_serie.value,
                                       index=new_time_serie.get_dates,
                                       columns=[new_time_serie.parameter_as_string])
 

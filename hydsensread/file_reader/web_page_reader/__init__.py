@@ -11,3 +11,4 @@ from .gnb_core_samples_web_scraper import GNBCoreSamplesNTSMapSearchWebScrapper
 from .gnb_core_samples_web_scraper import GNBOilAndGasNTSMapSearchWebScrapper
 from .gnb_core_samples_web_scraper import GNBOilAndGasWellsListWebScrapper
 from .gnb_water_quality_web_file_reader import GNBWaterQualityStation
+from .gc_hydrometric_weather_data.HydrometricData import HydrometricDataInterface
