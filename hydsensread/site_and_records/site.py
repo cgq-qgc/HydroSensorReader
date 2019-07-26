@@ -123,12 +123,16 @@ class SensorPlateform(Site):
 
     def merge_with_sensor_plateform(self, other_sensor_plateform: 'SensorPlateform'):
         """
-
+        Merge sensor plateform datas with different param/dates combinations
+        - Same dates/params
+        - Same dates diff params
+        - diff dates/params
+        - diff dates same params
+        See pandas doc here : https://pandas.pydata.org/pandas-docs/stable/user_guide/merging.html
         :param other_sensor_plateform:
         :return:
         """
         assert isinstance(other_sensor_plateform, SensorPlateform)
-        print(type(other_sensor_plateform))
 
 
 class Sample(Site):
