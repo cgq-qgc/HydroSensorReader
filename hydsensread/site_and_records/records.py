@@ -69,7 +69,7 @@ class TimeSeriesRecords(Record):
     """
 
     def __init__(self,
-                 records_date: typing.Union[list, typing.List[datetime.datetime], pd.DatetimeIndex] = None,
+                 records_date: typing.Union[list, typing.List[datetime.datetime], pd.DatetimeIndex, np.ndarray] = None,
                  values: typing.Union[list, typing.List[int], typing.List[float], np.ndarray] = None,
                  parameter: str = None,
                  parameter_unit: str = None):
