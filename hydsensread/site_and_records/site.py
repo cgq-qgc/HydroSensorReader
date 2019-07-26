@@ -7,10 +7,10 @@ __version__ = '1.0'
 
 import datetime
 from collections import namedtuple
-from typing import List
+from typing import List, Union
 
 import numpy as np
-from pandas import DataFrame, Series
+from pandas import DataFrame, Series, DatetimeIndex
 
 from hydsensread.site_and_records.records import ChemistryRecord
 from hydsensread.site_and_records.records import TimeSeriesRecords
@@ -73,7 +73,8 @@ class SensorPlateform(Site):
     def get_dates(self) -> np.ndarray:
         return self.records.index.values
 
-    def create_time_serie(self, parameter, unit, dates: List[datetime.datetime], values: list):
+    def create_time_serie(self, parameter, unit, dates: Union[list, List[datetime.datetime], DatetimeIndex, np.ndarray],
+                          values: Union[list, List[int], List[float], np.ndarray]):
         """
         Create a new TimeSerie and add id to the self.records DataFrame
         :param parameter: observed parameter
@@ -120,7 +121,7 @@ class SensorPlateform(Site):
                                                    site=self.site_name,
                                                    date=self.visit_date)
 
-    def merge_with_sensor_plateform(self, other_sensor_plateform:'SensorPlateform'):
+    def merge_with_sensor_plateform(self, other_sensor_plateform: 'SensorPlateform'):
         """
 
         :param other_sensor_plateform:
@@ -267,5 +268,3 @@ class DrillingSite(StationSite):
                                                                                   site_name=self.site_name,
                                                                                   depth=self.drilling_depth,
                                                                                   date=self.visit_date)
-
-
