@@ -10,11 +10,10 @@ from collections import namedtuple
 from typing import List
 
 import numpy as np
+from pandas import DataFrame, Series
 
-from pandas import  DataFrame, Series
-
-from .records import ChemistryRecord
-from .records import TimeSeriesRecords
+from hydsensread.site_and_records.records import ChemistryRecord
+from hydsensread.site_and_records.records import TimeSeriesRecords
 
 geographical_coordinates = namedtuple('XYZPoint', ['x', 'y', 'z'])
 
@@ -91,7 +90,7 @@ class SensorPlateform(Site):
         if len(self.records.index) == 0:
             # create a new dataframe
             self.records = DataFrame(data=time_serie.value, index=time_serie.get_dates,
-                                        columns=[time_serie.parameter_as_string])
+                                     columns=[time_serie.parameter_as_string])
         elif False in (time_serie.get_dates == self.records.index):
             # If dates differs
             self.resample_records(new_time_serie=time_serie)
@@ -105,8 +104,8 @@ class SensorPlateform(Site):
         :param new_time_serie: TimeSeriesRecords to append
         """
         new_data_frame = DataFrame(data=new_time_serie.value,
-                                      index=new_time_serie.get_dates,
-                                      columns=[new_time_serie.parameter_as_string])
+                                   index=new_time_serie.get_dates,
+                                   columns=[new_time_serie.parameter_as_string])
 
         new_time_delta = new_data_frame.index[1] - new_data_frame.index[0]
         old_time_delta = self.records.index[1] - self.records.index[0]
@@ -120,6 +119,15 @@ class SensorPlateform(Site):
         return "({serial}):{site} - {date}".format(serial=self.instrument_serial_number,
                                                    site=self.site_name,
                                                    date=self.visit_date)
+
+    def merge_with_sensor_plateform(self, other_sensor_plateform:'SensorPlateform'):
+        """
+
+        :param other_sensor_plateform:
+        :return:
+        """
+        assert isinstance(other_sensor_plateform, SensorPlateform)
+        print(type(other_sensor_plateform))
 
 
 class Sample(Site):
@@ -259,3 +267,5 @@ class DrillingSite(StationSite):
                                                                                   site_name=self.site_name,
                                                                                   depth=self.drilling_depth,
                                                                                   date=self.visit_date)
+
+
