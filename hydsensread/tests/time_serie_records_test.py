@@ -60,8 +60,6 @@ class TimeSeriesRecordsTest(unittest.TestCase):
         ts = self.ts.get_data_between(first_date, last_date)
         self.assertTrue(ts.all() == pd.Series(self.vals[d_to:d_from], index=self.dates[d_to:d_from]).all())
 
-
-
     def test_get_data_before_not_in_values(self):
         date_before = self.dates[0]
         date_before = datetime.datetime(date_before.year - 1, date_before.month, date_before.day)
@@ -70,11 +68,21 @@ class TimeSeriesRecordsTest(unittest.TestCase):
 
     def test_get_data_after_not_in_values(self):
         date_after = self.dates[-1]
-        date_after = datetime.datetime(date_after.year+1,date_after.month, date_after.day)
+        date_after = datetime.datetime(date_after.year + 1, date_after.month, date_after.day)
         getted_dates = self.ts.get_data_after_date(date_after)
         self.assertTrue(len(getted_dates) == 0)
 
+    def test_dates_and_values_not_same_size(self):
+        number_for_offset = 30
+        dates = pd.date_range('2011-02-01', periods=50, freq='H')
+
+        vals = np.random.randn(len(dates) - number_for_offset)
+        with self.assertRaises(ValueError, msg="there are fewer values than dates. It should raise a ValueError"):
+            TimeSeriesRecords(dates, vals)
+
+        vals = np.random.randn(len(dates) + number_for_offset)
+        with self.assertRaises(ValueError, msg="there are more values than dates. It should raise a ValueError"):
+            TimeSeriesRecords(dates, vals)
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TimeSeriesRecordsTest)
 unittest.TextTestRunner(verbosity=2).run(suite)
-
