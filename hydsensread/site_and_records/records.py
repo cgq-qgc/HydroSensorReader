@@ -69,24 +69,24 @@ class TimeSeriesRecords(Record):
     """
 
     def __init__(self,
-                 records_date: typing.Union[list, typing.List[datetime.datetime], pd.DatetimeIndex, np.ndarray] = None,
+                 record_dates: typing.Union[list, typing.List[datetime.datetime], pd.DatetimeIndex, np.ndarray] = None,
                  values: typing.Union[list, typing.List[int], typing.List[float], np.ndarray] = None,
                  parameter: str = None,
                  parameter_unit: str = None):
         """
 
-        :param records_date:
-        :param values:
+        :param record_dates: list of dates for the TimeSeries
+        :param values: list of values for the TimeSeries
         :param parameter:
         :param parameter_unit:
         """
-        if records_date is not None and values is not None:
+        if record_dates is not None and values is not None:
 
-            super().__init__(records_date[0],
+            super().__init__(record_dates[0],
                              parameter, parameter_unit, values[0])
-            self.value = pd.Series(data=values, index=records_date, name=self.parameter_as_string)
+            self.value = pd.Series(data=values, index=record_dates, name=self.parameter_as_string)
         else:
-            super().__init__(records_date, parameter, parameter_unit, values)
+            super().__init__(record_dates, parameter, parameter_unit, values)
             self.value = pd.Series()
 
     def add_value(self, _date: datetime.datetime, val):
