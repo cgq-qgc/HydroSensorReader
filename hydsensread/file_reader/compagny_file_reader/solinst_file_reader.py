@@ -381,6 +381,15 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
             elif re.search(r"[lL]ocation.*", line):
                 self._site_of_interest.site_name = (
                     self.file_content[i + 1][0].strip())
+            elif re.search(r"[aA]ltitude.*", line):
+                regex = r"\d*\.\d+|\d+"
+                try:
+                    self._altitude = float(re.findall(regex, line)[0])
+                except IndexError:
+                    # This means that the value is stored on the next line.
+                    # This can happen for older versions of Solinst files.
+                    next_line = ''.join(self.file_content[i + 1])
+                    self._altitude = float(re.findall(regex, next_line)[0])
             elif 'Date' in line and 'Time' in line:
                 self._start_of_data_row_index = i
                 self._header_length = i
