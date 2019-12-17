@@ -7,15 +7,18 @@
 # Licensed under the terms of the MIT License.
 # -----------------------------------------------------------------------------
 
-from matplotlib import pyplot as plt
+# ---- Standard imports
 import datetime
 import re
 import warnings
 from collections import defaultdict
 from typing import List, Tuple
 
+# ---- Third party imports
+from matplotlib import pyplot as plt
 from pandas import Timestamp
 
+# ---- Local imports
 from hydsensread.file_reader.abstract_file_reader import (
     TimeSeriesFileReader, date_list, LineDefinition)
 
