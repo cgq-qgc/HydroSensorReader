@@ -143,3 +143,7 @@ fabric.properties
 .idea/ogc_om_interface.iml
 .idea/workspace.xml
 .idea/preferred-vcs.xml
+
+# Spyder project settings
+.spyderproject
+.spyproject
