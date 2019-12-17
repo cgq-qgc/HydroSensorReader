@@ -1,12 +1,13 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+# -----------------------------------------------------------------------------
+# Copyright © HydroSensorReader Project Contributors
+# https://github.com/cgq-qgc/HydroSensorReader
+#
+# This file is part of HydroSensorReader.
+# Licensed under the terms of the MIT License.
+# -----------------------------------------------------------------------------
+
 from matplotlib import pyplot as plt
-
-__author__ = 'Laptop$'
-__date__ = '2017-07-16$'
-__description__ = " "
-__version__ = '1.3'
-
 import datetime
 import re
 import warnings
