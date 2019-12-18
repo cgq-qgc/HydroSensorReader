@@ -416,33 +416,12 @@ class CSVSolinstFileReader(SolinstFileReader):
 
 
 if __name__ == '__main__':
-    import os
-    import matplotlib.pyplot as plt
+    dirname = osp.dirname(osp.dirname(osp.dirname(__file__)))
+    dirname = osp.join(dirname, 'tests', 'files')
+    filename = '1XXXXXX_solinst_levelogger_gold_testfile.csv'
 
-    path = os.getcwd()
-    while os.path.split(path)[1] != "hydsensread":
-        path = os.path.split(path)[0]
-    file_loc = os.path.join(path, 'file_example')
+    reader = read_solinst_file(osp.join(dirname, filename), wait_read=False)
+    reader.read_file()
+    print(reader.records)
+    print(reader.sites)
 
-    teste_all = True
-    file_loc = "C:\\Users\\Laptop\\Documents\\McCully_slugTest_XM20180608"
-    if teste_all:
-        # file_name = "F21_logger_20160224_20160621.csv"
-        file_name = "PO-12_slug_3_XM20180608.lev"
-        # file_name = "slug_PO-05_20160729_1600.csv"
-        # file_name = "2029499_F7_NordChamp_PL20150925_2015_09_25.xle"
-        # file_name = "2041929_PO-06_XM20170307_2017_03_07.lev"
-        # file_name = "2056794_PO-05_baro_CB20161109_2016_11_09.lev"
-        file_location = os.path.join(file_loc, file_name)
-        print(file_location)
-        # t = ET.parse(open(file_location))
-        # root = t.getroot()
-        # print(root.find('Instrument_info_data_header').find('Location').text)
-        solinst_file = SolinstFileReader(file_location)
-        print(solinst_file.file_reader)
-        solinst_file.read_file()
-        print(solinst_file.sites)
-        print(solinst_file.records)
-        # print(len([i for i in solinst_file.records.dtypes.index if 'kpa' in i.lower()]) > 0)
-        solinst_file.plot(reformat_temperature=False)
-        plt.show(block=True)
