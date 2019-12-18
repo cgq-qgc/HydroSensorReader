@@ -1,22 +1,26 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from matplotlib import pyplot as plt
+# -----------------------------------------------------------------------------
+# Copyright © HydroSensorReader Project Contributors
+# https://github.com/cgq-qgc/HydroSensorReader
+#
+# This file is part of HydroSensorReader.
+# Licensed under the terms of the MIT License.
+# -----------------------------------------------------------------------------
 
-__author__ = 'Laptop$'
-__date__ = '2017-07-16$'
-__description__ = " "
-__version__ = '1.3'
-
+# ---- Standard imports
 import datetime
 import re
 import warnings
 from collections import defaultdict
 from typing import List, Tuple
+import os.path as osp
 
+# ---- Third party imports
+from matplotlib import pyplot as plt
 from pandas import Timestamp
 
+# ---- Local imports
 from hydsensread.file_reader.abstract_file_reader import (
-    TimeSeriesFileReader, date_list, LineDefinition)
 
 
 class SolinstFileReader(TimeSeriesFileReader):
@@ -46,6 +50,7 @@ class SolinstFileReader(TimeSeriesFileReader):
         else:
             warnings.warn("Unknown file extension for this compagny")
         self._site_of_interest = self.__main_reader._site_of_interest
+    TimeSeriesFileReader, LineDefinition)
 
     def read_file(self):
         self.__main_reader.read_file()
