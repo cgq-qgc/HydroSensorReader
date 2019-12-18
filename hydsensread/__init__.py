@@ -8,9 +8,9 @@
 # -----------------------------------------------------------------------------
 
 from .file_reader.compagny_file_reader.solinst_file_reader import (
-    read_solinst_file)
+    solinst_reader)
 from .file_reader import (
-    DATCampbellCRFileReader,  XLSHannaFileReader,
+    SolinstFileReader, DATCampbellCRFileReader,  XLSHannaFileReader,
     XSLMaxxamFileReader)
 from .file_reader.web_page_reader.gnb_core_samples_web_scraper import GNBCoreSamplesDataFactory
 from .file_reader.web_page_reader.gnb_core_samples_web_scraper import GNBCoreSamplesListWebScrapper

@@ -24,9 +24,27 @@ from hydsensread.file_reader.abstract_file_reader import (
     TimeSeriesFileReader, LineDefinition)
 
 
-def read_solinst_file(file_path, wait_read=False):
+def solinst_reader(file_path, wait_read=False):
     """
     Return a Solinst reader object appropriate to the given file type.
+
+    Parameters
+    ----------
+    file_path : str, path object
+        A valid string path or path object to a Solinst '.lev', '.xle', or
+        '.csv' level or baro level data file.
+    wait_read : bool
+        A boolean that indicates wheter the content of the file should be
+        read on instantiation of the reader. If 'False', use the
+        'read_file' method of the reader to read the content of the file
+        when needed.
+
+    Returns
+    -------
+    TimeSeriesFileReader
+        A time series file reader that can read Solinst '.lev', '.xle', or
+        '.csv' level or baro logger data files.
+
     """
     if not osp.isfile(file_path) or not osp.exists(file_path):
         raise ValueError("The path given doesn't point to an existing file.")
@@ -43,7 +61,14 @@ def read_solinst_file(file_path, wait_read=False):
         warnings.warn("Unknown file extension for this compagny")
 
 
-class SolinstFileReader(TimeSeriesFileReader):
+def SolinstFileReader(file_path, wait_read=False):
+    msg = ("SolinstFileReader is deprecated for removal in 1.8. "
+           "Use the function 'solinst_reader' instead.")
+    warnings.warn(msg, UserWarning)
+    return solinst_reader(file_path, wait_read=False)
+
+
+class SolinstFileReaderBase(TimeSeriesFileReader):
     def __init__(self, *args, **kargs):
         super().__init__(*args, **kargs)
 
@@ -85,7 +110,7 @@ class SolinstFileReader(TimeSeriesFileReader):
         return fig, axis
 
 
-class LEVSolinstFileReader(SolinstFileReader):
+class LEVSolinstFileReader(SolinstFileReaderBase):
     DATA_CHANNEL_STRING = ".*CHANNEL {} from data header.*"
 
     def __init__(self, file_path: str = None, header_length: int = 10,
@@ -202,7 +227,7 @@ class LEVSolinstFileReader(SolinstFileReader):
             self._site_of_interest.create_time_serie(parameter, parametere_unit, self._date_list, values)
 
 
-class XLESolinstFileReader(SolinstFileReader):
+class XLESolinstFileReader(SolinstFileReaderBase):
     CHANNEL_DATA_HEADER = "Ch{}_data_header"
 
     def __init__(self, file_path: str = None, header_length: int = 10,
@@ -315,7 +340,7 @@ class XLESolinstFileReader(SolinstFileReader):
                                   values)
 
 
-class CSVSolinstFileReader(SolinstFileReader):
+class CSVSolinstFileReader(SolinstFileReaderBase):
     UNIT = 'unit'
     PARAMETER_COL_INDEX = 'col_index'
 
@@ -420,8 +445,7 @@ if __name__ == '__main__':
     dirname = osp.join(dirname, 'tests', 'files')
     filename = '1XXXXXX_solinst_levelogger_gold_testfile.csv'
 
-    reader = read_solinst_file(osp.join(dirname, filename), wait_read=False)
-    reader.read_file()
+    reader = solinst_reader(osp.join(dirname, filename))
     print(reader.records)
     print(reader.sites)
 
