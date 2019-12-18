@@ -36,9 +36,9 @@ r = hsr.DATCampbellCRFileReader(file_path)
 # - Supported extension : '.xls', '.xlsx'
 r = hsr.XLSHannaFileReader(file_path)
 
-# read Solinst Levelogger and Barologger files
+# Read Solinst Levelogger and Barologger files
 # - Supported extension : '.lev', '.xle', '.csv'
-r = hsr.SolinstFileReader(file_path)
+r = hsr.read_solinst_file(file_path)
 
 # Plot the results with
 r.plot()
