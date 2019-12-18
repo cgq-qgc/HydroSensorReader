@@ -1,4 +1,11 @@
 # -*- coding: utf-8 -*-
+# -----------------------------------------------------------------------------
+# Copyright © HydroSensorReader Project Contributors
+# https://github.com/cgq-qgc/HydroSensorReader
+#
+# This file is part of HydroSensorReader.
+# Licensed under the terms of the MIT License.
+# -----------------------------------------------------------------------------
 
 # ---- Standard imports
 import os
@@ -25,7 +32,7 @@ def test_files_dir():
      "2XXXXXX_solinst_levelogger_edge_testfile.xle"])
 def test_solinst_levelogger_edge(test_files_dir, testfile):
     """Test reading Solinst Edge Levelogger files."""
-    solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
+    solinst_file = hsr.read_solinst_file(osp.join(test_files_dir, testfile))
 
     records = solinst_file.records
     assert len(records) == 19484
@@ -49,7 +56,7 @@ def test_solinst_levelogger_edge(test_files_dir, testfile):
 def test_solinst_levelogger_edge_lev(test_files_dir):
     """Test reading Solinst Edge Levelogger .lev files."""
     testfile = "2XXXXXX_solinst_levelogger_edge_testfile.lev"
-    solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
+    solinst_file = hsr.read_solinst_file(osp.join(test_files_dir, testfile))
 
     records = solinst_file.records
     assert len(records) == 10258
@@ -80,7 +87,7 @@ def test_solinst_levelogger_gold(test_files_dir, testfile):
 
     Regression test for Issue #26.
     """
-    solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
+    solinst_file = hsr.read_solinst_file(osp.join(test_files_dir, testfile))
 
     records = solinst_file.records
     assert len(records) == 19475
@@ -112,7 +119,7 @@ def test_solinst_colon_decimalsep(test_files_dir, testfile):
 
     Regression test for Issue #33.
     """
-    solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
+    solinst_file = hsr.read_solinst_file(osp.join(test_files_dir, testfile))
 
     records = solinst_file.records
     assert len(records) == 10
