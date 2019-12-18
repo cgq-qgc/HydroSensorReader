@@ -21,51 +21,31 @@ from pandas import Timestamp
 
 # ---- Local imports
 from hydsensread.file_reader.abstract_file_reader import (
+    TimeSeriesFileReader, LineDefinition)
+
+
+def read_solinst_file(file_path, wait_read=False):
+    """
+    Return a Solinst reader object appropriate to the given file type.
+    """
+    if not osp.isfile(file_path) or not osp.exists(file_path):
+        raise ValueError("The path given doesn't point to an existing file.")
+    root, ext = osp.splitext(file_path)
+    ext = ext[1:]
+
+    if ext in TimeSeriesFileReader.CSV_FILES_TYPES:
+        return CSVSolinstFileReader(file_path, wait_read=wait_read)
+    elif ext == 'lev':
+        return LEVSolinstFileReader(file_path, wait_read=wait_read)
+    elif ext == 'xle':
+        return XLESolinstFileReader(file_path, wait_read=wait_read)
+    else:
+        warnings.warn("Unknown file extension for this compagny")
 
 
 class SolinstFileReader(TimeSeriesFileReader):
-    def __init__(self, file_path: str = None, header_length: int = 10,
-                 wait_read: bool = False):
-        super().__init__(file_path, header_length, encoding='cp1252',
-                         wait_read=True)
-        self.__main_reader = None
-        self.__set_reader(wait_read)
-
-    def __set_reader(self, wait_read):
-        """
-        set the correct file reader for the solinst file
-        :return:
-        """
-        file_ext = self.file_extension
-
-        if file_ext in self.CSV_FILES_TYPES:
-            self.__main_reader = CSVSolinstFileReader(
-                self._file, wait_read=wait_read)
-        elif file_ext == 'lev':
-            self.__main_reader = LEVSolinstFileReader(
-                self._file, wait_read=wait_read)
-        elif file_ext == 'xle':
-            self.__main_reader = XLESolinstFileReader(
-                self._file, wait_read=wait_read)
-        else:
-            warnings.warn("Unknown file extension for this compagny")
-        self._site_of_interest = self.__main_reader._site_of_interest
-    TimeSeriesFileReader, LineDefinition)
-
-    def read_file(self):
-        self.__main_reader.read_file()
-
-    def _get_date_list(self) -> date_list:
-        pass
-
-    def _read_file_header(self):
-        pass
-
-    def _read_file_data_header(self):
-        pass
-
-    def _read_file_data(self):
-        pass
+    def __init__(self, *args, **kargs):
+        super().__init__(*args, **kargs)
 
     def plot(self, other_axis: List[LineDefinition] = list(),
              reformat_temperature=True, *args, **kwargs) -> \
@@ -105,7 +85,7 @@ class SolinstFileReader(TimeSeriesFileReader):
         return fig, axis
 
 
-class LEVSolinstFileReader(TimeSeriesFileReader):
+class LEVSolinstFileReader(SolinstFileReader):
     DATA_CHANNEL_STRING = ".*CHANNEL {} from data header.*"
 
     def __init__(self, file_path: str = None, header_length: int = 10,
@@ -222,7 +202,7 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
             self._site_of_interest.create_time_serie(parameter, parametere_unit, self._date_list, values)
 
 
-class XLESolinstFileReader(TimeSeriesFileReader):
+class XLESolinstFileReader(SolinstFileReader):
     CHANNEL_DATA_HEADER = "Ch{}_data_header"
 
     def __init__(self, file_path: str = None, header_length: int = 10,
@@ -335,7 +315,7 @@ class XLESolinstFileReader(TimeSeriesFileReader):
                                   values)
 
 
-class CSVSolinstFileReader(TimeSeriesFileReader):
+class CSVSolinstFileReader(SolinstFileReader):
     UNIT = 'unit'
     PARAMETER_COL_INDEX = 'col_index'
 
