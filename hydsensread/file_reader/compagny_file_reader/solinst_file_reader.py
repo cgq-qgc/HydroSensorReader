@@ -326,31 +326,12 @@ class CSVSolinstFileReader(SolinstFileReader):
         super().__init__(file_path, header_length, wait_read=wait_read,
                          csv_delim_regex="date([;,\t])time")
 
+    # ---- Base class abstract method
     def _read_file_header(self):
-        """
-        implementation of the base class abstract method
-        """
-        self._get_file_header_data()
-
-    def _read_file_data(self):
-        """
-        implementation of the base class abstract method
-        """
-        self._get_data()
-
-    def _read_file_data_header(self):
-        """
-        implementation of the base class abstract method
-        """
-        self._get_parameter_data()
-        self._date_list = self._get_date_list()
-
-    def _get_file_header_data(self):
         """
         Retrieve metadata from the header and determine the lenght of the
         header.
         """
-        # Retrieve the info from the data header.
         for i, line in enumerate(self.file_content):
             line = ''.join(line)
             if re.search(r"[sS]erial.[nN]umber.*", line):
@@ -368,6 +349,29 @@ class CSVSolinstFileReader(SolinstFileReader):
                 break
         else:
             raise TypeError("The data are not formatted correctly.")
+
+    def _read_file_data(self):
+        """Retrieve the level and temperature data from the file content."""
+        for parameter in list(self._params_dict.keys()):
+            param_unit = self._params_dict[parameter][self.UNIT]
+            param_col_index = (
+                self._params_dict[parameter][self.PARAMETER_COL_INDEX])
+            data = self.file_content[self._start_of_data_row_index + 1:]
+            try:
+                values = [float(val[param_col_index]) for val in data]
+            except ValueError:
+                # This probably means that a coma is used as decimal separator.
+                values = [float(val[param_col_index].replace(',', '.')) for
+                          val in data]
+            self._site_of_interest.create_time_serie(
+                parameter, param_unit, self._date_list, values)
+
+    def _read_file_data_header(self):
+        """
+        implementation of the base class abstract method
+        """
+        self._get_parameter_data()
+        self._date_list = self._get_date_list()
 
     def _get_date_list(self) -> list:
         """Retrieve the datetime data from the file content."""
@@ -409,22 +413,6 @@ class CSVSolinstFileReader(SolinstFileReader):
                     # For Solinst Gold logger files.
                     units = self.file_content[i + 2][0]
                 self._params_dict[param][self.UNIT] = units.strip()
-
-    def _get_data(self):
-        """Retrieve the level and temperature data from the file content."""
-        for parameter in list(self._params_dict.keys()):
-            param_unit = self._params_dict[parameter][self.UNIT]
-            param_col_index = (
-                self._params_dict[parameter][self.PARAMETER_COL_INDEX])
-            data = self.file_content[self._start_of_data_row_index + 1:]
-            try:
-                values = [float(val[param_col_index]) for val in data]
-            except ValueError:
-                # This probably means that a coma is used as decimal separator.
-                values = [float(val[param_col_index].replace(',', '.')) for
-                          val in data]
-            self._site_of_interest.create_time_serie(
-                parameter, param_unit, self._date_list, values)
 
 
 if __name__ == '__main__':
