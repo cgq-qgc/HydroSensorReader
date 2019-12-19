@@ -73,6 +73,7 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
     def __init__(self, *args, **kargs):
         super().__init__(*args, **kargs)
 
+    # ---- Public API
     def plot(self, other_axis: List[LineDefinition] = list(),
              reformat_temperature=True, *args, **kwargs) -> \
             Tuple[plt.Figure, List[plt.Axes]]:
@@ -111,6 +112,15 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
             axis[0].set_ylim(temperature_values.mean() - 1,
                              temperature_values.mean() + 1)
         return fig, axis
+
+    # ---- AbstractFileReader API
+    def _read_file_header(self):
+        """
+        Retrieve metadata from the header and determine the lenght of the
+        header.
+        """
+        self._update_header_lentgh()
+        self._update_plateform_attributes()
 
 
 class LEVSolinstFileReader(SolinstFileReaderBase):
