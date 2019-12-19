@@ -334,36 +334,41 @@ class XLESolinstFileReader(SolinstFileReaderBase):
     # ---- SolinstFileReaderBase API
     def _create_visited_date(self) -> datetime:
         """
-        create a datetime object by reading the file header. The visited date is equal to
-        the creation date of the file
-        :return:
+        Create a datetime object by reading the file header.
+        The visited date is equal to the creation date of the file
         """
         file_info = self.file_root.find('File_info')
 
         date_str = file_info.find('Date').text
         time_str = file_info.find('Time').text
         datetime_str = "{} {}".format(date_str, time_str)
-        datetime_obj = datetime.datetime.strptime(datetime_str, self.YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT)
+        datetime_obj = datetime.datetime.strptime(
+            datetime_str, self.YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT)
         return datetime_obj
 
     def _get_site_name(self) -> str:
-        return self.file_root.find('Instrument_info_data_header').find('Location').text
+        return self.file_root.find(
+            'Instrument_info_data_header').find('Location').text
 
     def _get_serial_number(self):
-        return self.file_root.find('Instrument_info').find('Serial_number').text
+        return self.file_root.find(
+            'Instrument_info').find('Serial_number').text
 
     def _get_project_name(self):
-        return self.file_root.find('Instrument_info_data_header').find('Project_ID').text
+        return self.file_root.find(
+            'Instrument_info_data_header').find('Project_ID').text
 
     def _get_number_of_channels(self):
-        return int(self.file_root.find('Instrument_info').find('Channel').text)
+        return int(self.file_root.find(
+            'Instrument_info').find('Channel').text)
 
     def _get_model_number(self):
         return self.file_root.find('Instrument_info').find('Model_number').text
 
     def _get_battery_level(self):
-        return self.file_root.find('Instrument_info').find('Battery_level').text
-    
+        return self.file_root.find(
+            'Instrument_info').find('Battery_level').text
+
     # ---- Private API
     def _get_data(self) -> None:
         """
@@ -372,7 +377,8 @@ class XLESolinstFileReader(SolinstFileReaderBase):
         """
         for channels in range(self._get_number_of_channels()):
             channel_name = self.CHANNEL_DATA_HEADER.format(channels + 1)
-            channel_parammeter = self.file_root.find(channel_name).find('Identification').text
+            channel_parammeter = self.file_root.find(
+                channel_name).find('Identification').text
             channel_unit = self.file_root.find(channel_name).find('Unit').text
             ch_selector = "ch{}".format(channels + 1)
             print(ch_selector)
@@ -384,10 +390,8 @@ class XLESolinstFileReader(SolinstFileReaderBase):
                 values = [float(d.find(ch_selector).text.replace(',', '.'))
                           for d in self.file_root.iter('Log')]
 
-            self._site_of_interest. \
-                create_time_serie(channel_parammeter,
-                                  channel_unit, self._date_list,
-                                  values)
+            self._site_of_interest.create_time_serie(
+                channel_parammeter, channel_unit, self._date_list, values)
 
 
 class CSVSolinstFileReader(SolinstFileReaderBase):
