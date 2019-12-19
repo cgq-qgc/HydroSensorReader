@@ -38,7 +38,7 @@ r = hsr.XLSHannaFileReader(file_path)
 
 # Read Solinst Levelogger and Barologger files
 # - Supported extension : '.lev', '.xle', '.csv'
-r = hsr.solinst_reader(file_path)
+r = hsr.SolinstFileReader(file_path)
 
 # Plot the results with
 r.plot()

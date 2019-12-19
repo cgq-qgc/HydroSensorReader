@@ -24,51 +24,52 @@ from hydsensread.file_reader.abstract_file_reader import (
     TimeSeriesFileReader, LineDefinition)
 
 
-def solinst_reader(file_path, wait_read=False):
+class SolinstFileReader(object):
     """
-    Return a Solinst reader object appropriate to the given file type.
-
-    Parameters
-    ----------
-    file_path : str, path object
-        A valid string path or path object to a Solinst '.lev', '.xle', or
-        '.csv' level or baro level data file.
-    wait_read : bool
-        A boolean that indicates wheter the content of the file should be
-        read on instantiation of the reader. If 'False', use the
-        'read_file' method of the reader to read the content of the file
-        when needed.
-
-    Returns
-    -------
-    TimeSeriesFileReader
-        A time series file reader that can read Solinst '.lev', '.xle', or
-        '.csv' level or baro logger data files.
-
+    A reader for Solinst '.lev', '.xle', or '.csv' files.
     """
-    if not osp.isfile(file_path) or not osp.exists(file_path):
-        raise ValueError("The path given doesn't point to an existing file.")
-    root, ext = osp.splitext(file_path)
-    ext = ext[1:]
 
-    if ext in TimeSeriesFileReader.CSV_FILES_TYPES:
-        return CSVSolinstFileReader(file_path, wait_read=wait_read)
-    elif ext == 'lev':
-        return LEVSolinstFileReader(file_path, wait_read=wait_read)
-    elif ext == 'xle':
-        return XLESolinstFileReader(file_path, wait_read=wait_read)
-    else:
-        warnings.warn("Unknown file extension for this compagny")
+    def __new__(cls, file_path, wait_read=False):
+        """
+        Parameters
+        ----------
+        file_path : str, path object
+            A valid string path or path object to a Solinst '.lev', '.xle', or
+            '.csv' level or baro level data file.
+        wait_read : bool
+            A boolean that indicates wheter the content of the file should be
+            read on instantiation of the reader. If 'False', use the
+            'read_file' method of the reader to read the content of the file
+            when needed.
 
+        Returns
+        -------
+        TimeSeriesFileReader
+            A time series file reader that can read Solinst '.lev', '.xle', or
+            '.csv' level or baro logger data files.
 
-def SolinstFileReader(file_path, wait_read=False):
-    msg = ("SolinstFileReader is deprecated for removal in 1.8. "
-           "Use the function 'solinst_reader' instead.")
-    warnings.warn(msg, UserWarning)
-    return solinst_reader(file_path, wait_read=False)
+        """
+        if not osp.isfile(file_path) or not osp.exists(file_path):
+            raise ValueError("The path given doesn't point to an "
+                             "existing file.")
+
+        root, ext = osp.splitext(file_path)
+        ext = ext[1:]
+        if ext in TimeSeriesFileReader.CSV_FILES_TYPES:
+            return CSVSolinstFileReader(file_path, wait_read=wait_read)
+        elif ext == 'lev':
+            return LEVSolinstFileReader(file_path, wait_read=wait_read)
+        elif ext == 'xle':
+            return XLESolinstFileReader(file_path, wait_read=wait_read)
+        else:
+            warnings.warn("Unknown file extension for this compagny")
 
 
 class SolinstFileReaderBase(TimeSeriesFileReader):
+    """
+    Base class for Solinst file readers.
+    """
+
     def __init__(self, *args, **kargs):
         super().__init__(*args, **kargs)
 
@@ -77,11 +78,13 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
             Tuple[plt.Figure, List[plt.Axes]]:
         """
         Plot function overriding the TimeSeriesFileReader method.
-        :param other_axis: if other axis needs to be added to the plot, use this parameter
-        :param reformat_temperature: if the temperature axis needs to be reformated or not.
-        :param args:
-        :param kwargs:
-        :return:
+
+        Parameters
+        ----------
+        param other_axis :
+            if other axis needs to be added to the plot, use this parameter
+        param reformat_temperature :
+            if the temperature axis needs to be reformated or not.
         """
         temperature_line_def = LineDefinition('TEMPERATURE_°C', 'red')
         temperature_values = self.records['TEMPERATURE_°C']
@@ -445,7 +448,7 @@ if __name__ == '__main__':
     dirname = osp.join(dirname, 'tests', 'files')
     filename = '1XXXXXX_solinst_levelogger_gold_testfile.csv'
 
-    reader = solinst_reader(osp.join(dirname, filename))
+    reader = SolinstFileReader(osp.join(dirname, filename))
     print(reader.records)
     print(reader.sites)
 

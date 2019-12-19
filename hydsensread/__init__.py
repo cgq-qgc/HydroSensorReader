@@ -7,8 +7,6 @@
 # Licensed under the terms of the MIT License.
 # -----------------------------------------------------------------------------
 
-from .file_reader.compagny_file_reader.solinst_file_reader import (
-    solinst_reader)
 from .file_reader import (
     SolinstFileReader, DATCampbellCRFileReader,  XLSHannaFileReader,
     XSLMaxxamFileReader)
