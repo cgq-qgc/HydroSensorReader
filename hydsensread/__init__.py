@@ -1,14 +1,15 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-__author__ = 'Laptop'
-__date__ = '2018-04-15'
-__description__ = " "
-__version__ = '1.0'
+# -----------------------------------------------------------------------------
+# Copyright © HydroSensorReader Project Contributors
+# https://github.com/cgq-qgc/HydroSensorReader
+#
+# This file is part of HydroSensorReader.
+# Licensed under the terms of the MIT License.
+# -----------------------------------------------------------------------------
 
-from .file_reader import SolinstFileReader, \
-    DATCampbellCRFileReader, \
-    XLSHannaFileReader, \
-    XSLMaxxamFileReader
+from .file_reader import (
+    SolinstFileReader, DATCampbellCRFileReader,  XLSHannaFileReader,
+    XSLMaxxamFileReader)
 from .file_reader.web_page_reader.gnb_core_samples_web_scraper import GNBCoreSamplesDataFactory
 from .file_reader.web_page_reader.gnb_core_samples_web_scraper import GNBCoreSamplesListWebScrapper
 from .file_reader.web_page_reader.gnb_core_samples_web_scraper import GNBCoreSamplesNTSMapSearchWebScrapper

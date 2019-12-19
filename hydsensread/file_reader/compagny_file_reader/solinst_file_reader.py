@@ -1,77 +1,90 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from matplotlib import pyplot as plt
+# -----------------------------------------------------------------------------
+# Copyright © HydroSensorReader Project Contributors
+# https://github.com/cgq-qgc/HydroSensorReader
+#
+# This file is part of HydroSensorReader.
+# Licensed under the terms of the MIT License.
+# -----------------------------------------------------------------------------
 
-__author__ = 'Laptop$'
-__date__ = '2017-07-16$'
-__description__ = " "
-__version__ = '1.3'
-
+# ---- Standard imports
 import datetime
 import re
 import warnings
 from collections import defaultdict
 from typing import List, Tuple
+import os.path as osp
 
+# ---- Third party imports
+from matplotlib import pyplot as plt
 from pandas import Timestamp
 
+# ---- Local imports
 from hydsensread.file_reader.abstract_file_reader import (
-    TimeSeriesFileReader, date_list, LineDefinition)
+    TimeSeriesFileReader, LineDefinition)
 
 
-class SolinstFileReader(TimeSeriesFileReader):
-    def __init__(self, file_path: str = None, header_length: int = 10,
-                 wait_read: bool = False):
-        super().__init__(file_path, header_length, encoding='cp1252',
-                         wait_read=True)
-        self.__main_reader = None
-        self.__set_reader(wait_read)
+class SolinstFileReader(object):
+    """
+    A reader for Solinst '.lev', '.xle', or '.csv' files.
+    """
 
-    def __set_reader(self, wait_read):
+    def __new__(cls, file_path, wait_read=False):
         """
-        set the correct file reader for the solinst file
-        :return:
-        """
-        file_ext = self.file_extension
+        Parameters
+        ----------
+        file_path : str, path object
+            A valid string path or path object to a Solinst '.lev', '.xle', or
+            '.csv' level or baro level data file.
+        wait_read : bool
+            A boolean that indicates wheter the content of the file should be
+            read on instantiation of the reader. If 'False', use the
+            'read_file' method of the reader to read the content of the file
+            when needed.
 
-        if file_ext in self.CSV_FILES_TYPES:
-            self.__main_reader = CSVSolinstFileReader(
-                self._file, wait_read=wait_read)
-        elif file_ext == 'lev':
-            self.__main_reader = LEVSolinstFileReader(
-                self._file, wait_read=wait_read)
-        elif file_ext == 'xle':
-            self.__main_reader = XLESolinstFileReader(
-                self._file, wait_read=wait_read)
+        Returns
+        -------
+        TimeSeriesFileReader
+            A time series file reader that can read Solinst '.lev', '.xle', or
+            '.csv' level or baro logger data files.
+
+        """
+        if not osp.isfile(file_path) or not osp.exists(file_path):
+            raise ValueError("The path given doesn't point to an "
+                             "existing file.")
+
+        root, ext = osp.splitext(file_path)
+        ext = ext[1:]
+        if ext in TimeSeriesFileReader.CSV_FILES_TYPES:
+            return CSVSolinstFileReader(file_path, wait_read=wait_read)
+        elif ext == 'lev':
+            return LEVSolinstFileReader(file_path, wait_read=wait_read)
+        elif ext == 'xle':
+            return XLESolinstFileReader(file_path, wait_read=wait_read)
         else:
             warnings.warn("Unknown file extension for this compagny")
-        self._site_of_interest = self.__main_reader._site_of_interest
 
-    def read_file(self):
-        self.__main_reader.read_file()
 
-    def _get_date_list(self) -> date_list:
-        pass
+class SolinstFileReaderBase(TimeSeriesFileReader):
+    """
+    Base class for Solinst file readers.
+    """
 
-    def _read_file_header(self):
-        pass
-
-    def _read_file_data_header(self):
-        pass
-
-    def _read_file_data(self):
-        pass
+    def __init__(self, *args, **kargs):
+        super().__init__(*args, **kargs)
 
     def plot(self, other_axis: List[LineDefinition] = list(),
              reformat_temperature=True, *args, **kwargs) -> \
             Tuple[plt.Figure, List[plt.Axes]]:
         """
         Plot function overriding the TimeSeriesFileReader method.
-        :param other_axis: if other axis needs to be added to the plot, use this parameter
-        :param reformat_temperature: if the temperature axis needs to be reformated or not.
-        :param args:
-        :param kwargs:
-        :return:
+
+        Parameters
+        ----------
+        param other_axis :
+            if other axis needs to be added to the plot, use this parameter
+        param reformat_temperature :
+            if the temperature axis needs to be reformated or not.
         """
         temperature_line_def = LineDefinition('TEMPERATURE_°C', 'red')
         temperature_values = self.records['TEMPERATURE_°C']
@@ -100,7 +113,7 @@ class SolinstFileReader(TimeSeriesFileReader):
         return fig, axis
 
 
-class LEVSolinstFileReader(TimeSeriesFileReader):
+class LEVSolinstFileReader(SolinstFileReaderBase):
     DATA_CHANNEL_STRING = ".*CHANNEL {} from data header.*"
 
     def __init__(self, file_path: str = None, header_length: int = 10,
@@ -217,7 +230,7 @@ class LEVSolinstFileReader(TimeSeriesFileReader):
             self._site_of_interest.create_time_serie(parameter, parametere_unit, self._date_list, values)
 
 
-class XLESolinstFileReader(TimeSeriesFileReader):
+class XLESolinstFileReader(SolinstFileReaderBase):
     CHANNEL_DATA_HEADER = "Ch{}_data_header"
 
     def __init__(self, file_path: str = None, header_length: int = 10,
@@ -330,7 +343,7 @@ class XLESolinstFileReader(TimeSeriesFileReader):
                                   values)
 
 
-class CSVSolinstFileReader(TimeSeriesFileReader):
+class CSVSolinstFileReader(SolinstFileReaderBase):
     UNIT = 'unit'
     PARAMETER_COL_INDEX = 'col_index'
 
@@ -341,31 +354,12 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
         super().__init__(file_path, header_length, wait_read=wait_read,
                          csv_delim_regex="date([;,\t])time")
 
+    # ---- Base class abstract method
     def _read_file_header(self):
-        """
-        implementation of the base class abstract method
-        """
-        self._get_file_header_data()
-
-    def _read_file_data(self):
-        """
-        implementation of the base class abstract method
-        """
-        self._get_data()
-
-    def _read_file_data_header(self):
-        """
-        implementation of the base class abstract method
-        """
-        self._get_parameter_data()
-        self._date_list = self._get_date_list()
-
-    def _get_file_header_data(self):
         """
         Retrieve metadata from the header and determine the lenght of the
         header.
         """
-        # Retrieve the info from the data header.
         for i, line in enumerate(self.file_content):
             line = ''.join(line)
             if re.search(r"[sS]erial.[nN]umber.*", line):
@@ -383,6 +377,29 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
                 break
         else:
             raise TypeError("The data are not formatted correctly.")
+
+    def _read_file_data(self):
+        """Retrieve the level and temperature data from the file content."""
+        for parameter in list(self._params_dict.keys()):
+            param_unit = self._params_dict[parameter][self.UNIT]
+            param_col_index = (
+                self._params_dict[parameter][self.PARAMETER_COL_INDEX])
+            data = self.file_content[self._start_of_data_row_index + 1:]
+            try:
+                values = [float(val[param_col_index]) for val in data]
+            except ValueError:
+                # This probably means that a coma is used as decimal separator.
+                values = [float(val[param_col_index].replace(',', '.')) for
+                          val in data]
+            self._site_of_interest.create_time_serie(
+                parameter, param_unit, self._date_list, values)
+
+    def _read_file_data_header(self):
+        """
+        implementation of the base class abstract method
+        """
+        self._get_parameter_data()
+        self._date_list = self._get_date_list()
 
     def _get_date_list(self) -> list:
         """Retrieve the datetime data from the file content."""
@@ -425,51 +442,13 @@ class CSVSolinstFileReader(TimeSeriesFileReader):
                     units = self.file_content[i + 2][0]
                 self._params_dict[param][self.UNIT] = units.strip()
 
-    def _get_data(self):
-        """Retrieve the level and temperature data from the file content."""
-        for parameter in list(self._params_dict.keys()):
-            param_unit = self._params_dict[parameter][self.UNIT]
-            param_col_index = (
-                self._params_dict[parameter][self.PARAMETER_COL_INDEX])
-            data = self.file_content[self._start_of_data_row_index + 1:]
-            try:
-                values = [float(val[param_col_index]) for val in data]
-            except ValueError:
-                # This probably means that a coma is used as decimal separator.
-                values = [float(val[param_col_index].replace(',', '.')) for
-                          val in data]
-            self._site_of_interest.create_time_serie(
-                parameter, param_unit, self._date_list, values)
-
 
 if __name__ == '__main__':
-    import os
-    import matplotlib.pyplot as plt
+    dirname = osp.dirname(osp.dirname(osp.dirname(__file__)))
+    dirname = osp.join(dirname, 'tests', 'files')
+    filename = '1XXXXXX_solinst_levelogger_gold_testfile.csv'
 
-    path = os.getcwd()
-    while os.path.split(path)[1] != "hydsensread":
-        path = os.path.split(path)[0]
-    file_loc = os.path.join(path, 'file_example')
+    reader = SolinstFileReader(osp.join(dirname, filename))
+    print(reader.records)
+    print(reader.sites)
 
-    teste_all = True
-    file_loc = "C:\\Users\\Laptop\\Documents\\McCully_slugTest_XM20180608"
-    if teste_all:
-        # file_name = "F21_logger_20160224_20160621.csv"
-        file_name = "PO-12_slug_3_XM20180608.lev"
-        # file_name = "slug_PO-05_20160729_1600.csv"
-        # file_name = "2029499_F7_NordChamp_PL20150925_2015_09_25.xle"
-        # file_name = "2041929_PO-06_XM20170307_2017_03_07.lev"
-        # file_name = "2056794_PO-05_baro_CB20161109_2016_11_09.lev"
-        file_location = os.path.join(file_loc, file_name)
-        print(file_location)
-        # t = ET.parse(open(file_location))
-        # root = t.getroot()
-        # print(root.find('Instrument_info_data_header').find('Location').text)
-        solinst_file = SolinstFileReader(file_location)
-        print(solinst_file.file_reader)
-        solinst_file.read_file()
-        print(solinst_file.sites)
-        print(solinst_file.records)
-        # print(len([i for i in solinst_file.records.dtypes.index if 'kpa' in i.lower()]) > 0)
-        solinst_file.plot(reformat_temperature=False)
-        plt.show(block=True)

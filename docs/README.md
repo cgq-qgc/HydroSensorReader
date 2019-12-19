@@ -3,6 +3,7 @@
 
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![pypi version](https://img.shields.io/pypi/v/HydroSensorReader.svg)](https://pypi.org/project/HydroSensorReader/)
 
 [![Build Status](https://travis-ci.org/cgq-qgc/HydroSensorReader.svg?branch=master)](https://travis-ci.org/cgq-qgc/HydroSensorReader)
 [![Coverage Status](https://coveralls.io/repos/github/cgq-qgc/HydroSensorReader/badge.svg)](https://coveralls.io/github/cgq-qgc/HydroSensorReader)
@@ -36,7 +37,7 @@ r = hsr.DATCampbellCRFileReader(file_path)
 # - Supported extension : '.xls', '.xlsx'
 r = hsr.XLSHannaFileReader(file_path)
 
-# read Solinst Levelogger and Barologger files
+# Read Solinst Levelogger and Barologger files
 # - Supported extension : '.lev', '.xle', '.csv'
 r = hsr.SolinstFileReader(file_path)
 
