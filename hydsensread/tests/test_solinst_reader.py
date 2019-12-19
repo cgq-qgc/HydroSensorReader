@@ -90,15 +90,15 @@ def test_solinst_levelogger_gold(test_files_dir, testfile):
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
 
     records = solinst_file.records
-    assert len(records) == 19475
+    assert len(records) == 200
 
-    assert records.index.tolist()[0] == Timestamp('2017-05-02 13:00:00')
+    assert records.index[0] == Timestamp('2017-05-02 13:00:00')
     assert records.iloc[0].iloc[0] == 923.561
     assert records.iloc[0].iloc[1] == 8.936
 
-    assert records.index.tolist()[-1] == Timestamp('2017-11-21 09:30:00')
-    assert records.iloc[-1].iloc[0] == 912.308
-    assert records.iloc[-1].iloc[1] == 9.204
+    assert records.index[-1] == Timestamp('2017-05-04 14:45:00')
+    assert records.iloc[-1].iloc[0] == 934.8801
+    assert records.iloc[-1].iloc[1] == 8.914
 
     assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_Deg C"]
 
