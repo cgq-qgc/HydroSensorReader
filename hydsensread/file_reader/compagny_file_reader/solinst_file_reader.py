@@ -146,32 +146,32 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         self.sites.other_attributes['altitude'] = self._get_altitude()
 
     def _create_visited_date(self):
-        return None
+        pass
 
     def _get_site_name(self):
         """Return the site name scraped from the header of the file."""
-        return None
+        pass
 
     def _get_serial_number(self):
         """
         Return the serial number of the Solinst level or baro logger scraped
         from the header of the file.
         """
-        return None
+        pass
 
     def _get_project_name(self):
         """Return the site name scraped from the header of the file."""
-        return None
+        pass
 
     def _get_battery_level(self):
-        return None
+        pass
 
     def _get_model_number(self):
-        return None
+        pass
 
     def _get_altitude(self):
         """Return the altitude value scraped from the header of the file."""
-        return None
+        pass
 
 
 class LEVSolinstFileReader(SolinstFileReaderBase):
