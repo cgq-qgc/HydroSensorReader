@@ -497,8 +497,7 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
                     # This means that the value is stored on the next line.
                     next_line = ''.join(self.file_content[i + 1])
                     altitude = float(re.findall(regex, next_line)[0])
-                finally:
-                    break
+                break
         return altitude
 
     # ---- Private API
