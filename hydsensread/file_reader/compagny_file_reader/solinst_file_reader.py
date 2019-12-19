@@ -304,17 +304,11 @@ class XLESolinstFileReader(SolinstFileReaderBase):
         self.file_root = self.file_content.getroot()
         super().read_file()
 
-    def _read_file_header(self):
-        """
-        implementation of the base class abstract method
-        """
-        self._update_plateform_information()
-
+    # ---- AbstractFileReader API
     def _read_file_data(self):
         """
         implementation of the base class abstract method
         """
-
         self._date_list = self._get_date_list()
         self._get_data()
 
@@ -324,18 +318,20 @@ class XLESolinstFileReader(SolinstFileReaderBase):
         """
         pass
 
-    def _update_plateform_information(self):
+    def _get_date_list(self) -> list:
         """
-        update the SensorPlateform class (domain element) by setting its attributs
+        get a list of timestamp present in the file
         :return:
         """
-        self._site_of_interest.visit_date = self._create_visited_date()
-        self._site_of_interest.site_name = self._get_site_name()
-        self._site_of_interest.instrument_serial_number = self._get_serial_number()
-        self._site_of_interest.project_name = self._get_project_name()
-        self._site_of_interest.batterie_level = self._get_battery_level()
-        self._site_of_interest.model_number = self._get_model_number()
+        datetime_list = [datetime.datetime.strptime(
+            "{} {}:{}".format(_data.find('Date').text,
+                              _data.find('Time').text,
+                              _data.find('ms').text),
+            '%Y/%m/%d %H:%M:%S:%f'
+            ) for _data in self.file_root.iter('Log')]
+        return datetime_list
 
+    # ---- SolinstFileReaderBase API
     def _create_visited_date(self) -> datetime:
         """
         create a datetime object by reading the file header. The visited date is equal to
@@ -367,19 +363,8 @@ class XLESolinstFileReader(SolinstFileReaderBase):
 
     def _get_battery_level(self):
         return self.file_root.find('Instrument_info').find('Battery_level').text
-
-    def _get_date_list(self) -> list:
-        """
-        get a list of timestamp present in the file
-        :return:
-        """
-        datetime_list = [datetime.datetime.strptime("{} {}:{}".format(_data.find('Date').text,
-                                                                      _data.find('Time').text,
-                                                                      _data.find('ms').text),
-                                                    '%Y/%m/%d %H:%M:%S:%f')
-                         for _data in self.file_root.iter('Log')]
-        return datetime_list
-
+    
+    # ---- Private API
     def _get_data(self) -> None:
         """
         create time serie and update the SensorPlateform object
