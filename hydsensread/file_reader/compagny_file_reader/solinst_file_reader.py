@@ -401,30 +401,7 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
         super().__init__(file_path, header_length, wait_read=wait_read,
                          csv_delim_regex="date([;,\t])time")
 
-    # ---- Base class abstract method
-    def _read_file_header(self):
-        """
-        Retrieve metadata from the header and determine the lenght of the
-        header.
-        """
-        for i, line in enumerate(self.file_content):
-            line = ''.join(line)
-            if re.search(r"[sS]erial.[nN]umber.*", line):
-                self._site_of_interest.instrument_serial_number = (
-                    self.file_content[i + 1][0].strip())
-            elif re.search(r"[pP]roject.[idID].*", line):
-                self._site_of_interest.project_name = (
-                    self.file_content[i + 1][0].strip())
-            elif re.search(r"[lL]ocation.*", line):
-                self._site_of_interest.site_name = (
-                    self.file_content[i + 1][0].strip())
-            elif 'Date' in line and 'Time' in line:
-                self._start_of_data_row_index = i
-                self._header_length = i
-                break
-        else:
-            raise TypeError("The data are not formatted correctly.")
-
+    # ---- Base class abstract method implementation
     def _read_file_data(self):
         """Retrieve the level and temperature data from the file content."""
         for parameter in list(self._params_dict.keys()):
@@ -468,6 +445,69 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
         self.sites.visit_date = datetimes[-1]
         return datetimes
 
+    # ---- SolinstFileReaderBase API
+    def _update_header_lentgh(self):
+        for i, line in enumerate(self.file_content):
+            line = ''.join(line).lower()
+            if 'date' in line and 'time' in line:
+                self._start_of_data_row_index = i
+                self._header_length = i
+                break
+        else:
+            raise TypeError("The data are not formatted correctly.")
+
+    def _get_site_name(self):
+        """Return the site name scraped from the header of the file."""
+        return self._get_instrument_info(r"[lL]ocation.*")
+
+    def _get_serial_number(self):
+        """
+        Return the serial number of the Solinst level or baro logger scraped
+        from the header of the file.
+        """
+        return self._get_instrument_info(r"[sS]erial.[nN]umber.*")
+
+    def _get_project_name(self):
+        """Return the site name scraped from the header of the file."""
+        return self._get_instrument_info(r"[pP]roject.[idID].*")
+
+    def _get_battery_level(self):
+        return None
+
+    def _get_model_number(self):
+        return None
+
+    def _get_altitude(self):
+        """Return the altitude value scraped from the header of the file."""
+        altitude = None
+        for i, line in enumerate(self.file_content):
+            if i == self._header_length:
+                break
+
+            line = ''.join(line).lower()
+            if re.search(r"[aA]ltitude.*", line):
+                regex = r"\d*\.\d+|\d+"
+                try:
+                    altitude = float(re.findall(regex, line)[0])
+                except IndexError:
+                    # This means that the value is stored on the next line.
+                    next_line = ''.join(self.file_content[i + 1])
+                    altitude = float(re.findall(regex, next_line)[0])
+                finally:
+                    break
+        return altitude
+
+    # ---- Private API
+    def _get_instrument_info(self, regex_: str):
+        result = None
+        for i, line in enumerate(self.file_content):
+            if i == self._header_length:
+                break
+            if re.search(regex_, ''.join(line).lower()):
+                result = self.file_content[i + 1][0].strip()
+                break
+        return result
+
     def _get_parameter_data(self):
         """
         Retrieve the parameters name, units, and column index from the file
@@ -498,4 +538,3 @@ if __name__ == '__main__':
     reader = SolinstFileReader(osp.join(dirname, filename))
     print(reader.records)
     print(reader.sites)
-
