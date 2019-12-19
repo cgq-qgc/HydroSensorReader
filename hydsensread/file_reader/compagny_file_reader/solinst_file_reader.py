@@ -122,6 +122,57 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         self._update_header_lentgh()
         self._update_plateform_attributes()
 
+    # ---- Private API
+    def _update_header_lentgh(self):
+        pass
+
+    def _update_plateform_attributes(self):
+        """
+        Update the SensorPlateform instance of this reader by setting
+        its attributes.
+        """
+        self.sites.visit_date = self._create_visited_date()
+        self.sites.site_name = self._get_site_name()
+        self.sites.instrument_serial_number = self._get_serial_number()
+        self.sites.project_name = self._get_project_name()
+        self.sites.batterie_level = self._get_battery_level()
+        self.sites.model_number = self._get_model_number()
+
+        # A value for the altitude is present in the header of data
+        # files produced by Solinst level and baro loggers of the
+        # Gold series (1xxxxxx) and older. This value is used to
+        # correct measurements for altitude before they are saved
+        # in the logger.
+        self.sites.other_attributes['altitude'] = self._get_altitude()
+
+    def _create_visited_date(self):
+        return None
+
+    def _get_site_name(self):
+        """Return the site name scraped from the header of the file."""
+        return None
+
+    def _get_serial_number(self):
+        """
+        Return the serial number of the Solinst level or baro logger scraped
+        from the header of the file.
+        """
+        return None
+
+    def _get_project_name(self):
+        """Return the site name scraped from the header of the file."""
+        return None
+
+    def _get_battery_level(self):
+        return None
+
+    def _get_model_number(self):
+        return None
+
+    def _get_altitude(self):
+        """Return the altitude value scraped from the header of the file."""
+        return None
+
 
 class LEVSolinstFileReader(SolinstFileReaderBase):
     DATA_CHANNEL_STRING = ".*CHANNEL {} from data header.*"
