@@ -106,6 +106,7 @@ def test_solinst_levelogger_gold(test_files_dir, testfile):
     assert sites.instrument_serial_number == "1062280"
     assert sites.project_name == "03030012"
     assert sites.site_name == "Saint-Guillaume_P14A"
+    assert sites.other_attributes['altitude'] == 42
 
 
 @pytest.mark.parametrize(
