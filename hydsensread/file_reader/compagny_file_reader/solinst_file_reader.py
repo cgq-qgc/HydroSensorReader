@@ -182,13 +182,7 @@ class LEVSolinstFileReader(SolinstFileReaderBase):
         super().__init__(file_path, header_length, encoding='cp1252',
                          wait_read=wait_read)
 
-    def _read_file_header(self):
-        """
-        implementation of the base class abstract method
-        """
-        self._update_header_lentgh()
-        self._update_plateform_attributes()
-
+    # ---- AbstractFileReader API
     def _read_file_data(self):
         """
         implementation of the base class abstract method
@@ -200,57 +194,6 @@ class LEVSolinstFileReader(SolinstFileReaderBase):
         implementation of the base class abstract method
         """
         self._date_list = self._get_date_list()
-
-    def _update_plateform_attributes(self):
-        self._site_of_interest.visit_date = self._create_visited_date()
-        self._site_of_interest.site_name = self._get_site_name()
-        self._site_of_interest.instrument_serial_number = self._get_serial_number()
-        self._site_of_interest.project_name = self._get_project_name()
-        self._site_of_interest.batterie_level = None
-        self._site_of_interest.model_number = None
-
-    def _create_visited_date(self) -> datetime:
-        _date = None
-        _time = None
-        for lines in self.file_content[:self._header_length]:
-            if re.search("^date.*", lines, re.IGNORECASE):
-                _date = lines.split(":")[1].replace(" ", "")
-            if re.search(r"^time.*", lines, re.IGNORECASE):
-                _time = lines.split(" :")[1].replace(" ", "")
-        to_datetime = datetime.datetime.strptime(
-            "{} {}".format(_date, _time),
-            self.MONTH_S_DAY_S_YEAR_HMS_DATE_STRING_FORMAT)
-        return to_datetime
-
-    def _update_header_lentgh(self):
-        for i, lines in enumerate(self.file_content):
-            if re.search('^.data.*', lines.lower()):
-                self._header_length = i + 1
-                break
-        else:
-            raise TypeError("The data are not formatted correctly.")
-
-    def _get_instrument_info(self, regex_: str) -> str:
-        str_to_find = None
-        for lines in self.file_content:
-            if re.search(regex_, lines):
-                str_to_find = lines.split("=")[1]
-                break
-        return str_to_find
-
-    def _get_site_name(self) -> str:
-        return self._get_instrument_info(r".*[lL]ocation.*")
-
-    def _get_serial_number(self):
-        serial_string = self._get_instrument_info(r".*(S|s)erial.number.*")
-        serial_numb = serial_string.split('-')[1].split(' ')[0]
-        return serial_numb
-
-    def _get_project_name(self):
-        return self._get_instrument_info(r".*(I|i)nstrument.number.*")
-
-    def _get_number_of_channels(self) -> int:
-        return int(self._get_instrument_info(r" *Channel *=.*"))
 
     def _get_date_list(self) -> List[datetime.datetime]:
         """Retrieve the datetime data from the file content."""
@@ -266,6 +209,64 @@ class LEVSolinstFileReader(SolinstFileReaderBase):
                 break
             datetime_list.append(_date_time)
         return datetime_list
+
+    # ---- SolinstFileReaderBase API
+    def _update_header_lentgh(self):
+        for i, lines in enumerate(self.file_content):
+            if re.search('^.data.*', lines.lower()):
+                self._header_length = i + 1
+                break
+        else:
+            raise TypeError("The data are not formatted correctly.")
+
+    # ---- Private API
+    def _create_visited_date(self) -> datetime:
+        _date = None
+        _time = None
+        for lines in self.file_content[:self._header_length]:
+            if re.search("^date.*", lines, re.IGNORECASE):
+                _date = lines.split(":")[1].replace(" ", "")
+            if re.search(r"^time.*", lines, re.IGNORECASE):
+                _time = lines.split(" :")[1].replace(" ", "")
+        to_datetime = datetime.datetime.strptime(
+            "{} {}".format(_date, _time),
+            self.MONTH_S_DAY_S_YEAR_HMS_DATE_STRING_FORMAT)
+        return to_datetime
+
+    def _get_instrument_info(self, regex_: str) -> str:
+        str_to_find = None
+        for i, lines in enumerate(self.file_content):
+            if i == self._header_length:
+                break
+            if re.search(regex_, lines):
+                str_to_find = lines.split("=")[1]
+                break
+        return str_to_find
+
+    def _get_altitude(self):
+        """
+        Return the altitude value scraped from the header of the file.
+        """
+        alt_str = self._get_instrument_info(r".*[aA]ltitude.*")
+        if alt_str is not None:
+            return float(re.findall(r"\d*\.\d+|\d+", alt_str)[0])
+        else:
+            return None
+        return
+
+    def _get_site_name(self) -> str:
+        return self._get_instrument_info(r".*[lL]ocation.*")
+
+    def _get_serial_number(self):
+        serial_string = self._get_instrument_info(r".*(S|s)erial.number.*")
+        serial_numb = serial_string.split('-')[1].split(' ')[0]
+        return serial_numb
+
+    def _get_project_name(self):
+        return self._get_instrument_info(r".*(I|i)nstrument.number.*")
+
+    def _get_number_of_channels(self) -> int:
+        return int(self._get_instrument_info(r" *Channel *=.*"))
 
     def _get_data(self):
         for channel_num in range(self._get_number_of_channels()):
