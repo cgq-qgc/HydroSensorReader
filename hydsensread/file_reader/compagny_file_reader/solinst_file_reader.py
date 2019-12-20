@@ -278,7 +278,7 @@ class LEVSolinstFileReader(SolinstFileReaderBase):
             if i == self._header_length:
                 break
             if re.search(regex_, lines):
-                str_to_find = lines.split("=")[1]
+                str_to_find = lines.split("=")[1].strip()
                 break
         return str_to_find
 
