@@ -525,17 +525,23 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
         params = [p for p in data_header if p
                   not in ('', 'Date', 'ms', '100 ms', 'Time')]
         for i, row in enumerate(self.file_content[:self._header_length]):
-            if row[0] in params:
-                param = row[0]
-                self._params_dict[param]['col_index'] = (
-                    data_header.index(param))
+            # Some files produced for Solinst logger models older than the Gold
+            # series add tabulations at the beginning of some lines in the
+            # header, so we need to remove them.
+            row0 = row[0].replace('\t', '')
+            if row0 in params:
+                self._params_dict[row0]['col_index'] = (
+                    data_header.index(row0))
                 if "UNIT: " in self.file_content[i + 1][0]:
                     # For Solinst Edge logger files.
                     units = self.file_content[i + 1][0].split(": ")[1]
+                elif "Offset" in self.file_content[i + 1][0]:
+                    # For Solinst loggers older than the Gold series.
+                    units = self.file_content[i + 2][0].split(" ")[-1]
                 else:
                     # For Solinst Gold logger files.
                     units = self.file_content[i + 2][0]
-                self._params_dict[param]['unit'] = units.strip()
+                self._params_dict[row0]['unit'] = units.strip()
 
     def _get_data(self):
         """Return the numerical data from the Solinst data file."""
