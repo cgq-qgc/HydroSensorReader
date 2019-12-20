@@ -278,7 +278,7 @@ class LEVSolinstFileReader(SolinstFileReaderBase):
             if i == self._header_length:
                 break
             if re.search(regex_, lines):
-                str_to_find = lines.split("=")[1]
+                str_to_find = lines.split("=")[1].strip()
                 break
         return str_to_find
 
@@ -298,7 +298,7 @@ class LEVSolinstFileReader(SolinstFileReaderBase):
 
     def _get_serial_number(self):
         serial_string = self._get_instrument_info(r".*(S|s)erial.number.*")
-        serial_numb = serial_string.split('-')[1].split(' ')[0]
+        serial_numb = re.findall(r'-(?:\s*)(\d*)\s*\d*', serial_string)[0]
         return serial_numb
 
     def _get_project_name(self):
@@ -309,26 +309,31 @@ class LEVSolinstFileReader(SolinstFileReaderBase):
 
     def _get_data(self):
         for channel_num in range(self._get_number_of_channels()):
-            parameter = None
-            parametere_unit = None
-            for row_num, row in enumerate(self.file_content[:self._header_length]):
-                if re.search(self.DATA_CHANNEL_STRING.format(channel_num + 1), row):
-                    row_offset = 1
-                    while not (re.search(self.DATA_CHANNEL_STRING.format(channel_num + 2),
-                                         self.file_content[row_num + row_offset]) or
-                               re.search(r".*data.*", self.file_content[row_num + row_offset].lower())):
-                        row_with_offset = str(self.file_content[row_num + row_offset])
-                        if re.search(r".*identification.*", row_with_offset.lower()):
-                            parameter = row_with_offset.split("=")[1]
-                        if re.search(r".*unit.*", row_with_offset.lower()):
-                            parametere_unit = row_with_offset.split("=")[1]
-                        row_offset += 1
+            param = None
+            param_unit = None
+            for row_num, row in enumerate(
+                    self.file_content[:self._header_length]):
+                data_channel_string = (
+                    self.DATA_CHANNEL_STRING.format(channel_num + 1))
+                if re.search(data_channel_string, row):
+                    next_row = self.file_content[row_num + 1].strip()
+                    if re.search(r".*identification.*", next_row.lower()):
+                        param = next_row.split("=")[-1].strip()
+                    next_row = self.file_content[row_num + 2].strip()
+                    if re.search(r".*unit.*", next_row.lower()):
+                        param_unit = next_row.split("=")[-1].strip()
+                    elif re.search(r".*reference.*", next_row.lower()):
+                        # For Solinst loggers older than the Gold series.
+                        param_unit = next_row.split("=")[-1]
+                        param_unit = param_unit.split(" ")[-1].strip()
 
             values = []
             for lines in self.file_content[self._header_length + 1:-1]:
-                sep_line = [data for data in list(lines.split(" ")) if data != '']
+                sep_line = [
+                    data for data in list(lines.split(" ")) if data != '']
                 values.append(float(sep_line[channel_num + 2]))
-            self._site_of_interest.create_time_serie(parameter, parametere_unit, self._date_list, values)
+            self.sites.create_time_serie(
+                param, param_unit, self._date_list, values)
 
 
 class XLESolinstFileReader(SolinstFileReaderBase):
@@ -520,17 +525,23 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
         params = [p for p in data_header if p
                   not in ('', 'Date', 'ms', '100 ms', 'Time')]
         for i, row in enumerate(self.file_content[:self._header_length]):
-            if row[0] in params:
-                param = row[0]
-                self._params_dict[param]['col_index'] = (
-                    data_header.index(param))
+            # Some files produced for Solinst logger models older than the Gold
+            # series add tabulations at the beginning of some lines in the
+            # header, so we need to remove them.
+            row0 = row[0].replace('\t', '')
+            if row0 in params:
+                self._params_dict[row0]['col_index'] = (
+                    data_header.index(row0))
                 if "UNIT: " in self.file_content[i + 1][0]:
                     # For Solinst Edge logger files.
                     units = self.file_content[i + 1][0].split(": ")[1]
+                elif "Offset" in self.file_content[i + 1][0]:
+                    # For Solinst loggers older than the Gold series.
+                    units = self.file_content[i + 2][0].split(" ")[-1]
                 else:
                     # For Solinst Gold logger files.
                     units = self.file_content[i + 2][0]
-                self._params_dict[param]['unit'] = units.strip()
+                self._params_dict[row0]['unit'] = units.strip()
 
     def _get_data(self):
         """Return the numerical data from the Solinst data file."""
@@ -553,7 +564,12 @@ if __name__ == '__main__':
     dirname = osp.dirname(osp.dirname(osp.dirname(__file__)))
     dirname = osp.join(dirname, 'tests', 'files')
     filename = '1XXXXXX_solinst_levelogger_gold_testfile.csv'
+    filename = '1XXXXXX_solinst_levelogger_gold_testfile.lev'
+    filename = 'XXXX_solinst_levelogger_M5.csv'
+    filename = 'XXXX_solinst_levelogger_M5.lev'
 
     reader = SolinstFileReader(osp.join(dirname, filename))
     print(reader.records)
     print(reader.sites)
+    print(reader.sites.instrument_serial_number)
+    print(reader.records.keys())
