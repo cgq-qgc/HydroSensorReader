@@ -381,7 +381,6 @@ class XLESolinstFileReader(SolinstFileReaderBase):
                 channel_name).find('Identification').text
             channel_unit = self.file_root.find(channel_name).find('Unit').text
             ch_selector = "ch{}".format(channels + 1)
-            print(ch_selector)
             try:
                 values = [float(d.find(ch_selector).text)
                           for d in self.file_root.iter('Log')]
@@ -395,8 +394,6 @@ class XLESolinstFileReader(SolinstFileReaderBase):
 
 
 class CSVSolinstFileReader(SolinstFileReaderBase):
-    UNIT = 'unit'
-    PARAMETER_COL_INDEX = 'col_index'
 
     def __init__(self, file_path: str = None, header_length: int = 12,
                  wait_read: bool = False):
@@ -522,7 +519,7 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
         for i, row in enumerate(self.file_content[:self._header_length]):
             if row[0] in params:
                 param = row[0]
-                self._params_dict[param][self.PARAMETER_COL_INDEX] = (
+                self._params_dict[param]['col_index'] = (
                     data_header.index(param))
                 if "UNIT: " in self.file_content[i + 1][0]:
                     # For Solinst Edge logger files.
@@ -530,7 +527,7 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
                 else:
                     # For Solinst Gold logger files.
                     units = self.file_content[i + 2][0]
-                self._params_dict[param][self.UNIT] = units.strip()
+                self._params_dict[param]['unit'] = units.strip()
 
 
 if __name__ == '__main__':
