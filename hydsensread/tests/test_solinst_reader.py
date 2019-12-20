@@ -51,6 +51,7 @@ def test_solinst_levelogger_edge(test_files_dir, testfile):
     assert records.iloc[-1].iloc[0] == 1920.85
     assert records.iloc[-1].iloc[1] == 7.872
 
+    assert solinst_file.plot()
 
 
 def test_solinst_levelogger_edge_lev(test_files_dir):
