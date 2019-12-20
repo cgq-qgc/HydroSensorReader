@@ -59,8 +59,14 @@ def test_solinst_levelogger_edge_lev(test_files_dir):
     testfile = "2XXXXXX_solinst_levelogger_edge_testfile.lev"
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
 
+    sites = solinst_file.sites
+    assert sites.instrument_serial_number == "2041929"
+    assert sites.project_name == "McCully"
+    assert sites.site_name == "PO-06_XM20170307"
+
     records = solinst_file.records
     assert len(records) == 200
+    assert list(records.columns) == ["LEVEL_m", "TEMPERATURE_degC"]
 
     assert records.index.tolist()[0] == Timestamp('2017-03-07 19:00:00')
     assert records.iloc[0].iloc[0] == 14.6861
@@ -70,12 +76,6 @@ def test_solinst_levelogger_edge_lev(test_files_dir):
     assert records.iloc[-1].iloc[0] == 14.5130
     assert records.iloc[-1].iloc[1] == 7.610
 
-    assert list(records.columns) == ["LEVEL_m", "TEMPERATURE_degC"]
-
-    sites = solinst_file.sites
-    assert sites.instrument_serial_number == "2041929"
-    assert sites.project_name == "McCully"
-    assert sites.site_name == "PO-06_XM20170307"
 
 
 @pytest.mark.parametrize(
