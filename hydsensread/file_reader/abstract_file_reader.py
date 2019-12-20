@@ -15,7 +15,8 @@ import matplotlib.pyplot as plt
 from pandas import DataFrame
 
 from hydsensread import file_parser
-from hydsensread.site_and_records import *
+from hydsensread.site_and_records import (
+    DrillingSite, geographical_coordinates, Sample, SensorPlateform)
 
 sample_ana_type = Dict[str, Sample]
 sample_dict = Dict[str, sample_ana_type]
@@ -42,8 +43,11 @@ class LineDefinition(object):
 
 
 class AbstractFileReader(object, metaclass=ABCMeta):
-    """Interface permettant de lire un fichier provenant d'un datalogger quelconque
-    classe permettant d'extraire des données d'un fichier quelconque.
+    """
+    Interface permettant de lire un fichier provenant d'un datalogger
+    quelconque classe permettant d'extraire des données d'un fichier
+    quelconque.
+
     Un fichier de donnée est en général composé de :
     - Entete d'information sur l'environnement de prise de données
     - Entete d'information sur les colonnes de données
@@ -56,8 +60,10 @@ class AbstractFileReader(object, metaclass=ABCMeta):
     WEB_XML_FILES_TYPES = ['http']
     MONTH_S_DAY_S_YEAR_HMS_DATE_STRING_FORMAT = '%m/%d/%y %H:%M:%S'
     YEAR_S_MONTH_S_DAY_HM_DATE_STRING_FORMAT = '%Y/%m/%d %H:%M'
-    YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT = YEAR_S_MONTH_S_DAY_HM_DATE_STRING_FORMAT + ":%S"
-    YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT = YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT + ".%f"
+    YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT = (
+        YEAR_S_MONTH_S_DAY_HM_DATE_STRING_FORMAT + ":%S")
+    YEAR_S_MONTH_S_DAY_HMSMS_DATE_STRING_FORMAT = (
+        YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT + ".%f")
 
     def __init__(self, file_path: str = None,
                  header_length: int = 10,
@@ -103,19 +109,23 @@ class AbstractFileReader(object, metaclass=ABCMeta):
         file_ext = self.file_extension
         try:
             if file_ext in self.TXT_FILE_TYPES:
-                file_reader = file_parser.TXTFileParser(file_path=self._file,
-                                                        header_length=self._header_length, encoding=self._encoding)
+                file_reader = file_parser.TXTFileParser(
+                    file_path=self._file,
+                    header_length=self._header_length,
+                    encoding=self._encoding)
             elif file_ext in self.XLS_FILES_TYPES:
-                file_reader = file_parser.EXCELFileParser(file_path=self._file,
-                                                          header_length=self._header_length)
+                file_reader = file_parser.EXCELFileParser(
+                    file_path=self._file,
+                    header_length=self._header_length)
             elif file_ext in self.CSV_FILES_TYPES:
                 file_reader = file_parser.CSVFileParser(
                     file_path=self._file,
                     header_length=self._header_length,
                     csv_delim_regex=self._csv_delim_regex)
             elif file_ext in self.WEB_XML_FILES_TYPES or 'http' in self._file:
-                file_reader = file_parser.WEBFileParser(file_path=self._file,
-                                                        requests_params=self.request_params)
+                file_reader = file_parser.WEBFileParser(
+                    file_path=self._file,
+                    requests_params=self.request_params)
             elif file_ext in self.XML_FILES_TYPES:
                 file_reader = file_parser.XMLFileParser(file_path=self._file)
         except ValueError as e:
@@ -136,12 +146,13 @@ class AbstractFileReader(object, metaclass=ABCMeta):
         if len(file_list) == 1:
             raise ValueError("The path given doesn't point to a file name")
         if len(file_list) > 2 and 'http' not in self._file:
-            raise ValueError("The file name seems to be corrupted. Too much file extension in the current name")
+            raise ValueError("The file name seems to be corrupted. "
+                             "Too much file extension in the current name.")
         else:
             return file_list[-1].lower()
 
     @property
-    def file_content(self) -> Union[ET.ElementTree, bs4.BeautifulSoup, list,]:
+    def file_content(self) -> Union[ET.ElementTree, bs4.BeautifulSoup, list, ]:
         return self.file_reader.get_file_content
 
     def _make_site(self):
