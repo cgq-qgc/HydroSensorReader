@@ -146,45 +146,29 @@ class AbstractFileReader(object, metaclass=ABCMeta):
 
     def _make_site(self):
         """
-        create a site object by reading the file header and the data header to know what
-        was recorded by calling
-        -   self._read_file_header()
-        -   self._read_file_data_header()
-        :return:
+        Create a site object by reading the file header and the data header
+        to know what was recorded.
         """
         self._read_file_header()
         self._read_file_data_header()
 
     def _make_data(self):
-        """
-        read and classified the data by calling
-        -   self._read_file_data()
-        :return:
-        """
+        """Read and classify the data."""
         self._read_file_data()
 
     @abstractmethod
     def _read_file_header(self):
-        """
-        Read the file header
-        :return:
-        """
+        """Read the file header."""
         pass
 
     @abstractmethod
     def _read_file_data_header(self):
-        """
-        read the data header (what was recorded)
-        :return:
-        """
+        """Read the data header (what was recorded)."""
         pass
 
     @abstractmethod
     def _read_file_data(self):
-        """
-        read and classified the data column
-        :return:
-        """
+        """Read and classify the data columns."""
         pass
 
 
