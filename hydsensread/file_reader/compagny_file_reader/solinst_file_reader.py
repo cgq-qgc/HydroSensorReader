@@ -87,9 +87,9 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         param reformat_temperature :
             if the temperature axis needs to be reformated or not.
         """
-        temperature_line_def = LineDefinition('TEMPERATURE_°C', 'red')
-        temperature_values = self.records['TEMPERATURE_°C']
         all_axis = other_axis
+        temperature_line_def = LineDefinition('TEMPERATURE_degC', 'red')
+        temperature_values = self.records['TEMPERATURE_degC']
         # This part produce the axis to be plotted
         if len(all_axis) == 0:
             # Get the records for the current station
