@@ -74,9 +74,8 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         super().__init__(*args, **kargs)
 
     # ---- Public API
-    def plot(self, other_axis: List[LineDefinition] = list(),
-             reformat_temperature=True, *args, **kwargs) -> \
-            Tuple[plt.Figure, List[plt.Axes]]:
+    def plot(self, other_axis=None, reformat_temperature=True,
+             *args, **kwargs) -> Tuple[plt.Figure, List[plt.Axes]]:
         """
         Plot function overriding the TimeSeriesFileReader method.
 
@@ -87,9 +86,9 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         param reformat_temperature :
             if the temperature axis needs to be reformated or not.
         """
-        all_axis = other_axis
         temperature_line_def = LineDefinition('TEMPERATURE_degC', 'red')
         temperature_values = self.records['TEMPERATURE_degC']
+        all_axis = [] if other_axis is None else other_axis
         # This part produce the axis to be plotted
         if len(all_axis) == 0:
             # Get the records for the current station
