@@ -130,7 +130,19 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         """Read and classify the data columns."""
         self._date_list = self._get_date_list()
         self._get_data()
+        self._format_data_units()
     # ---- Private API
+    def _format_data_units(self):
+        columns_map = {}
+        for column in self.records.columns:
+            column_split = column.split('_')
+            units = column_split[-1].replace(' ', '').lower()
+            if units in ['°c', 'degc', 'degree_celsius', 'celsius', 'degreec']:
+                columns_map[column] = '_'.join(column_split[:-1]) + '_degC'
+            else:
+                columns_map[column] = column
+        self.records.rename(columns_map, axis='columns', inplace=True)
+
     def _update_header_lentgh(self):
         pass
 
