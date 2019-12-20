@@ -122,6 +122,10 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         self._update_header_lentgh()
         self._update_plateform_attributes()
 
+    def _read_file_data_header(self):
+        """Read the data header (what was recorded)."""
+        pass
+
     # ---- Private API
     def _update_header_lentgh(self):
         pass
@@ -188,13 +192,6 @@ class LEVSolinstFileReader(SolinstFileReaderBase):
         implementation of the base class abstract method
         """
         self._get_data()
-
-    def _read_file_data_header(self):
-        """
-        implementation of the base class abstract method
-        """
-        self._date_list = self._get_date_list()
-
     def _get_date_list(self) -> List[datetime.datetime]:
         """Retrieve the datetime data from the file content."""
         sep = self.file_content[self._header_length + 1][4]
@@ -311,13 +308,6 @@ class XLESolinstFileReader(SolinstFileReaderBase):
         """
         self._date_list = self._get_date_list()
         self._get_data()
-
-    def _read_file_data_header(self):
-        """
-        implementation of the base class abstract method
-        """
-        pass
-
     def _get_date_list(self) -> list:
         """
         get a list of timestamp present in the file
@@ -418,13 +408,6 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
                           val in data]
             self._site_of_interest.create_time_serie(
                 parameter, param_unit, self._date_list, values)
-
-    def _read_file_data_header(self):
-        """
-        implementation of the base class abstract method
-        """
-        self._get_parameter_data()
-        self._date_list = self._get_date_list()
 
     def _get_date_list(self) -> list:
         """Retrieve the datetime data from the file content."""
