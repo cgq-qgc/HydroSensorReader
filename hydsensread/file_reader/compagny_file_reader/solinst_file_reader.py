@@ -564,7 +564,12 @@ if __name__ == '__main__':
     dirname = osp.dirname(osp.dirname(osp.dirname(__file__)))
     dirname = osp.join(dirname, 'tests', 'files')
     filename = '1XXXXXX_solinst_levelogger_gold_testfile.csv'
+    filename = '1XXXXXX_solinst_levelogger_gold_testfile.lev'
+    filename = 'XXXX_solinst_levelogger_M5.csv'
+    filename = 'XXXX_solinst_levelogger_M5.lev'
 
     reader = SolinstFileReader(osp.join(dirname, filename))
     print(reader.records)
     print(reader.sites)
+    print(reader.sites.instrument_serial_number)
+    print(reader.records.keys())
