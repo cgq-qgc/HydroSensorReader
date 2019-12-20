@@ -34,8 +34,14 @@ def test_solinst_levelogger_edge(test_files_dir, testfile):
     """Test reading Solinst Edge Levelogger files."""
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
 
+    sites = solinst_file.sites
+    assert sites.instrument_serial_number == "2010143"
+    assert sites.project_name == "03040018"
+    assert sites.site_name == "Sutton_PO22B"
+
     records = solinst_file.records
     assert len(records) == 200
+    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
 
     assert records.index.tolist()[0] == Timestamp('2017-05-03 13:00:00')
     assert records.iloc[0].iloc[0] == 1919.32
@@ -45,12 +51,6 @@ def test_solinst_levelogger_edge(test_files_dir, testfile):
     assert records.iloc[-1].iloc[0] == 1920.85
     assert records.iloc[-1].iloc[1] == 7.872
 
-    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
-
-    sites = solinst_file.sites
-    assert sites.instrument_serial_number == "2010143"
-    assert sites.project_name == "03040018"
-    assert sites.site_name == "Sutton_PO22B"
 
 
 def test_solinst_levelogger_edge_lev(test_files_dir):
