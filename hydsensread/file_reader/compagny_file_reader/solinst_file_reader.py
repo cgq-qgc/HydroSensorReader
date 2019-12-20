@@ -131,6 +131,8 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         self._date_list = self._get_date_list()
         self._get_data()
         self._format_data_units()
+        self._undo_altitude_correction()
+
     # ---- Private API
     def _format_data_units(self):
         columns_map = {}
@@ -142,6 +144,35 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
             else:
                 columns_map[column] = column
         self.records.rename(columns_map, axis='columns', inplace=True)
+
+    def _undo_altitude_correction(self):
+        """
+        Undo the altitude correction for level and baro loggers of the
+        Gold series (1xxxxxx) and older.
+
+        See cgq-qgc/HydroSensorReader#43
+        """
+        altitude = self.sites.other_attributes['altitude']
+        serial_number = int(self.sites.instrument_serial_number)
+        if altitude is not None and serial_number < 2000000:
+            for column in self.records.columns:
+                # When a metric unit is used, the unit of altitude is meters.
+                # When feet are the level channel units, feet are the units
+                # of altitude.
+                #
+                # See Levelogger Series User Guide - Software Version 4,
+                # section 5.9 Levelogger Gold Series Setup, page 35.
+                units = column.split('_')[-1]
+                if units in ['m', 'ft']:
+                    self.sites.records[column] = (
+                        self.sites.records[column] - 0.0012 * altitude)
+                elif units == 'cm':
+                    self.sites.records[column] = (
+                        self.sites.records[column] - 0.12 * altitude)
+
+    def _get_data(self):
+        """Return the numerical data from the Solinst data file."""
+        pass
 
     def _update_header_lentgh(self):
         pass
