@@ -215,11 +215,11 @@ class TimeSeriesFileReader(AbstractFileReader):
     def records(self, value: DataFrame):
         self._site_of_interest.records = value
 
-    def plot(self, main_axis_def: LineDefinition, other_axis: List[LineDefinition], legend_loc='upper left', *args,
-             **kwargs) \
-            -> Tuple[plt.Figure, List[plt.Axes]]:
+    def plot(self, main_axis_def: LineDefinition,
+             other_axis,
+             legend_loc='upper left',
+             *args, **kwargs) -> Tuple[plt.Figure, List[plt.Axes]]:
         """
-
         :param main_axis_def:
         :param other_axis:
         :param legend_loc:
@@ -244,7 +244,9 @@ class TimeSeriesFileReader(AbstractFileReader):
         self.records = self.records.drop_duplicates()
         return self.records
 
-    def _add_axe_to_plot(self, parent_plot, new_line_def: LineDefinition, **kwargs) -> mp_axe.Axes:
+    def _add_axe_to_plot(self, parent_plot,
+                         new_line_def: LineDefinition,
+                         **kwargs) -> mp_axe.Axes:
         new_axis = parent_plot.twinx()
         new_axis.plot(self.records[new_line_def.param],
                       color=new_line_def.color, linestyle=new_line_def.linestyle,
@@ -253,19 +255,22 @@ class TimeSeriesFileReader(AbstractFileReader):
         new_axis.set_ylabel(new_line_def.param, color=new_line_def.color)
         new_axis.spines["right"].set_color(new_line_def.color)
         if new_line_def.outward != 0:
-            new_axis.spines["right"].set_position(("outward", new_line_def.outward))
+            new_axis.spines["right"].set_position(
+                ("outward", new_line_def.outward))
 
         return new_axis
 
-    def _add_first_axis(self, main_axis: mp_axe.Axes, line_def: LineDefinition, **kwargs) -> mp_axe.Axes:
+    def _add_first_axis(self, main_axis: mp_axe.Axes,
+                        line_def: LineDefinition, **kwargs) -> mp_axe.Axes:
         main_axis.plot(self.records[line_def.param],
                        color=line_def.color,
                        linestyle=line_def.linestyle,
                        linewidth=line_def.linewidth, **kwargs)
-
         main_axis.set_ylabel(line_def.param, color=line_def.color)
         main_axis.spines['left'].set_color(line_def.color)
-        main_axis.set_title(self.sites.site_name + " - Visit date: " + str(self.sites.visit_date))
+        main_axis.set_title(self.sites.site_name +
+                            " - Visit date: " +
+                            str(self.sites.visit_date))
         main_axis.grid(line_def.make_grid)
 
         return main_axis
