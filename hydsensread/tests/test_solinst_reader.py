@@ -76,6 +76,7 @@ def test_solinst_levelogger_edge_lev(test_files_dir):
     assert records.iloc[-1].iloc[0] == 14.5130
     assert records.iloc[-1].iloc[1] == 7.610
 
+    assert solinst_file.plot()
 
 
 @pytest.mark.parametrize(
