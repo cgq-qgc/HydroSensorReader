@@ -13,11 +13,13 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 
 from pandas import DataFrame
+from pandas.plotting import register_matplotlib_converters
 
 from hydsensread import file_parser
 from hydsensread.site_and_records import (
     DrillingSite, geographical_coordinates, Sample, SensorPlateform)
 
+register_matplotlib_converters()
 sample_ana_type = Dict[str, Sample]
 sample_dict = Dict[str, sample_ana_type]
 date_list = List[datetime.datetime]
@@ -215,8 +217,7 @@ class TimeSeriesFileReader(AbstractFileReader):
     def records(self, value: DataFrame):
         self._site_of_interest.records = value
 
-    def plot(self, main_axis_def: LineDefinition,
-             other_axis,
+    def plot(self, main_axis_def: LineDefinition, other_axis,
              legend_loc='upper left',
              *args, **kwargs) -> Tuple[plt.Figure, List[plt.Axes]]:
         """
