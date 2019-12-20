@@ -126,6 +126,10 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         """Read the data header (what was recorded)."""
         pass
 
+    def _read_file_data(self):
+        """Read and classify the data columns."""
+        self._date_list = self._get_date_list()
+        self._get_data()
     # ---- Private API
     def _update_header_lentgh(self):
         pass
@@ -187,11 +191,6 @@ class LEVSolinstFileReader(SolinstFileReaderBase):
                          wait_read=wait_read)
 
     # ---- AbstractFileReader API
-    def _read_file_data(self):
-        """
-        implementation of the base class abstract method
-        """
-        self._get_data()
     def _get_date_list(self) -> List[datetime.datetime]:
         """Retrieve the datetime data from the file content."""
         sep = self.file_content[self._header_length + 1][4]
@@ -302,12 +301,6 @@ class XLESolinstFileReader(SolinstFileReaderBase):
         super().read_file()
 
     # ---- AbstractFileReader API
-    def _read_file_data(self):
-        """
-        implementation of the base class abstract method
-        """
-        self._date_list = self._get_date_list()
-        self._get_data()
     def _get_date_list(self) -> list:
         """
         get a list of timestamp present in the file
@@ -393,22 +386,6 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
                          csv_delim_regex="date([;,\t])time")
 
     # ---- Base class abstract method implementation
-    def _read_file_data(self):
-        """Retrieve the level and temperature data from the file content."""
-        for parameter in list(self._params_dict.keys()):
-            param_unit = self._params_dict[parameter][self.UNIT]
-            param_col_index = (
-                self._params_dict[parameter][self.PARAMETER_COL_INDEX])
-            data = self.file_content[self._start_of_data_row_index + 1:]
-            try:
-                values = [float(val[param_col_index]) for val in data]
-            except ValueError:
-                # This probably means that a coma is used as decimal separator.
-                values = [float(val[param_col_index].replace(',', '.')) for
-                          val in data]
-            self._site_of_interest.create_time_serie(
-                parameter, param_unit, self._date_list, values)
-
     def _get_date_list(self) -> list:
         """Retrieve the datetime data from the file content."""
         data_header = self.file_content[self._start_of_data_row_index]
@@ -511,6 +488,22 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
                     # For Solinst Gold logger files.
                     units = self.file_content[i + 2][0]
                 self._params_dict[param]['unit'] = units.strip()
+
+    def _get_data(self):
+        """Return the numerical data from the Solinst data file."""
+        self._get_parameter_data()
+        for parameter in list(self._params_dict.keys()):
+            param_unit = self._params_dict[parameter]['unit']
+            param_col_index = self._params_dict[parameter]['col_index']
+            data = self.file_content[self._start_of_data_row_index + 1:]
+            try:
+                values = [float(val[param_col_index]) for val in data]
+            except ValueError:
+                # This probably means that a coma is used as decimal separator.
+                values = [float(val[param_col_index].replace(',', '.')) for
+                          val in data]
+            self._site_of_interest.create_time_serie(
+                parameter, param_unit, self._date_list, values)
 
 
 if __name__ == '__main__':
