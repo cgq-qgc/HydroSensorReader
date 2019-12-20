@@ -73,6 +73,7 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
     def __init__(self, *args, **kargs):
         super().__init__(*args, **kargs)
 
+    # ---- Public API
     def plot(self, other_axis: List[LineDefinition] = list(),
              reformat_temperature=True, *args, **kwargs) -> \
             Tuple[plt.Figure, List[plt.Axes]]:
@@ -112,6 +113,117 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
                              temperature_values.mean() + 1)
         return fig, axis
 
+    # ---- AbstractFileReader API
+    def _read_file_header(self):
+        """
+        Retrieve metadata from the header and determine the lenght of the
+        header.
+        """
+        self._update_header_lentgh()
+        self._update_plateform_attributes()
+
+    def _read_file_data_header(self):
+        """Read the data header (what was recorded)."""
+        pass
+
+    def _read_file_data(self):
+        """Read and classify the data columns."""
+        self._date_list = self._get_date_list()
+        self._get_data()
+        self._format_data_units()
+        self._undo_altitude_correction()
+
+    # ---- Private API
+    def _format_data_units(self):
+        columns_map = {}
+        for column in self.records.columns:
+            column_split = column.split('_')
+            units = column_split[-1].replace(' ', '').lower()
+            if units in ['°c', 'degc', 'degree_celsius', 'celsius', 'degreec']:
+                columns_map[column] = '_'.join(column_split[:-1]) + '_degC'
+            else:
+                columns_map[column] = column
+        self.records.rename(columns_map, axis='columns', inplace=True)
+
+    def _undo_altitude_correction(self):
+        """
+        Undo the altitude correction for level and baro loggers of the
+        Gold series (1xxxxxx) and older.
+
+        See cgq-qgc/HydroSensorReader#43
+        """
+        altitude = self.sites.other_attributes['altitude']
+        serial_number = int(self.sites.instrument_serial_number)
+        if altitude is not None and serial_number < 2000000:
+            for column in self.records.columns:
+                # When a metric unit is used, the unit of altitude is meters.
+                # When feet are the level channel units, feet are the units
+                # of altitude.
+                #
+                # See Levelogger Series User Guide - Software Version 4,
+                # section 5.9 Levelogger Gold Series Setup, page 35.
+                units = column.split('_')[-1]
+                if units in ['m', 'ft']:
+                    self.sites.records[column] = (
+                        self.sites.records[column] - 0.0012 * altitude)
+                elif units == 'cm':
+                    self.sites.records[column] = (
+                        self.sites.records[column] - 0.12 * altitude)
+
+    def _get_data(self):
+        """Return the numerical data from the Solinst data file."""
+        pass
+
+    def _update_header_lentgh(self):
+        pass
+
+    def _update_plateform_attributes(self):
+        """
+        Update the SensorPlateform instance of this reader by setting
+        its attributes.
+        """
+        self.sites.visit_date = self._create_visited_date()
+        self.sites.site_name = self._get_site_name()
+        self.sites.instrument_serial_number = self._get_serial_number()
+        self.sites.project_name = self._get_project_name()
+        self.sites.batterie_level = self._get_battery_level()
+        self.sites.model_number = self._get_model_number()
+
+        # A value for the altitude is present in the header of data
+        # files produced by Solinst level and baro loggers of the
+        # Gold series (1xxxxxx) and older. This value is used to
+        # correct measurements for altitude before they are saved
+        # in the logger.
+        self.sites.other_attributes['altitude'] = self._get_altitude()
+
+    def _create_visited_date(self):
+        pass
+
+    def _get_site_name(self):
+        """Return the site name scraped from the header of the file."""
+        pass
+
+    def _get_serial_number(self):
+        """
+        Return the serial number of the Solinst level or baro logger scraped
+        from the header of the file.
+        """
+        pass
+
+    def _get_project_name(self):
+        """Return the site name scraped from the header of the file."""
+        pass
+
+    def _get_battery_level(self):
+        pass
+
+    def _get_model_number(self):
+        pass
+
+    def _get_altitude(self):
+        """Return the altitude value scraped from the header of the file."""
+        pass
+
 
 class LEVSolinstFileReader(SolinstFileReaderBase):
     DATA_CHANNEL_STRING = ".*CHANNEL {} from data header.*"
@@ -121,76 +233,7 @@ class LEVSolinstFileReader(SolinstFileReaderBase):
         super().__init__(file_path, header_length, encoding='cp1252',
                          wait_read=wait_read)
 
-    def _read_file_header(self):
-        """
-        implementation of the base class abstract method
-        """
-        self._update_header_lentgh()
-        self._update_plateform_attributes()
-
-    def _read_file_data(self):
-        """
-        implementation of the base class abstract method
-        """
-        self._get_data()
-
-    def _read_file_data_header(self):
-        """
-        implementation of the base class abstract method
-        """
-        self._date_list = self._get_date_list()
-
-    def _update_plateform_attributes(self):
-        self._site_of_interest.visit_date = self._create_visited_date()
-        self._site_of_interest.site_name = self._get_site_name()
-        self._site_of_interest.instrument_serial_number = self._get_serial_number()
-        self._site_of_interest.project_name = self._get_project_name()
-        self._site_of_interest.batterie_level = None
-        self._site_of_interest.model_number = None
-
-    def _create_visited_date(self) -> datetime:
-        _date = None
-        _time = None
-        for lines in self.file_content[:self._header_length]:
-            if re.search("^date.*", lines, re.IGNORECASE):
-                _date = lines.split(":")[1].replace(" ", "")
-            if re.search(r"^time.*", lines, re.IGNORECASE):
-                _time = lines.split(" :")[1].replace(" ", "")
-        to_datetime = datetime.datetime.strptime(
-            "{} {}".format(_date, _time),
-            self.MONTH_S_DAY_S_YEAR_HMS_DATE_STRING_FORMAT)
-        return to_datetime
-
-    def _update_header_lentgh(self):
-        for i, lines in enumerate(self.file_content):
-            if re.search('^.data.*', lines.lower()):
-                self._header_length = i + 1
-                break
-        else:
-            raise TypeError("The data are not formatted correctly.")
-
-    def _get_instrument_info(self, regex_: str) -> str:
-        str_to_find = None
-        for lines in self.file_content:
-            if re.search(regex_, lines):
-                str_to_find = lines.split("=")[1]
-                break
-        return str_to_find
-
-    def _get_site_name(self) -> str:
-        return self._get_instrument_info(r".*[lL]ocation.*")
-
-    def _get_serial_number(self):
-        serial_string = self._get_instrument_info(r".*(S|s)erial.number.*")
-        serial_numb = serial_string.split('-')[1].split(' ')[0]
-        return serial_numb
-
-    def _get_project_name(self):
-        return self._get_instrument_info(r".*(I|i)nstrument.number.*")
-
-    def _get_number_of_channels(self) -> int:
-        return int(self._get_instrument_info(r" *Channel *=.*"))
-
+    # ---- AbstractFileReader API
     def _get_date_list(self) -> List[datetime.datetime]:
         """Retrieve the datetime data from the file content."""
         sep = self.file_content[self._header_length + 1][4]
@@ -205,6 +248,64 @@ class LEVSolinstFileReader(SolinstFileReaderBase):
                 break
             datetime_list.append(_date_time)
         return datetime_list
+
+    # ---- SolinstFileReaderBase API
+    def _update_header_lentgh(self):
+        for i, lines in enumerate(self.file_content):
+            if re.search('^.data.*', lines.lower()):
+                self._header_length = i + 1
+                break
+        else:
+            raise TypeError("The data are not formatted correctly.")
+
+    # ---- Private API
+    def _create_visited_date(self) -> datetime:
+        _date = None
+        _time = None
+        for lines in self.file_content[:self._header_length]:
+            if re.search("^date.*", lines, re.IGNORECASE):
+                _date = lines.split(":")[1].replace(" ", "")
+            if re.search(r"^time.*", lines, re.IGNORECASE):
+                _time = lines.split(" :")[1].replace(" ", "")
+        to_datetime = datetime.datetime.strptime(
+            "{} {}".format(_date, _time),
+            self.MONTH_S_DAY_S_YEAR_HMS_DATE_STRING_FORMAT)
+        return to_datetime
+
+    def _get_instrument_info(self, regex_: str) -> str:
+        str_to_find = None
+        for i, lines in enumerate(self.file_content):
+            if i == self._header_length:
+                break
+            if re.search(regex_, lines):
+                str_to_find = lines.split("=")[1]
+                break
+        return str_to_find
+
+    def _get_altitude(self):
+        """
+        Return the altitude value scraped from the header of the file.
+        """
+        alt_str = self._get_instrument_info(r".*[aA]ltitude.*")
+        if alt_str is not None:
+            return float(re.findall(r"\d*\.\d+|\d+", alt_str)[0])
+        else:
+            return None
+        return
+
+    def _get_site_name(self) -> str:
+        return self._get_instrument_info(r".*[lL]ocation.*")
+
+    def _get_serial_number(self):
+        serial_string = self._get_instrument_info(r".*(S|s)erial.number.*")
+        serial_numb = serial_string.split('-')[1].split(' ')[0]
+        return serial_numb
+
+    def _get_project_name(self):
+        return self._get_instrument_info(r".*(I|i)nstrument.number.*")
+
+    def _get_number_of_channels(self) -> int:
+        return int(self._get_instrument_info(r" *Channel *=.*"))
 
     def _get_data(self):
         for channel_num in range(self._get_number_of_channels()):
@@ -242,82 +343,59 @@ class XLESolinstFileReader(SolinstFileReaderBase):
         self.file_root = self.file_content.getroot()
         super().read_file()
 
-    def _read_file_header(self):
+    # ---- AbstractFileReader API
+    def _get_date_list(self) -> list:
         """
-        implementation of the base class abstract method
-        """
-        self._update_plateform_information()
-
-    def _read_file_data(self):
-        """
-        implementation of the base class abstract method
-        """
-
-        self._date_list = self._get_date_list()
-        self._get_data()
-
-    def _read_file_data_header(self):
-        """
-        implementation of the base class abstract method
-        """
-        pass
-
-    def _update_plateform_information(self):
-        """
-        update the SensorPlateform class (domain element) by setting its attributs
+        get a list of timestamp present in the file
         :return:
         """
-        self._site_of_interest.visit_date = self._create_visited_date()
-        self._site_of_interest.site_name = self._get_site_name()
-        self._site_of_interest.instrument_serial_number = self._get_serial_number()
-        self._site_of_interest.project_name = self._get_project_name()
-        self._site_of_interest.batterie_level = self._get_battery_level()
-        self._site_of_interest.model_number = self._get_model_number()
+        datetime_list = [datetime.datetime.strptime(
+            "{} {}:{}".format(_data.find('Date').text,
+                              _data.find('Time').text,
+                              _data.find('ms').text),
+            '%Y/%m/%d %H:%M:%S:%f'
+            ) for _data in self.file_root.iter('Log')]
+        return datetime_list
 
+    # ---- SolinstFileReaderBase API
     def _create_visited_date(self) -> datetime:
         """
-        create a datetime object by reading the file header. The visited date is equal to
-        the creation date of the file
-        :return:
+        Create a datetime object by reading the file header.
+        The visited date is equal to the creation date of the file
         """
         file_info = self.file_root.find('File_info')
 
         date_str = file_info.find('Date').text
         time_str = file_info.find('Time').text
         datetime_str = "{} {}".format(date_str, time_str)
-        datetime_obj = datetime.datetime.strptime(datetime_str, self.YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT)
+        datetime_obj = datetime.datetime.strptime(
+            datetime_str, self.YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT)
         return datetime_obj
 
     def _get_site_name(self) -> str:
-        return self.file_root.find('Instrument_info_data_header').find('Location').text
+        return self.file_root.find(
+            'Instrument_info_data_header').find('Location').text
 
     def _get_serial_number(self):
-        return self.file_root.find('Instrument_info').find('Serial_number').text
+        return self.file_root.find(
+            'Instrument_info').find('Serial_number').text
 
     def _get_project_name(self):
-        return self.file_root.find('Instrument_info_data_header').find('Project_ID').text
+        return self.file_root.find(
+            'Instrument_info_data_header').find('Project_ID').text
 
     def _get_number_of_channels(self):
-        return int(self.file_root.find('Instrument_info').find('Channel').text)
+        return int(self.file_root.find(
+            'Instrument_info').find('Channel').text)
 
     def _get_model_number(self):
         return self.file_root.find('Instrument_info').find('Model_number').text
 
     def _get_battery_level(self):
-        return self.file_root.find('Instrument_info').find('Battery_level').text
+        return self.file_root.find(
+            'Instrument_info').find('Battery_level').text
 
-    def _get_date_list(self) -> list:
-        """
-        get a list of timestamp present in the file
-        :return:
-        """
-        datetime_list = [datetime.datetime.strptime("{} {}:{}".format(_data.find('Date').text,
-                                                                      _data.find('Time').text,
-                                                                      _data.find('ms').text),
-                                                    '%Y/%m/%d %H:%M:%S:%f')
-                         for _data in self.file_root.iter('Log')]
-        return datetime_list
-
+    # ---- Private API
     def _get_data(self) -> None:
         """
         create time serie and update the SensorPlateform object
@@ -325,10 +403,10 @@ class XLESolinstFileReader(SolinstFileReaderBase):
         """
         for channels in range(self._get_number_of_channels()):
             channel_name = self.CHANNEL_DATA_HEADER.format(channels + 1)
-            channel_parammeter = self.file_root.find(channel_name).find('Identification').text
+            channel_parammeter = self.file_root.find(
+                channel_name).find('Identification').text
             channel_unit = self.file_root.find(channel_name).find('Unit').text
             ch_selector = "ch{}".format(channels + 1)
-            print(ch_selector)
             try:
                 values = [float(d.find(ch_selector).text)
                           for d in self.file_root.iter('Log')]
@@ -337,15 +415,11 @@ class XLESolinstFileReader(SolinstFileReaderBase):
                 values = [float(d.find(ch_selector).text.replace(',', '.'))
                           for d in self.file_root.iter('Log')]
 
-            self._site_of_interest. \
-                create_time_serie(channel_parammeter,
-                                  channel_unit, self._date_list,
-                                  values)
+            self._site_of_interest.create_time_serie(
+                channel_parammeter, channel_unit, self._date_list, values)
 
 
 class CSVSolinstFileReader(SolinstFileReaderBase):
-    UNIT = 'unit'
-    PARAMETER_COL_INDEX = 'col_index'
 
     def __init__(self, file_path: str = None, header_length: int = 12,
                  wait_read: bool = False):
@@ -354,53 +428,7 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
         super().__init__(file_path, header_length, wait_read=wait_read,
                          csv_delim_regex="date([;,\t])time")
 
-    # ---- Base class abstract method
-    def _read_file_header(self):
-        """
-        Retrieve metadata from the header and determine the lenght of the
-        header.
-        """
-        for i, line in enumerate(self.file_content):
-            line = ''.join(line)
-            if re.search(r"[sS]erial.[nN]umber.*", line):
-                self._site_of_interest.instrument_serial_number = (
-                    self.file_content[i + 1][0].strip())
-            elif re.search(r"[pP]roject.[idID].*", line):
-                self._site_of_interest.project_name = (
-                    self.file_content[i + 1][0].strip())
-            elif re.search(r"[lL]ocation.*", line):
-                self._site_of_interest.site_name = (
-                    self.file_content[i + 1][0].strip())
-            elif 'Date' in line and 'Time' in line:
-                self._start_of_data_row_index = i
-                self._header_length = i
-                break
-        else:
-            raise TypeError("The data are not formatted correctly.")
-
-    def _read_file_data(self):
-        """Retrieve the level and temperature data from the file content."""
-        for parameter in list(self._params_dict.keys()):
-            param_unit = self._params_dict[parameter][self.UNIT]
-            param_col_index = (
-                self._params_dict[parameter][self.PARAMETER_COL_INDEX])
-            data = self.file_content[self._start_of_data_row_index + 1:]
-            try:
-                values = [float(val[param_col_index]) for val in data]
-            except ValueError:
-                # This probably means that a coma is used as decimal separator.
-                values = [float(val[param_col_index].replace(',', '.')) for
-                          val in data]
-            self._site_of_interest.create_time_serie(
-                parameter, param_unit, self._date_list, values)
-
-    def _read_file_data_header(self):
-        """
-        implementation of the base class abstract method
-        """
-        self._get_parameter_data()
-        self._date_list = self._get_date_list()
-
+    # ---- Base class abstract method implementation
     def _get_date_list(self) -> list:
         """Retrieve the datetime data from the file content."""
         data_header = self.file_content[self._start_of_data_row_index]
@@ -421,6 +449,68 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
         self.sites.visit_date = datetimes[-1]
         return datetimes
 
+    # ---- SolinstFileReaderBase API
+    def _update_header_lentgh(self):
+        for i, line in enumerate(self.file_content):
+            line = ''.join(line).lower()
+            if 'date' in line and 'time' in line:
+                self._start_of_data_row_index = i
+                self._header_length = i
+                break
+        else:
+            raise TypeError("The data are not formatted correctly.")
+
+    def _get_site_name(self):
+        """Return the site name scraped from the header of the file."""
+        return self._get_instrument_info(r"[lL]ocation.*")
+
+    def _get_serial_number(self):
+        """
+        Return the serial number of the Solinst level or baro logger scraped
+        from the header of the file.
+        """
+        return self._get_instrument_info(r"[sS]erial.[nN]umber.*")
+
+    def _get_project_name(self):
+        """Return the site name scraped from the header of the file."""
+        return self._get_instrument_info(r"[pP]roject.[idID].*")
+
+    def _get_battery_level(self):
+        return None
+
+    def _get_model_number(self):
+        return None
+
+    def _get_altitude(self):
+        """Return the altitude value scraped from the header of the file."""
+        altitude = None
+        for i, line in enumerate(self.file_content):
+            if i == self._header_length:
+                break
+
+            line = ''.join(line).lower()
+            if re.search(r"[aA]ltitude.*", line):
+                regex = r"\d*\.\d+|\d+"
+                try:
+                    altitude = float(re.findall(regex, line)[0])
+                except IndexError:
+                    # This means that the value is stored on the next line.
+                    next_line = ''.join(self.file_content[i + 1])
+                    altitude = float(re.findall(regex, next_line)[0])
+                break
+        return altitude
+
+    # ---- Private API
+    def _get_instrument_info(self, regex_: str):
+        result = None
+        for i, line in enumerate(self.file_content):
+            if i == self._header_length:
+                break
+            if re.search(regex_, ''.join(line).lower()):
+                result = self.file_content[i + 1][0].strip()
+                break
+        return result
+
     def _get_parameter_data(self):
         """
         Retrieve the parameters name, units, and column index from the file
@@ -432,7 +522,7 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
         for i, row in enumerate(self.file_content[:self._header_length]):
             if row[0] in params:
                 param = row[0]
-                self._params_dict[param][self.PARAMETER_COL_INDEX] = (
+                self._params_dict[param]['col_index'] = (
                     data_header.index(param))
                 if "UNIT: " in self.file_content[i + 1][0]:
                     # For Solinst Edge logger files.
@@ -440,7 +530,23 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
                 else:
                     # For Solinst Gold logger files.
                     units = self.file_content[i + 2][0]
-                self._params_dict[param][self.UNIT] = units.strip()
+                self._params_dict[param]['unit'] = units.strip()
+
+    def _get_data(self):
+        """Return the numerical data from the Solinst data file."""
+        self._get_parameter_data()
+        for parameter in list(self._params_dict.keys()):
+            param_unit = self._params_dict[parameter]['unit']
+            param_col_index = self._params_dict[parameter]['col_index']
+            data = self.file_content[self._start_of_data_row_index + 1:]
+            try:
+                values = [float(val[param_col_index]) for val in data]
+            except ValueError:
+                # This probably means that a coma is used as decimal separator.
+                values = [float(val[param_col_index].replace(',', '.')) for
+                          val in data]
+            self._site_of_interest.create_time_serie(
+                parameter, param_unit, self._date_list, values)
 
 
 if __name__ == '__main__':
@@ -451,4 +557,3 @@ if __name__ == '__main__':
     reader = SolinstFileReader(osp.join(dirname, filename))
     print(reader.records)
     print(reader.sites)
-

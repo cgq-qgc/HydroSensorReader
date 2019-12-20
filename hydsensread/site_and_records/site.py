@@ -11,7 +11,7 @@ from typing import List
 
 import numpy as np
 
-from pandas import  DataFrame, Series
+from pandas import DataFrame, Series
 
 from .records import ChemistryRecord
 from .records import TimeSeriesRecords
@@ -21,7 +21,7 @@ geographical_coordinates = namedtuple('XYZPoint', ['x', 'y', 'z'])
 
 class Site(object):
     """
-    most basic site definition with a site name and a visit date
+    Most basic site definition with a site name and a visit date.
     """
 
     def __init__(self, site_name: str = None,
@@ -39,8 +39,9 @@ class Site(object):
 
 class SensorPlateform(Site):
     """
-    Definition of a Sensor plateform site. A plateform is an object that can take measurement as
-    a standalone object.
+    Definition of a Sensor plateform site.
+
+    A plateform is an object that can take measurement as a standalone object.
     """
 
     def __init__(self, site_name: str = None,
