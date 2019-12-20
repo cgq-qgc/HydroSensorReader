@@ -309,26 +309,31 @@ class LEVSolinstFileReader(SolinstFileReaderBase):
 
     def _get_data(self):
         for channel_num in range(self._get_number_of_channels()):
-            parameter = None
-            parametere_unit = None
-            for row_num, row in enumerate(self.file_content[:self._header_length]):
-                if re.search(self.DATA_CHANNEL_STRING.format(channel_num + 1), row):
-                    row_offset = 1
-                    while not (re.search(self.DATA_CHANNEL_STRING.format(channel_num + 2),
-                                         self.file_content[row_num + row_offset]) or
-                               re.search(r".*data.*", self.file_content[row_num + row_offset].lower())):
-                        row_with_offset = str(self.file_content[row_num + row_offset])
-                        if re.search(r".*identification.*", row_with_offset.lower()):
-                            parameter = row_with_offset.split("=")[1]
-                        if re.search(r".*unit.*", row_with_offset.lower()):
-                            parametere_unit = row_with_offset.split("=")[1]
-                        row_offset += 1
+            param = None
+            param_unit = None
+            for row_num, row in enumerate(
+                    self.file_content[:self._header_length]):
+                data_channel_string = (
+                    self.DATA_CHANNEL_STRING.format(channel_num + 1))
+                if re.search(data_channel_string, row):
+                    next_row = self.file_content[row_num + 1].strip()
+                    if re.search(r".*identification.*", next_row.lower()):
+                        param = next_row.split("=")[-1].strip()
+                    next_row = self.file_content[row_num + 2].strip()
+                    if re.search(r".*unit.*", next_row.lower()):
+                        param_unit = next_row.split("=")[-1].strip()
+                    elif re.search(r".*reference.*", next_row.lower()):
+                        # For Solinst loggers older than the Gold series.
+                        param_unit = next_row.split("=")[-1]
+                        param_unit = param_unit.split(" ")[-1].strip()
 
             values = []
             for lines in self.file_content[self._header_length + 1:-1]:
-                sep_line = [data for data in list(lines.split(" ")) if data != '']
+                sep_line = [
+                    data for data in list(lines.split(" ")) if data != '']
                 values.append(float(sep_line[channel_num + 2]))
-            self._site_of_interest.create_time_serie(parameter, parametere_unit, self._date_list, values)
+            self.sites.create_time_serie(
+                param, param_unit, self._date_list, values)
 
 
 class XLESolinstFileReader(SolinstFileReaderBase):
