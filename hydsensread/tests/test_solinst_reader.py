@@ -35,15 +35,15 @@ def test_solinst_levelogger_edge(test_files_dir, testfile):
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
 
     records = solinst_file.records
-    assert len(records) == 19484
+    assert len(records) == 200
 
     assert records.index.tolist()[0] == Timestamp('2017-05-03 13:00:00')
     assert records.iloc[0].iloc[0] == 1919.32
     assert records.iloc[0].iloc[1] == 7.849
 
-    assert records.index.tolist()[-1] == Timestamp('2017-11-22 11:45:00')
-    assert records.iloc[-1].iloc[0] == 1906.33
-    assert records.iloc[-1].iloc[1] == 8.275
+    assert records.index.tolist()[-1] == Timestamp('2017-05-05 14:45:00')
+    assert records.iloc[-1].iloc[0] == 1920.85
+    assert records.iloc[-1].iloc[1] == 7.872
 
     assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
 
