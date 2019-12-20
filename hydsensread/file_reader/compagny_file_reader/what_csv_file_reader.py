@@ -11,8 +11,11 @@ import datetime
 from abc import abstractmethod
 from typing import Union, List, Tuple
 
-from hydsensread.file_reader.abstract_file_reader import TimeSeriesFileReader, date_list, LineDefinition, StationSite, \
-    geographical_coordinates, StreamFlowStation
+# ---- Local imports
+from hydsensread.site_and_records import (
+    geographical_coordinates, StationSite, StreamFlowStation)
+from hydsensread.file_reader.abstract_file_reader import (
+    TimeSeriesFileReader, date_list, LineDefinition)
 
 WHAT_METEO_FILES_HEADER_LENGTH = 10
 WHAT_WATER_LEVEL_FILES_HEADER_LENGTH = 10
