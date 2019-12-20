@@ -298,7 +298,7 @@ class LEVSolinstFileReader(SolinstFileReaderBase):
 
     def _get_serial_number(self):
         serial_string = self._get_instrument_info(r".*(S|s)erial.number.*")
-        serial_numb = serial_string.split('-')[1].split(' ')[0]
+        serial_numb = re.findall(r'-(?:\s*)(\d*)\s*\d*', serial_string)[0]
         return serial_numb
 
     def _get_project_name(self):
