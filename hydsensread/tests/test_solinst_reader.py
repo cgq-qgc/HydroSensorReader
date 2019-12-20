@@ -111,6 +111,33 @@ def test_solinst_levelogger_gold(test_files_dir, testfile):
 
 @pytest.mark.parametrize(
     'testfile',
+    ["XXXX_solinst_levelogger_M5.csv",
+     "XXXX_solinst_levelogger_M5.lev"])
+def test_solinst_levelogger_M5(test_files_dir, testfile):
+    """
+    Test reading Solinst Levelogger M5 files (older than the Gold series).
+    """
+    solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
+
+    sites = solinst_file.sites
+    assert sites.instrument_serial_number == "5741"
+    assert sites.project_name == "04040001"
+    assert sites.site_name == "St-Andre-Avellin"
+    assert sites.other_attributes['altitude'] == 170
+
+    records = solinst_file.records
+    assert len(records) == 200
+    assert list(records.columns) == ["LEVEL_cm"]
+
+    assert records.index[0] == Timestamp('2016-11-04 13:00:00')
+    assert records.iloc[0].iloc[0] == 314.0 - (0.12 * 170)
+
+    assert records.index[-1] == Timestamp('2016-11-06 14:45:00')
+    assert records.iloc[-1].iloc[0] == 317.5 - (0.12 * 170)
+
+
+@pytest.mark.parametrize(
+    'testfile',
     ["2XXXXXX_solinst_colon_as_decimalsep.csv",
      "2XXXXXX_solinst_colon_as_decimalsep.xle"])
 def test_solinst_colon_decimalsep(test_files_dir, testfile):
