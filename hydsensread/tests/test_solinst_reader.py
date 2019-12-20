@@ -45,7 +45,7 @@ def test_solinst_levelogger_edge(test_files_dir, testfile):
     assert records.iloc[-1].iloc[0] == 1906.33
     assert records.iloc[-1].iloc[1] == 8.275
 
-    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_°C"]
+    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
 
     sites = solinst_file.sites
     assert sites.instrument_serial_number == "2010143"
@@ -69,7 +69,7 @@ def test_solinst_levelogger_edge_lev(test_files_dir):
     assert records.iloc[-1].iloc[0] == 10.1788
     assert records.iloc[-1].iloc[1] == 11.844
 
-    assert list(records.columns) == ["LEVEL_m", "TEMPERATURE_°C"]
+    assert list(records.columns) == ["LEVEL_m", "TEMPERATURE_degC"]
 
     sites = solinst_file.sites
     assert sites.instrument_serial_number == "2041929"
@@ -93,14 +93,14 @@ def test_solinst_levelogger_gold(test_files_dir, testfile):
     assert len(records) == 200
 
     assert records.index[0] == Timestamp('2017-05-02 13:00:00')
-    assert records.iloc[0].iloc[0] == 923.561
+    assert records.iloc[0].iloc[0] == 923.561 - (0.12 * 42)
     assert records.iloc[0].iloc[1] == 8.936
 
     assert records.index[-1] == Timestamp('2017-05-04 14:45:00')
-    assert records.iloc[-1].iloc[0] == 934.8801
+    assert records.iloc[-1].iloc[0] == 934.8801 - (0.12 * 42)
     assert records.iloc[-1].iloc[1] == 8.914
 
-    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_Deg C"]
+    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
 
     sites = solinst_file.sites
     assert sites.instrument_serial_number == "1062280"
@@ -133,7 +133,7 @@ def test_solinst_colon_decimalsep(test_files_dir, testfile):
     assert records.iloc[-1].iloc[0] == 1812.59
     assert records.iloc[-1].iloc[1] == 9.179
 
-    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_°C"]
+    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
 
     sites = solinst_file.sites
     assert sites.instrument_serial_number == "2048469"
