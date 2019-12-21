@@ -28,8 +28,8 @@ def test_files_dir():
 # ---- Tests
 @pytest.mark.parametrize(
     'testfile',
-    ["2XXXXXX_solinst_levelogger_edge_testfile.csv",
-     "2XXXXXX_solinst_levelogger_edge_testfile.xle"])
+    ["2XXXXXX_solinst_levelogger_edge.csv",
+     "2XXXXXX_solinst_levelogger_edge.xle"])
 def test_solinst_levelogger_edge(test_files_dir, testfile):
     """Test reading Solinst Edge Levelogger files."""
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
@@ -56,7 +56,7 @@ def test_solinst_levelogger_edge(test_files_dir, testfile):
 
 def test_solinst_levelogger_edge_lev(test_files_dir):
     """Test reading Solinst Edge Levelogger .lev files."""
-    testfile = "2XXXXXX_solinst_levelogger_edge_testfile.lev"
+    testfile = "2XXXXXX_solinst_levelogger_edge.lev"
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
 
     sites = solinst_file.sites
@@ -81,8 +81,8 @@ def test_solinst_levelogger_edge_lev(test_files_dir):
 
 @pytest.mark.parametrize(
     'testfile',
-    ["1XXXXXX_solinst_levelogger_gold_testfile.csv",
-     "1XXXXXX_solinst_levelogger_gold_testfile.lev"])
+    ["1XXXXXX_solinst_levelogger_gold.csv",
+     "1XXXXXX_solinst_levelogger_gold.lev"])
 def test_solinst_levelogger_gold(test_files_dir, testfile):
     """
     Test reading Solinst Edge Levelogger files.
