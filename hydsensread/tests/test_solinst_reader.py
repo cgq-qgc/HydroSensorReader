@@ -34,8 +34,14 @@ def test_solinst_levelogger_edge(test_files_dir, testfile):
     """Test reading Solinst Edge Levelogger files."""
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
 
+    sites = solinst_file.sites
+    assert sites.instrument_serial_number == "2010143"
+    assert sites.project_name == "03040018"
+    assert sites.site_name == "Sutton_PO22B"
+
     records = solinst_file.records
     assert len(records) == 200
+    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
 
     assert records.index.tolist()[0] == Timestamp('2017-05-03 13:00:00')
     assert records.iloc[0].iloc[0] == 1919.32
@@ -45,12 +51,7 @@ def test_solinst_levelogger_edge(test_files_dir, testfile):
     assert records.iloc[-1].iloc[0] == 1920.85
     assert records.iloc[-1].iloc[1] == 7.872
 
-    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
-
-    sites = solinst_file.sites
-    assert sites.instrument_serial_number == "2010143"
-    assert sites.project_name == "03040018"
-    assert sites.site_name == "Sutton_PO22B"
+    assert solinst_file.plot()
 
 
 def test_solinst_levelogger_edge_lev(test_files_dir):
@@ -58,8 +59,14 @@ def test_solinst_levelogger_edge_lev(test_files_dir):
     testfile = "2XXXXXX_solinst_levelogger_edge_testfile.lev"
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
 
+    sites = solinst_file.sites
+    assert sites.instrument_serial_number == "2041929"
+    assert sites.project_name == "McCully"
+    assert sites.site_name == "PO-06_XM20170307"
+
     records = solinst_file.records
     assert len(records) == 200
+    assert list(records.columns) == ["LEVEL_m", "TEMPERATURE_degC"]
 
     assert records.index.tolist()[0] == Timestamp('2017-03-07 19:00:00')
     assert records.iloc[0].iloc[0] == 14.6861
@@ -69,12 +76,7 @@ def test_solinst_levelogger_edge_lev(test_files_dir):
     assert records.iloc[-1].iloc[0] == 14.5130
     assert records.iloc[-1].iloc[1] == 7.610
 
-    assert list(records.columns) == ["LEVEL_m", "TEMPERATURE_degC"]
-
-    sites = solinst_file.sites
-    assert sites.instrument_serial_number == "2041929"
-    assert sites.project_name == "McCully"
-    assert sites.site_name == "PO-06_XM20170307"
+    assert solinst_file.plot()
 
 
 @pytest.mark.parametrize(
@@ -89,8 +91,15 @@ def test_solinst_levelogger_gold(test_files_dir, testfile):
     """
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
 
+    sites = solinst_file.sites
+    assert sites.instrument_serial_number == "1062280"
+    assert sites.project_name == "03030012"
+    assert sites.site_name == "Saint-Guillaume_P14A"
+    assert sites.other_attributes['altitude'] == 42
+
     records = solinst_file.records
     assert len(records) == 200
+    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
 
     assert records.index[0] == Timestamp('2017-05-02 13:00:00')
     assert records.iloc[0].iloc[0] == 923.561 - (0.12 * 42)
@@ -100,13 +109,7 @@ def test_solinst_levelogger_gold(test_files_dir, testfile):
     assert records.iloc[-1].iloc[0] == 934.8801 - (0.12 * 42)
     assert records.iloc[-1].iloc[1] == 8.914
 
-    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
-
-    sites = solinst_file.sites
-    assert sites.instrument_serial_number == "1062280"
-    assert sites.project_name == "03030012"
-    assert sites.site_name == "Saint-Guillaume_P14A"
-    assert sites.other_attributes['altitude'] == 42
+    assert solinst_file.plot()
 
 
 @pytest.mark.parametrize(
@@ -135,6 +138,8 @@ def test_solinst_levelogger_M5(test_files_dir, testfile):
     assert records.index[-1] == Timestamp('2016-11-06 14:45:00')
     assert records.iloc[-1].iloc[0] == 317.5 - (0.12 * 170)
 
+    assert solinst_file.plot()
+
 
 @pytest.mark.parametrize(
     'testfile',
@@ -149,8 +154,14 @@ def test_solinst_colon_decimalsep(test_files_dir, testfile):
     """
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
 
+    sites = solinst_file.sites
+    assert sites.instrument_serial_number == "2048469"
+    assert sites.project_name == "03040008"
+    assert sites.site_name == "Rougemont_Plus profond"
+
     records = solinst_file.records
     assert len(records) == 10
+    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
 
     assert records.index.tolist()[0] == Timestamp('2016-11-23 19:00:00')
     assert records.iloc[0].iloc[0] == 1813.03
@@ -160,12 +171,7 @@ def test_solinst_colon_decimalsep(test_files_dir, testfile):
     assert records.iloc[-1].iloc[0] == 1812.59
     assert records.iloc[-1].iloc[1] == 9.179
 
-    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
-
-    sites = solinst_file.sites
-    assert sites.instrument_serial_number == "2048469"
-    assert sites.project_name == "03040008"
-    assert sites.site_name == "Rougemont_Plus profond"
+    assert solinst_file.plot()
 
 
 if __name__ == "__main__":

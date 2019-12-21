@@ -74,43 +74,54 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         super().__init__(*args, **kargs)
 
     # ---- Public API
-    def plot(self, other_axis: List[LineDefinition] = list(),
-             reformat_temperature=True, *args, **kwargs) -> \
-            Tuple[plt.Figure, List[plt.Axes]]:
+    def plot(self, other_axis=None, reformat_temperature=True,
+             *args, **kwargs):
         """
         Plot function overriding the TimeSeriesFileReader method.
 
         Parameters
         ----------
-        param other_axis :
+        other_axis: list
             if other axis needs to be added to the plot, use this parameter
-        param reformat_temperature :
+        reformat_temperature: bool
             if the temperature axis needs to be reformated or not.
+
+        Returns
+        -------
+        plt.Figure
+            A matplotlib Figure object.
+        List of mpl.Axes
+            A list of matplotlib Axes object.
         """
-        temperature_line_def = LineDefinition('TEMPERATURE_°C', 'red')
-        temperature_values = self.records['TEMPERATURE_°C']
-        all_axis = other_axis
-        # This part produce the axis to be plotted
-        if len(all_axis) == 0:
-            # Get the records for the current station
-            level_param = [
-                i for i in self.records.dtypes.index if 'TEMP' not in i]
-            if len(level_param) > 0:
-                colors = ['blue', 'orange', 'green', 'purple', 'black',
-                          'brown', 'darkorange', 'cyan']
-                for color_index, param in enumerate(level_param):
-                    if color_index > len(colors):
-                        color_index = color_index - len(colors)
-                    level_line_def = LineDefinition(param, colors[color_index],
-                                                    make_grid=True)
-                    all_axis.append(level_line_def)
-        fig, axis = super().plot(temperature_line_def, all_axis,
-                                 *args, **kwargs)
+        other_axis = [] if other_axis is None else other_axis
+        nparams = len(self.records.columns)
+
+        # Setup level channel line definition.
+        level_line_def = LineDefinition(
+            self.records.columns[0], 'blue', make_grid=True)
+
+        # Setup temperature channel line definition.
+        if nparams >= 2:
+            temp_line_def = LineDefinition(self.records.columns[1], 'red')
+            temp_values = self.records[self.records.columns[1]]
+            other_axis.append(temp_line_def)
+
+        # Setup other channel line definition.
+        colors = ['orange', 'green', 'purple', 'black',
+                  'brown', 'darkorange', 'cyan']
+        if nparams >= 3:
+            for color_index, param in enumerate(self.records.columns[2:]):
+                if color_index > len(colors):
+                    color_index = color_index - len(colors)
+                    other_axis.append(
+                        LineDefinition(param, colors[color_index]))
+
+        fig, axis = super().plot(level_line_def, other_axis, *args, **kwargs)
+
         # This is for barometric data.
-        n = len([i for i in self.records.dtypes.index if 'kpa' in i.lower()])
-        if n == 0 and reformat_temperature:
-            axis[0].set_ylim(temperature_values.mean() - 1,
-                             temperature_values.mean() + 1)
+        n = len([i for i in self.records.columns if 'kpa' in i.lower()])
+        if n == 0 and reformat_temperature and nparams >= 2:
+            axis[1].set_ylim(temp_values.mean() - 1, temp_values.mean() + 1)
         return fig, axis
 
     # ---- AbstractFileReader API
@@ -573,3 +584,4 @@ if __name__ == '__main__':
     print(reader.sites)
     print(reader.sites.instrument_serial_number)
     print(reader.records.keys())
+    reader.plot()
