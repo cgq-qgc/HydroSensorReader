@@ -75,18 +75,25 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
 
     # ---- Public API
     def plot(self, other_axis=None, reformat_temperature=True,
-             *args, **kwargs) -> Tuple[plt.Figure, List[plt.Axes]]:
+             *args, **kwargs):
         """
         Plot function overriding the TimeSeriesFileReader method.
 
         Parameters
         ----------
-        param other_axis :
+        other_axis: list
             if other axis needs to be added to the plot, use this parameter
-        param reformat_temperature :
+        reformat_temperature: bool
             if the temperature axis needs to be reformated or not.
+
+        Returns
+        -------
+        plt.Figure
+            A matplotlib Figure object.
+        List of mpl.Axes
+            A list of matplotlib Axes object.
         """
-        all_axis = [] if other_axis is None else other_axis
+        other_axis = [] if other_axis is None else other_axis
         nparams = len(self.records.columns)
 
         # Setup level channel line definition.
@@ -97,7 +104,7 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         if nparams >= 2:
             temp_line_def = LineDefinition(self.records.columns[1], 'red')
             temp_values = self.records[self.records.columns[1]]
-            all_axis.append(temp_line_def)
+            other_axis.append(temp_line_def)
 
         # Setup other channel line definition.
         colors = ['orange', 'green', 'purple', 'black',
@@ -106,10 +113,10 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
             for color_index, param in enumerate(self.records.columns[2:]):
                 if color_index > len(colors):
                     color_index = color_index - len(colors)
-                    all_axis.append(
+                    other_axis.append(
                         LineDefinition(param, colors[color_index]))
 
-        fig, axis = super().plot(level_line_def, all_axis, *args, **kwargs)
+        fig, axis = super().plot(level_line_def, other_axis, *args, **kwargs)
 
         # This is for barometric data.
         n = len([i for i in self.records.columns if 'kpa' in i.lower()])
