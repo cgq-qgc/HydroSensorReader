@@ -158,8 +158,8 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
 
     def _undo_altitude_correction(self):
         """
-        Undo the altitude correction for level and baro loggers of the
-        Gold series (1xxxxxx) and older.
+        Undo the automatic compensation for elevation applied to readings made
+        by level and baro loggers of the Gold series (1xxxxxx) and older.
 
         See cgq-qgc/HydroSensorReader#43
         """
