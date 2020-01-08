@@ -5,7 +5,7 @@ install:
   - pip install -r requirements-dev.txt
   - python setup.py build_ext --inplace
 script:
-  - pytest -x hydsensread -v -rw --cov=hydsensread
+  - python runtests.py
 after_success:
   - coveralls
 
