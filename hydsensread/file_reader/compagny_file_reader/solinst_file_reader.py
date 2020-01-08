@@ -142,6 +142,7 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         self._date_list = self._get_date_list()
         self._get_data()
         self._format_data_units()
+        self._undo_zero_point_offset()
         self._undo_altitude_correction()
 
     # ---- Private API
@@ -158,8 +159,8 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
 
     def _undo_altitude_correction(self):
         """
-        Undo the altitude correction for level and baro loggers of the
-        Gold series (1xxxxxx) and older.
+        Undo the automatic compensation for elevation applied to readings made
+        by level and baro loggers of the Gold series (1xxxxxx) and older.
 
         See cgq-qgc/HydroSensorReader#43
         """
@@ -180,6 +181,27 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
                 elif units == 'cm':
                     self.sites.records[column] = (
                         self.sites.records[column] - 0.12 * altitude)
+
+    def _undo_zero_point_offset(self):
+        """
+        Undo the zero point offset applied to readings made by level and baro
+        loggers of the Gold series (1xxxxxx) and older.
+
+        See cgq-qgc/HydroSensorReader#51
+        """
+        serial_number = int(self.sites.instrument_serial_number)
+        if serial_number < 2000000:
+            for column in self.records.columns:
+                units = column.split('_')[-1]
+                if units == 'm':
+                    self.sites.records[column] = (
+                        self.sites.records[column] + 9.5)
+                elif units == 'cm':
+                    self.sites.records[column] = (
+                        self.sites.records[column] + 950)
+                elif units == 'ft':
+                    self.sites.records[column] = (
+                        self.sites.records[column] + 31.17)
 
     def _get_data(self):
         """Return the numerical data from the Solinst data file."""
