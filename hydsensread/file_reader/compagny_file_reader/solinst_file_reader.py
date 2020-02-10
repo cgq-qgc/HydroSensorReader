@@ -142,7 +142,6 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         self._date_list = self._get_date_list()
         self._get_data()
         self._format_data_units()
-        self._undo_zero_point_offset()
 
     # ---- Private API
     def _format_data_units(self):
@@ -181,7 +180,7 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
                     self.sites.records[column] = (
                         self.sites.records[column] - 0.12 * altitude)
 
-    def _undo_zero_point_offset(self):
+    def undo_zero_point_offset(self):
         """
         Undo the zero point offset applied to readings made by level and baro
         loggers of the Gold series (1xxxxxx) and older.
