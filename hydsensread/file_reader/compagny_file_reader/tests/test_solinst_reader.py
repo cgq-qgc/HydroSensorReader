@@ -102,12 +102,22 @@ def test_solinst_levelogger_gold(test_files_dir, testfile):
     assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
 
     assert records.index[0] == Timestamp('2017-05-02 13:00:00')
-    assert records.iloc[0].iloc[0] == 923.561 - (0.12 * 42) + 950
+    assert records.iloc[0].iloc[0] == 923.561
     assert records.iloc[0].iloc[1] == 8.936
 
     assert records.index[-1] == Timestamp('2017-05-04 14:45:00')
-    assert records.iloc[-1].iloc[0] == 934.8801 - (0.12 * 42) + 950
+    assert records.iloc[-1].iloc[0] == 934.8801
     assert records.iloc[-1].iloc[1] == 8.914
+
+    # Test undo altitude correction.
+    solinst_file.undo_altitude_correction()
+    assert records.iloc[-1].iloc[0] == 934.8801 - (0.12 * 42)
+    assert records.iloc[-1].iloc[0] == 934.8801 - (0.12 * 42)
+
+    # Test undo zero point offset.
+    solinst_file.undo_zero_point_offset()
+    assert records.iloc[0].iloc[0] == 923.561 - (0.12 * 42) + 950
+    assert records.iloc[-1].iloc[0] == 934.8801 - (0.12 * 42) + 950
 
     assert solinst_file.plot()
 
@@ -133,9 +143,19 @@ def test_solinst_levelogger_M5(test_files_dir, testfile):
     assert list(records.columns) == ["LEVEL_cm"]
 
     assert records.index[0] == Timestamp('2016-11-04 13:00:00')
-    assert records.iloc[0].iloc[0] == 314.0 - (0.12 * 170) + 950
+    assert records.iloc[0].iloc[0] == 314.0
 
     assert records.index[-1] == Timestamp('2016-11-06 14:45:00')
+    assert records.iloc[-1].iloc[0] == 317.5
+
+    # Test undo altitude correction.
+    solinst_file.undo_altitude_correction()
+    assert records.iloc[0].iloc[0] == 314.0 - (0.12 * 170)
+    assert records.iloc[-1].iloc[0] == 317.5 - (0.12 * 170)
+
+    # Test undo zero point offset.
+    solinst_file.undo_zero_point_offset()
+    assert records.iloc[0].iloc[0] == 314.0 - (0.12 * 170) + 950
     assert records.iloc[-1].iloc[0] == 317.5 - (0.12 * 170) + 950
 
     assert solinst_file.plot()
