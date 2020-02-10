@@ -143,7 +143,6 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         self._get_data()
         self._format_data_units()
         self._undo_zero_point_offset()
-        self._undo_altitude_correction()
 
     # ---- Private API
     def _format_data_units(self):
@@ -157,7 +156,7 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
                 columns_map[column] = column
         self.records.rename(columns_map, axis='columns', inplace=True)
 
-    def _undo_altitude_correction(self):
+    def undo_altitude_correction(self):
         """
         Undo the automatic compensation for elevation applied to readings made
         by level and baro loggers of the Gold series (1xxxxxx) and older.
