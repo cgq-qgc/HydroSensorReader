@@ -1,8 +1,12 @@
 # Include the README
-include *.md
+include docs/README.md
 
 # Include the license file
-include LICENSE.txt
+include LICENSE
 
 # Include requirements.txt
 include requirements.txt
+
+# Include file examples
+include hydsensread/file_example/*.*
+include hydsensread/file_reader/compagny_file_reader/tests/files/*.*
