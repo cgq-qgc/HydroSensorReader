@@ -48,7 +48,7 @@ test_script:
   - python runtests.py
   
 after_test:
-  - IF ["%APPVEYOR_PULL_REQUEST_NUMBER%"]==[""] (%PYTHON%/python.exe setup.py sdist bdist_wheel)
+  - python setup.py sdist bdist_wheel
 
 artifacts:
   - path: 'dist/*.whl'
