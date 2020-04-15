@@ -193,13 +193,13 @@ def test_solinst_colon_decimalsep(test_files_dir, testfile):
     assert records.iloc[-1].iloc[1] == 9.179
 
     assert solinst_file.plot()
-    
+
 
 def test_missing_data(test_files_dir):
     """
     Test that file with missing data in a given channel can be read as
     expected.
-    
+
     Regression test for cgq-qgc/HydroSensorReader#58.
     """
     testfile = 'solinst_missing_data.csv'
@@ -209,7 +209,7 @@ def test_missing_data(test_files_dir):
     assert len(records) == 10
     assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
     assert pd.isnull(records.iloc[0]["TEMPERATURE_degC"])
-    
+
 
 if __name__ == "__main__":
     pytest.main(['-x', os.path.basename(__file__), '-v', '-rw'])
