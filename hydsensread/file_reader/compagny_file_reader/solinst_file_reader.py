@@ -16,6 +16,7 @@ from typing import List, Tuple
 import os.path as osp
 
 # ---- Third party imports
+import numpy as np
 from matplotlib import pyplot as plt
 from pandas import Timestamp
 
@@ -577,16 +578,16 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
     def _get_data(self):
         """Return the numerical data from the Solinst data file."""
         self._get_parameter_data()
+        data = np.array(self.file_content[self._start_of_data_row_index + 1:])
         for parameter in list(self._params_dict.keys()):
             param_unit = self._params_dict[parameter]['unit']
             param_col_index = self._params_dict[parameter]['col_index']
-            data = self.file_content[self._start_of_data_row_index + 1:]
-            try:
-                values = [float(val[param_col_index]) for val in data]
-            except ValueError:
-                # This probably means that a coma is used as decimal separator.
-                values = [float(val[param_col_index].replace(',', '.')) for
-                          val in data]
+
+            values = data[:, param_col_index]
+            values = np.char.replace(np.char.strip(values), ',', '.')
+            values[values == ''] = np.nan
+            values = values.astype(float)
+
             self._site_of_interest.create_time_serie(
                 parameter, param_unit, self._date_list, values)
 
