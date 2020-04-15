@@ -211,5 +211,18 @@ def test_missing_data(test_files_dir):
     assert pd.isnull(records.iloc[0]["TEMPERATURE_degC"])
 
 
+def test_filename_with_dot_in_path(test_files_dir):
+    """
+    Test that a file with a dot in its path is read without raising any error.
+
+    Regression rest for cgq-qgc/HydroSensorReader#57
+    """
+    testfile = 'solinst_file_with_._in_name.csv'
+    solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
+
+    records = solinst_file.records
+    assert len(records) == 10
+
+
 if __name__ == "__main__":
     pytest.main(['-x', os.path.basename(__file__), '-v', '-rw'])
