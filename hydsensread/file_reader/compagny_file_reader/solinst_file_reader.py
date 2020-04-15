@@ -585,6 +585,7 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
 
             values = data[:, param_col_index]
             values = np.char.replace(np.char.strip(values), ',', '.')
+            values[values == ''] = np.nan
             values = values.astype(float)
 
             self._site_of_interest.create_time_serie(
