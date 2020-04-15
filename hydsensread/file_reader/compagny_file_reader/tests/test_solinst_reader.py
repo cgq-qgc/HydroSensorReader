@@ -14,6 +14,7 @@ import os.path as osp
 # ---- Third party imports
 import pytest
 from pandas import Timestamp
+import pandas as pd
 
 # ---- Local imports
 import hydsensread as hsr
@@ -170,7 +171,7 @@ def test_solinst_colon_decimalsep(test_files_dir, testfile):
     Test that level data can be read correctly from the Solinst data files when
     a colon is used as decimal separator instead of the dot.
 
-    Regression test for Issue #33.
+    Regression test for cgq-qgc/HydroSensorReader#33.
     """
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
 
@@ -192,7 +193,23 @@ def test_solinst_colon_decimalsep(test_files_dir, testfile):
     assert records.iloc[-1].iloc[1] == 9.179
 
     assert solinst_file.plot()
+    
 
+def test_missing_data(test_files_dir):
+    """
+    Test that file with missing data in a given channel can be read as
+    expected.
+    
+    Regression test for cgq-qgc/HydroSensorReader#58.
+    """
+    testfile = 'solinst_missing_data.csv'
+    solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
+
+    records = solinst_file.records
+    assert len(records) == 10
+    assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
+    assert pd.isnull(records.iloc[0]["TEMPERATURE_degC"])
+    
 
 if __name__ == "__main__":
     pytest.main(['-x', os.path.basename(__file__), '-v', '-rw'])
