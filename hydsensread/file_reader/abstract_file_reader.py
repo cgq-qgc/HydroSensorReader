@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import warnings
+import os.path as osp
 from abc import abstractmethod, ABCMeta
 from collections import defaultdict
 from typing import Dict, List, Union, Tuple
@@ -144,14 +145,11 @@ class AbstractFileReader(object, metaclass=ABCMeta):
 
     @property
     def file_extension(self):
-        file_list = self._file.split(".")
-        if len(file_list) == 1:
-            raise ValueError("The path given doesn't point to a file name")
-        if len(file_list) > 2 and 'http' not in self._file:
-            raise ValueError("The file name seems to be corrupted. "
-                             "Too much file extension in the current name.")
+        ext = osp.splitext(self._file)[1]
+        if ext == '':
+            raise ValueError("The path given doesn't point to a file name.")
         else:
-            return file_list[-1].lower()
+            return ext[1:].lower()
 
     @property
     def file_content(self) -> Union[ET.ElementTree, bs4.BeautifulSoup, list, ]:
