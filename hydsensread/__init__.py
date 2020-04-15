@@ -18,7 +18,7 @@ from .file_reader.web_page_reader.gnb_core_samples_web_scraper import GNBOilAndG
 from .file_reader.web_page_reader.gnb_water_quality_web_file_reader import GNBWaterQualityStation
 
 
-version_info = (1, 7, 4)
+version_info = (1, 7, 5, 'dev0')
 __version__ = '.'.join(map(str, version_info))
 __date__ = '14/04/2020'
 __project_url__ = "https://github.com/cgq-qgc/HydroSensorReader"
