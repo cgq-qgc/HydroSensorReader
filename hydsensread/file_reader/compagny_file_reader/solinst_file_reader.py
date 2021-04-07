@@ -601,13 +601,12 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
 
 
 if __name__ == '__main__':
-    dirname = osp.dirname(osp.dirname(osp.dirname(__file__)))
-    dirname = osp.join(dirname, 'tests', 'files')
+    dirname = osp.join(osp.dirname(__file__), 'tests', 'files')
     filename = '1XXXXXX_solinst_levelogger_gold_testfile.csv'
     filename = '1XXXXXX_solinst_levelogger_gold_testfile.lev'
     filename = 'XXXX_solinst_levelogger_M5.csv'
     filename = 'XXXX_solinst_levelogger_M5.lev'
-
+    filename = 'solinst_missing_data.csv'
     reader = SolinstFileReader(osp.join(dirname, filename))
     print(reader.records)
     print(reader.sites)
