@@ -18,7 +18,7 @@ import os.path as osp
 # ---- Third party imports
 import numpy as np
 from matplotlib import pyplot as plt
-from pandas import Timestamp
+import pandas as pd
 
 # ---- Local imports
 from hydsensread.file_reader.abstract_file_reader import (
@@ -479,7 +479,7 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
         datetimes = []
         for line in self.file_content[self._start_of_data_row_index + 1:]:
             try:
-                _datetime = Timestamp(fmt.format(*line[istart:iend + 1]))
+                _datetime = pd.Timestamp(fmt.format(*line[istart:iend + 1]))
             except ValueError:
                 break
             datetimes.append(_datetime)
@@ -576,7 +576,7 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
                 self._params_dict[row0]['unit'] = units.strip()
 
     def _get_data(self):
-        """Return the numerical data from the Solinst data file."""
+        """Retrieve the numerical data from the Solinst data file."""
         self._get_parameter_data()
         data = np.array(self.file_content[self._start_of_data_row_index + 1:])
         for parameter in list(self._params_dict.keys()):
