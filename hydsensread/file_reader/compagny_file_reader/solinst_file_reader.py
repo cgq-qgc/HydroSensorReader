@@ -582,8 +582,11 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
     def _get_data(self):
         """Retrieve the numerical data from the Solinst data file."""
         self._get_parameter_data()
-        data = np.array(
-            [self.file_content[i] for i in self._data_content_indexes])
+
+        data = [self.file_content[i] for i in self._data_content_indexes]
+        pad = len(max(data, key=len))
+        data = np.array([row + [np.nan] * (pad - len(row)) for row in data])
+
         for parameter in list(self._params_dict.keys()):
             param_unit = self._params_dict[parameter]['unit']
             param_col_index = self._params_dict[parameter]['col_index']
