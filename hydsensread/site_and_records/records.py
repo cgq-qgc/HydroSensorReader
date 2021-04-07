@@ -87,7 +87,7 @@ class TimeSeriesRecords(Record):
             self.value = pd.Series(data=values, index=records_date, name=self.parameter_as_string)
         else:
             super().__init__(records_date, parameter, parameter_unit, values)
-            self.value = pd.Series()
+            self.value = pd.Series(dtype=float)
 
     def add_value(self, _date: datetime.datetime, val):
         """
@@ -128,7 +128,7 @@ class TimeSeriesRecords(Record):
 
     def get_data_at_time(self, at_date: typing.Union[datetime.datetime, str, datetime.date]) -> pd.Series:
         """
-        method that return a list of an unique Record if the date match the
+        Return a list of an unique Record if the date match the
         Record date or a list of all the Record for the given date
         :param at_date: datetime object corresponding to the needed Record
         :raise: KeyError if date not present
