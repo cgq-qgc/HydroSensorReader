@@ -477,12 +477,16 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
             fmt += ".{}"
 
         datetimes = []
-        for line in self.file_content[self._start_of_data_row_index + 1:]:
+        self._data_content_indexes = []
+        data_content = self.file_content[self._start_of_data_row_index + 1:]
+        for i, line in enumerate(data_content):
             try:
                 _datetime = pd.Timestamp(fmt.format(*line[istart:iend + 1]))
-            except ValueError:
-                break
+            except (ValueError, IndexError):
+                continue
             datetimes.append(_datetime)
+            self._data_content_indexes.append(
+                i + self._start_of_data_row_index + 1)
         self.sites.visit_date = datetimes[-1]
         return datetimes
 
@@ -578,7 +582,8 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
     def _get_data(self):
         """Retrieve the numerical data from the Solinst data file."""
         self._get_parameter_data()
-        data = np.array(self.file_content[self._start_of_data_row_index + 1:])
+        data = np.array(
+            [self.file_content[i] for i in self._data_content_indexes])
         for parameter in list(self._params_dict.keys()):
             param_unit = self._params_dict[parameter]['unit']
             param_col_index = self._params_dict[parameter]['col_index']
