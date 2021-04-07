@@ -12,6 +12,7 @@ import os
 import os.path as osp
 
 # ---- Third party imports
+import matplotlib.pyplot as plt
 import pytest
 from pandas import Timestamp
 import pandas as pd
@@ -53,6 +54,7 @@ def test_solinst_levelogger_edge(test_files_dir, testfile):
     assert records.iloc[-1].iloc[1] == 7.872
 
     assert solinst_file.plot()
+    plt.close('all')
 
 
 def test_solinst_levelogger_edge_lev(test_files_dir):
@@ -78,6 +80,7 @@ def test_solinst_levelogger_edge_lev(test_files_dir):
     assert records.iloc[-1].iloc[1] == 7.610
 
     assert solinst_file.plot()
+    plt.close('all')
 
 
 @pytest.mark.parametrize(
@@ -121,7 +124,7 @@ def test_solinst_levelogger_gold(test_files_dir, testfile):
     assert records.iloc[-1].iloc[0] == 934.8801 - (0.12 * 42) + 950
 
     assert solinst_file.plot()
-
+    plt.close('all')
 
 @pytest.mark.parametrize(
     'testfile',
@@ -160,6 +163,7 @@ def test_solinst_levelogger_M5(test_files_dir, testfile):
     assert records.iloc[-1].iloc[0] == 317.5 - (0.12 * 170) + 950
 
     assert solinst_file.plot()
+    plt.close('all')
 
 
 @pytest.mark.parametrize(
@@ -193,12 +197,12 @@ def test_solinst_colon_decimalsep(test_files_dir, testfile):
     assert records.iloc[-1].iloc[1] == 9.179
 
     assert solinst_file.plot()
+    plt.close('all')
 
 
 def test_missing_data(test_files_dir):
     """
-    Test that file with missing data in a given channel can be read as
-    expected.
+    Test that file with missing data and empty lines are read as expected.
 
     Regression test for cgq-qgc/HydroSensorReader#58.
     """
@@ -210,12 +214,17 @@ def test_missing_data(test_files_dir):
     assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
     assert pd.isnull(records.iloc[0]["TEMPERATURE_degC"])
 
+    assert pd.isnull(records.iat[0, 1])
+    assert pd.isnull(records.iat[6, 0])
+    assert pd.isnull(records.iat[6, 1])
+
 
 def test_filename_with_dot_in_path(test_files_dir):
     """
     Test that a file with a dot in its path is read without raising any error.
 
     Regression rest for cgq-qgc/HydroSensorReader#57
+    See also cgq-qgc/HydroSensorReader#62
     """
     testfile = 'solinst_file_with_._in_name.csv'
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
@@ -225,4 +234,4 @@ def test_filename_with_dot_in_path(test_files_dir):
 
 
 if __name__ == "__main__":
-    pytest.main(['-x', os.path.basename(__file__), '-v', '-rw'])
+    pytest.main(['-x', __file__, '-v', '-rw'])
