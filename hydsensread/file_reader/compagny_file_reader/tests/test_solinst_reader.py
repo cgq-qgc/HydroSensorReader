@@ -205,6 +205,7 @@ def test_missing_data(test_files_dir):
     Test that file with missing data and empty lines are read as expected.
 
     Regression test for cgq-qgc/HydroSensorReader#58.
+    See also cgq-qgc/HydroSensorReader#62.
     """
     testfile = 'solinst_missing_data.csv'
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
@@ -214,9 +215,14 @@ def test_missing_data(test_files_dir):
     assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
     assert pd.isnull(records.iloc[0]["TEMPERATURE_degC"])
 
+    assert records.iat[0, 0] == 1919.32
     assert pd.isnull(records.iat[0, 1])
+
     assert pd.isnull(records.iat[6, 0])
     assert pd.isnull(records.iat[6, 1])
+
+    assert records.iat[-1, 0] == 1921.87
+    assert records.iat[-1, 1] == 7.823
 
 
 def test_filename_with_dot_in_path(test_files_dir):
@@ -224,7 +230,6 @@ def test_filename_with_dot_in_path(test_files_dir):
     Test that a file with a dot in its path is read without raising any error.
 
     Regression rest for cgq-qgc/HydroSensorReader#57
-    See also cgq-qgc/HydroSensorReader#62
     """
     testfile = 'solinst_file_with_._in_name.csv'
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
