@@ -215,12 +215,15 @@ def test_missing_data(test_files_dir):
     assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
     assert pd.isnull(records.iloc[0]["TEMPERATURE_degC"])
 
+    assert records.index[0] == Timestamp('2017-05-03 13:00:00')
     assert records.iat[0, 0] == 1919.32
     assert pd.isnull(records.iat[0, 1])
 
+    assert records.index[6] == Timestamp('2017-05-03 14:30:00')
     assert pd.isnull(records.iat[6, 0])
     assert pd.isnull(records.iat[6, 1])
 
+    assert records.index[-1] == Timestamp('2017-05-03 15:15:00')
     assert records.iat[-1, 0] == 1921.87
     assert records.iat[-1, 1] == 7.823
 
