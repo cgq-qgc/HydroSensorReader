@@ -28,7 +28,7 @@ class TimeSeriesRecordsTest(unittest.TestCase):
             self.assertTrue('2014-10-03 15:30:00' in str(context.msg))
 
     def test_get_multiple_record_by_date(self):
-        multiple_record = self.ts.get_data_at_time(datetime.datetime(2011, 2, 2).date())
+        multiple_record = self.ts.get_data_at_time(datetime.datetime(2011, 2, 2))
         anticipated_response = self.ts.value['2011-02-02']
         self.assertEqual(multiple_record.all(), anticipated_response.all())
 
