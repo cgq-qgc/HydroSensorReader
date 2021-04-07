@@ -75,9 +75,11 @@ class SensorPlateform(Site):
     def get_dates(self) -> np.ndarray:
         return self.records.index.values
 
-    def create_time_serie(self, parameter, unit, dates: List[datetime.datetime], values: list):
+    def create_time_serie(self, parameter, unit,
+                          dates: List[datetime.datetime],
+                          values: list):
         """
-        Create a new TimeSerie and add id to the self.records DataFrame
+        Create a new TimeSerie and add it to the self.records DataFrame
         :param parameter: observed parameter
         :param unit: parameter's unit
         :param dates: list of datetime objects
@@ -85,14 +87,17 @@ class SensorPlateform(Site):
         :return:
         """
         if parameter in self.records.keys():
-            raise ValueError('time serie with the same parameter allready exist')
+            raise ValueError('A time serie with the same parameter '
+                             'already exist')
 
         time_serie = TimeSeriesRecords(dates, values, parameter, unit)
 
         if len(self.records.index) == 0:
             # create a new dataframe
-            self.records = DataFrame(data=time_serie.value, index=time_serie.get_dates,
-                                        columns=[time_serie.parameter_as_string])
+            self.records = DataFrame(
+                data=time_serie.value,
+                index=time_serie.get_dates,
+                columns=[time_serie.parameter_as_string])
         elif False in (time_serie.get_dates == self.records.index):
             # If dates differs
             self.resample_records(new_time_serie=time_serie)
