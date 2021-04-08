@@ -12,6 +12,7 @@ import os
 import os.path as osp
 
 # ---- Third party imports
+import matplotlib.pyplot as plt
 import pytest
 from pandas import Timestamp
 import pandas as pd
@@ -44,15 +45,16 @@ def test_solinst_levelogger_edge(test_files_dir, testfile):
     assert len(records) == 200
     assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
 
-    assert records.index.tolist()[0] == Timestamp('2017-05-03 13:00:00')
+    assert records.index[0] == Timestamp('2017-05-03 13:00:00')
     assert records.iloc[0].iloc[0] == 1919.32
     assert records.iloc[0].iloc[1] == 7.849
 
-    assert records.index.tolist()[-1] == Timestamp('2017-05-05 14:45:00')
+    assert records.index[-1] == Timestamp('2017-05-05 14:45:00')
     assert records.iloc[-1].iloc[0] == 1920.85
     assert records.iloc[-1].iloc[1] == 7.872
 
     assert solinst_file.plot()
+    plt.close('all')
 
 
 def test_solinst_levelogger_edge_lev(test_files_dir):
@@ -69,15 +71,16 @@ def test_solinst_levelogger_edge_lev(test_files_dir):
     assert len(records) == 200
     assert list(records.columns) == ["LEVEL_m", "TEMPERATURE_degC"]
 
-    assert records.index.tolist()[0] == Timestamp('2017-03-07 19:00:00')
+    assert records.index[0] == Timestamp('2017-03-07 19:00:00')
     assert records.iloc[0].iloc[0] == 14.6861
     assert records.iloc[0].iloc[1] == 7.626
 
-    assert records.index.tolist()[-1] == Timestamp('2017-03-09 20:45:00')
+    assert records.index[-1] == Timestamp('2017-03-09 20:45:00')
     assert records.iloc[-1].iloc[0] == 14.5130
     assert records.iloc[-1].iloc[1] == 7.610
 
     assert solinst_file.plot()
+    plt.close('all')
 
 
 @pytest.mark.parametrize(
@@ -121,7 +124,7 @@ def test_solinst_levelogger_gold(test_files_dir, testfile):
     assert records.iloc[-1].iloc[0] == 934.8801 - (0.12 * 42) + 950
 
     assert solinst_file.plot()
-
+    plt.close('all')
 
 @pytest.mark.parametrize(
     'testfile',
@@ -160,6 +163,7 @@ def test_solinst_levelogger_M5(test_files_dir, testfile):
     assert records.iloc[-1].iloc[0] == 317.5 - (0.12 * 170) + 950
 
     assert solinst_file.plot()
+    plt.close('all')
 
 
 @pytest.mark.parametrize(
@@ -184,23 +188,24 @@ def test_solinst_colon_decimalsep(test_files_dir, testfile):
     assert len(records) == 10
     assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
 
-    assert records.index.tolist()[0] == Timestamp('2016-11-23 19:00:00')
+    assert records.index[0] == Timestamp('2016-11-23 19:00:00')
     assert records.iloc[0].iloc[0] == 1813.03
     assert records.iloc[0].iloc[1] == 9.182
 
-    assert records.index.tolist()[-1] == Timestamp('2016-11-23 21:15:00')
+    assert records.index[-1] == Timestamp('2016-11-23 21:15:00')
     assert records.iloc[-1].iloc[0] == 1812.59
     assert records.iloc[-1].iloc[1] == 9.179
 
     assert solinst_file.plot()
+    plt.close('all')
 
 
 def test_missing_data(test_files_dir):
     """
-    Test that file with missing data in a given channel can be read as
-    expected.
+    Test that file with missing data and empty lines are read as expected.
 
     Regression test for cgq-qgc/HydroSensorReader#58.
+    See also cgq-qgc/HydroSensorReader#62.
     """
     testfile = 'solinst_missing_data.csv'
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
@@ -209,6 +214,18 @@ def test_missing_data(test_files_dir):
     assert len(records) == 10
     assert list(records.columns) == ["LEVEL_cm", "TEMPERATURE_degC"]
     assert pd.isnull(records.iloc[0]["TEMPERATURE_degC"])
+
+    assert records.index[0] == Timestamp('2017-05-03 13:00:00')
+    assert records.iat[0, 0] == 1919.32
+    assert pd.isnull(records.iat[0, 1])
+
+    assert records.index[6] == Timestamp('2017-05-03 14:30:00')
+    assert pd.isnull(records.iat[6, 0])
+    assert pd.isnull(records.iat[6, 1])
+
+    assert records.index[-1] == Timestamp('2017-05-03 15:15:00')
+    assert records.iat[-1, 0] == 1921.87
+    assert records.iat[-1, 1] == 7.823
 
 
 def test_filename_with_dot_in_path(test_files_dir):
@@ -225,4 +242,4 @@ def test_filename_with_dot_in_path(test_files_dir):
 
 
 if __name__ == "__main__":
-    pytest.main(['-x', os.path.basename(__file__), '-v', '-rw'])
+    pytest.main(['-x', __file__, '-v', '-rw'])

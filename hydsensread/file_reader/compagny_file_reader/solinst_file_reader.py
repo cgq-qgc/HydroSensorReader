@@ -18,7 +18,7 @@ import os.path as osp
 # ---- Third party imports
 import numpy as np
 from matplotlib import pyplot as plt
-from pandas import Timestamp
+import pandas as pd
 
 # ---- Local imports
 from hydsensread.file_reader.abstract_file_reader import (
@@ -477,12 +477,16 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
             fmt += ".{}"
 
         datetimes = []
-        for line in self.file_content[self._start_of_data_row_index + 1:]:
+        self._data_content_indexes = []
+        data_content = self.file_content[self._start_of_data_row_index + 1:]
+        for i, line in enumerate(data_content):
             try:
-                _datetime = Timestamp(fmt.format(*line[istart:iend + 1]))
-            except ValueError:
-                break
+                _datetime = pd.Timestamp(fmt.format(*line[istart:iend + 1]))
+            except (ValueError, IndexError):
+                continue
             datetimes.append(_datetime)
+            self._data_content_indexes.append(
+                i + self._start_of_data_row_index + 1)
         self.sites.visit_date = datetimes[-1]
         return datetimes
 
@@ -576,9 +580,13 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
                 self._params_dict[row0]['unit'] = units.strip()
 
     def _get_data(self):
-        """Return the numerical data from the Solinst data file."""
+        """Retrieve the numerical data from the Solinst data file."""
         self._get_parameter_data()
-        data = np.array(self.file_content[self._start_of_data_row_index + 1:])
+
+        data = [self.file_content[i] for i in self._data_content_indexes]
+        pad = len(max(data, key=len))
+        data = np.array([row + [np.nan] * (pad - len(row)) for row in data])
+
         for parameter in list(self._params_dict.keys()):
             param_unit = self._params_dict[parameter]['unit']
             param_col_index = self._params_dict[parameter]['col_index']
@@ -593,13 +601,12 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
 
 
 if __name__ == '__main__':
-    dirname = osp.dirname(osp.dirname(osp.dirname(__file__)))
-    dirname = osp.join(dirname, 'tests', 'files')
+    dirname = osp.join(osp.dirname(__file__), 'tests', 'files')
     filename = '1XXXXXX_solinst_levelogger_gold_testfile.csv'
     filename = '1XXXXXX_solinst_levelogger_gold_testfile.lev'
     filename = 'XXXX_solinst_levelogger_M5.csv'
     filename = 'XXXX_solinst_levelogger_M5.lev'
-
+    filename = 'solinst_missing_data.csv'
     reader = SolinstFileReader(osp.join(dirname, filename))
     print(reader.records)
     print(reader.sites)
