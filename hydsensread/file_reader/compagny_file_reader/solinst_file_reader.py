@@ -476,8 +476,13 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
             iend += 1
             fmt += ".{}"
 
-        datetimes = []
+        # We store the line indexes corresponding to valid dates in the
+        # record, so that we can retrieve the numerical data at these specific
+        # indexes later in _get_data. This is required in case there is
+        # blank lines or badly formatted dates in the record.
+        # See cgq-qgc/HydroSensorReader#62.
         self._data_content_indexes = []
+        datetimes = []
         data_content = self.file_content[self._start_of_data_row_index + 1:]
         for i, line in enumerate(data_content):
             try:
@@ -582,8 +587,11 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
     def _get_data(self):
         """Retrieve the numerical data from the Solinst data file."""
         self._get_parameter_data()
-
         data = [self.file_content[i] for i in self._data_content_indexes]
+
+        # We go over each row of data and pad with nan values when needed
+        # to make sure each row has the same length.
+        # See cgq-qgc/HydroSensorReader#62.
         pad = len(max(data, key=len))
         data = np.array([row + [np.nan] * (pad - len(row)) for row in data])
 
