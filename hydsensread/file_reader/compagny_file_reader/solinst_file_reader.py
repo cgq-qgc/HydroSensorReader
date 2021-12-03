@@ -149,7 +149,7 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         columns_map = {}
         for column in self.records.columns:
             column_split = column.split('_')
-            units = column_split[-1].replace(' ', '').lower()
+            units = re.sub(r'[^a-zA-Z0-9°\.]','', column_split[-1]).lower()
             if units in ['°c', 'degc', 'degree_celsius', 'celsius', 'degreec']:
                 columns_map[column] = '_'.join(column_split[:-1]) + '_degC'
             else:
@@ -386,12 +386,15 @@ class XLESolinstFileReader(SolinstFileReaderBase):
         get a list of timestamp present in the file
         :return:
         """
-        datetime_list = [datetime.datetime.strptime(
-            "{} {}:{}".format(_data.find('Date').text,
+        datetime_list = []
+        for _data in self.file_root.iter('Log'):
+            dts = "{} {}:{}".format(_data.find('Date').text,
                               _data.find('Time').text,
-                              _data.find('ms').text),
-            '%Y/%m/%d %H:%M:%S:%f'
-            ) for _data in self.file_root.iter('Log')]
+                              _data.find('ms').text)
+            dts = dts.replace('_','/')
+            dt = datetime.datetime.strptime( dts, 
+                '%Y/%m/%d %H:%M:%S:%f')
+            datetime_list.append(dt)
         return datetime_list
 
     # ---- SolinstFileReaderBase API
@@ -405,6 +408,7 @@ class XLESolinstFileReader(SolinstFileReaderBase):
         date_str = file_info.find('Date').text
         time_str = file_info.find('Time').text
         datetime_str = "{} {}".format(date_str, time_str)
+        datetime_str = datetime_str.replace("_","/") # Some models delimit date fields with _
         datetime_obj = datetime.datetime.strptime(
             datetime_str, self.YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT)
         return datetime_obj
@@ -429,8 +433,11 @@ class XLESolinstFileReader(SolinstFileReaderBase):
         return self.file_root.find('Instrument_info').find('Model_number').text
 
     def _get_battery_level(self):
-        return self.file_root.find(
-            'Instrument_info').find('Battery_level').text
+        try:
+            return self.file_root.find('Instrument_info')
+        except AttributeError:
+            return None
+
 
     # ---- Private API
     def _get_data(self) -> None:
