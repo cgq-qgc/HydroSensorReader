@@ -9,6 +9,7 @@
 
 # ---- Standard imports
 import datetime
+from pathlib import Path
 import re
 import warnings
 from collections import defaultdict
@@ -50,6 +51,9 @@ class SolinstFileReader(object):
             '.csv' level or baro logger data files.
 
         """
+        if isinstance(file_path, Path):
+            file_path = str(file_path)
+
         if not osp.isfile(file_path) or not osp.exists(file_path):
             raise ValueError("The path given doesn't point to an "
                              "existing file.")
@@ -220,6 +224,7 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         self.sites.project_name = self._get_project_name()
         self.sites.batterie_level = self._get_battery_level()
         self.sites.model_number = self._get_model_number()
+        self.sites.instrument_type = self._get_instrument_type()
 
         # A value for the altitude is present in the header of data
         # files produced by Solinst level and baro loggers of the
@@ -249,6 +254,9 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
     def _get_battery_level(self):
         pass
 
+    def _get_instrument_type(self):
+        pass
+    
     def _get_model_number(self):
         pass
 
@@ -434,10 +442,17 @@ class XLESolinstFileReader(SolinstFileReaderBase):
 
     def _get_battery_level(self):
         try:
-            return self.file_root.find('Instrument_info')
+            return self.file_root.find(
+                'Instrument_info').find('Battery_level').text
         except AttributeError:
-            return None
+            return "N/A"
 
+    def _get_instrument_type(self):
+        try:
+            return self.file_root.find(
+                'Instrument_info').find('Instrument_type').text
+        except AttributeError:
+            return "N/A"
 
     # ---- Private API
     def _get_data(self) -> None:
@@ -529,6 +544,9 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
         return self._get_instrument_info(r"[pP]roject.[idID].*")
 
     def _get_battery_level(self):
+        return None
+
+    def _get_instrument_type(self):
         return None
 
     def _get_model_number(self):
