@@ -415,10 +415,21 @@ class XLESolinstFileReader(SolinstFileReaderBase):
 
         date_str = file_info.find('Date').text
         time_str = file_info.find('Time').text
-        datetime_str = "{} {}".format(date_str, time_str)
-        datetime_str = datetime_str.replace("_","/") # Some models delimit date fields with _
-        datetime_obj = datetime.datetime.strptime(
-            datetime_str, self.YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT)
+
+        if date_str == time_str:
+            # Some loggers keep a (potentially tz-aware) datetime in BOTH date and time fields.
+            datetime_str = date_str
+        else:
+            datetime_str = "{} {}".format(date_str, time_str)
+            datetime_str = datetime_str.replace("_","/") # Some models delimit date fields with _
+
+        if re.search(' -[0-9]{4}$', datetime_str):
+            # Timezone offset at end of datetime string on some models
+            datetime_obj = datetime.datetime.strptime(
+                datetime_str, self.YEAR_S_MONTH_S_DAY_HMS_Z_DATE_STRING_FORMAT)
+        else:
+            datetime_obj = datetime.datetime.strptime(
+                datetime_str, self.YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT)
         return datetime_obj
 
     def _get_site_name(self) -> str:
