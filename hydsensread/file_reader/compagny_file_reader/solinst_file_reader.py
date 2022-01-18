@@ -403,8 +403,7 @@ class XLESolinstFileReader(SolinstFileReaderBase):
                     _data.find('ms').text
                     ).replace('_', '/'),
                 '%Y/%m/%d %H:%M:%S:%f'
-            ) for _data in self.file_root.iter('Log')
-            ]
+            ) for _data in self.file_root.iter('Log')]
         return datetime_list
 
     # ---- SolinstFileReaderBase API
