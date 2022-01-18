@@ -569,6 +569,9 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
         params = [p for p in data_header if p
                   not in ('', 'Date', 'ms', '100 ms', 'Time')]
         for i, row in enumerate(self.file_content[:self._header_length]):
+            if not len(row):
+                continue
+
             # Some files produced for Solinst logger models older than the Gold
             # series add tabulations at the beginning of some lines in the
             # header, so we need to remove them.
