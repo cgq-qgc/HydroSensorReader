@@ -31,9 +31,7 @@ def test_files_dir():
 @pytest.mark.parametrize(
     'testfile',
     ["2XXXXXX_solinst_levelogger_edge.csv",
-     "2XXXXXX_solinst_levelogger_edge.xle",
-     ])
-
+     "2XXXXXX_solinst_levelogger_edge.xle"])
 def test_solinst_levelogger_edge(test_files_dir, testfile):
     """Test reading Solinst Edge Levelogger files."""
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
@@ -58,13 +56,10 @@ def test_solinst_levelogger_edge(test_files_dir, testfile):
     assert solinst_file.plot()
     plt.close('all')
 
-@pytest.mark.parametrize(
-    'testfile',
-     ['LT_EDGE_m30_fw3.003.xle',
-     ])
 
-def test_solinst_levelogger_edge_m30(test_files_dir, testfile):
-    """Test reading Solinst Edge Levelogger files."""
+def test_solinst_levelogger_edge_m30(test_files_dir):
+    """Test reading Solinst Edge m30 Levelogger files."""
+    testfile = 'LT_EDGE_m30_fw3.003.xle'
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
 
     sites = solinst_file.sites
@@ -85,7 +80,6 @@ def test_solinst_levelogger_edge_m30(test_files_dir, testfile):
     assert records.iloc[-1].iloc[1] == 3.826
     assert solinst_file.plot()
     plt.close('all')
-
 
 
 def test_solinst_levelogger_edge_lev(test_files_dir):
@@ -157,20 +151,18 @@ def test_solinst_levelogger_gold(test_files_dir, testfile):
     assert solinst_file.plot()
     plt.close('all')
 
-@pytest.mark.parametrize(
-    'testfile',
-    [ 'LT_Gold_baro_m15_fw2006.xle'
-     ])
-def test_solinst_levelogger_gold_m15(test_files_dir, testfile):
+
+def test_solinst_levelogger_gold_m15(test_files_dir):
     """
-    Test reading Solinst LT Gold barologger files.
+    Test reading Solinst LT Gold m15 barologger files.
     """
+    testfile = 'LT_Gold_baro_m15_fw2006.xle'
     solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
 
     sites = solinst_file.sites
     assert sites.instrument_serial_number == "7654321"
     assert sites.project_name == 'Someplace'
-    assert sites.site_name =='Somewhere'
+    assert sites.site_name == 'Somewhere'
     assert sites.other_attributes['altitude'] is None
 
     records = solinst_file.records
@@ -178,8 +170,8 @@ def test_solinst_levelogger_gold_m15(test_files_dir, testfile):
     assert list(records.columns) == ["LEVEL_m", "TEMPERATURE_degC"]
 
     assert records.index[0] == Timestamp('2021-01-03 16:00:04')
-    assert records.iloc[0].iloc[0] ==-0.6523
-    assert records.iloc[0].iloc[1] ==-5.329
+    assert records.iloc[0].iloc[0] == -0.6523
+    assert records.iloc[0].iloc[1] == -5.329
 
     assert records.index[-1] == Timestamp('2021-10-16 10:00:04')
     assert records.iloc[-1].iloc[0] == -0.5228
