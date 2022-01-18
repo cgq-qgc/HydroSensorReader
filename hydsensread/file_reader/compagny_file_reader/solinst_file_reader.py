@@ -390,15 +390,16 @@ class XLESolinstFileReader(SolinstFileReaderBase):
         get a list of timestamp present in the file
         :return:
         """
-        datetime_list = []
-        for _data in self.file_root.iter('Log'):
-            dts = "{} {}:{}".format(
-                _data.find('Date').text,
-                _data.find('Time').text,
-                _data.find('ms').text)
-            dts = dts.replace('_', '/')
-            dt = datetime.datetime.strptime(dts, '%Y/%m/%d %H:%M:%S:%f')
-            datetime_list.append(dt)
+        datetime_list = [
+            datetime.datetime.strptime(
+                "{} {}:{}".format(
+                    _data.find('Date').text,
+                    _data.find('Time').text,
+                    _data.find('ms').text
+                    ).replace('_', '/'),
+                '%Y/%m/%d %H:%M:%S:%f'
+            ) for _data in self.file_root.iter('Log')
+            ]
         return datetime_list
 
     # ---- SolinstFileReaderBase API
