@@ -547,13 +547,16 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
         return altitude
 
     # ---- Private API
-    def _get_instrument_info(self, regex_: str):
+    def _get_instrument_info(self, regex_: str) -> str:
         result = None
         for i, line in enumerate(self.file_content):
             if i == self._header_length:
                 break
             if re.search(regex_, ''.join(line).lower()):
-                result = self.file_content[i + 1][0].strip()
+                try:
+                    result = self.file_content[i + 1][0].strip()
+                except IndexError:
+                    result = ''
                 break
         return result
 
