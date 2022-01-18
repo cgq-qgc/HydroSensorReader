@@ -4,7 +4,6 @@
 [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![pypi version](https://img.shields.io/pypi/v/HydroSensorReader.svg)](https://pypi.org/project/HydroSensorReader/)
-
 [![Build status](https://ci.appveyor.com/api/projects/status/lhxr1vjup234fa62/branch/master?svg=true)](https://ci.appveyor.com/project/jnsebgosselin/hydrosensorreader/branch/master)
 [![codecov](https://codecov.io/gh/cgq-qgc/HydroSensorReader/branch/master/graph/badge.svg)](https://codecov.io/gh/cgq-qgc/HydroSensorReader)
 
