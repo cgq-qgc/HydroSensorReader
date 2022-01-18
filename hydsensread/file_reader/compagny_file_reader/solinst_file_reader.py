@@ -17,7 +17,6 @@ import os.path as osp
 
 # ---- Third party imports
 import numpy as np
-from matplotlib import pyplot as plt
 import pandas as pd
 
 # ---- Local imports
@@ -150,7 +149,7 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         columns_map = {}
         for column in self.records.columns:
             column_split = column.split('_')
-            units = re.sub(r'[^a-zA-Z0-9°\.]','', column_split[-1]).lower()
+            units = re.sub(r'[^a-zA-Z0-9°\.]', '', column_split[-1]).lower()
             if units in ['°c', 'degc', 'degree_celsius', 'celsius', 'degreec']:
                 columns_map[column] = '_'.join(column_split[:-1]) + '_degC'
             else:
@@ -253,7 +252,7 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
 
     def _get_instrument_type(self):
         pass
-    
+
     def _get_model_number(self):
         pass
 
@@ -393,12 +392,12 @@ class XLESolinstFileReader(SolinstFileReaderBase):
         """
         datetime_list = []
         for _data in self.file_root.iter('Log'):
-            dts = "{} {}:{}".format(_data.find('Date').text,
-                              _data.find('Time').text,
-                              _data.find('ms').text)
-            dts = dts.replace('_','/')
-            dt = datetime.datetime.strptime( dts, 
-                '%Y/%m/%d %H:%M:%S:%f')
+            dts = "{} {}:{}".format(
+                _data.find('Date').text,
+                _data.find('Time').text,
+                _data.find('ms').text)
+            dts = dts.replace('_', '/')
+            dt = datetime.datetime.strptime(dts, '%Y/%m/%d %H:%M:%S:%f')
             datetime_list.append(dt)
         return datetime_list
 
@@ -414,11 +413,13 @@ class XLESolinstFileReader(SolinstFileReaderBase):
         time_str = file_info.find('Time').text
 
         if date_str == time_str:
-            # Some loggers keep a (potentially tz-aware) datetime in BOTH date and time fields.
+            # Some loggers keep a (potentially tz-aware) datetime in BOTH date
+            # and time fields.
             datetime_str = date_str
         else:
+            # Some models delimit date fields with _
             datetime_str = "{} {}".format(date_str, time_str)
-            datetime_str = datetime_str.replace("_","/") # Some models delimit date fields with _
+            datetime_str = datetime_str.replace("_", "/")
 
         if re.search(' -[0-9]{4}$', datetime_str):
             # Timezone offset at end of datetime string on some models
