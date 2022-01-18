@@ -418,9 +418,8 @@ class XLESolinstFileReader(SolinstFileReaderBase):
             # and time fields.
             datetime_str = date_str
         else:
-            # Some models delimit date fields with _
-            datetime_str = "{} {}".format(date_str, time_str)
-            datetime_str = datetime_str.replace("_", "/")
+            # Some models delimit date fields with "_".
+            datetime_str = "{} {}".format(date_str, time_str).replace("_", "/")
 
         if re.search(' -[0-9]{4}$', datetime_str):
             # Timezone offset at end of datetime string on some models
