@@ -556,9 +556,6 @@ class CSVSolinstFileReader(SolinstFileReaderBase):
     def _get_battery_level(self):
         return None
 
-    def _get_instrument_type(self):
-        return None
-
     def _get_model_number(self):
         return None
 
