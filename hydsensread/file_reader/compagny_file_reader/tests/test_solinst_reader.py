@@ -304,5 +304,18 @@ def test_filename_with_dot_in_path(test_files_dir):
     assert len(records) == 10
 
 
+def test_missing_location(test_files_dir):
+    """
+    Test that files with missing Location can be read as expected.
+
+    Regression test for cgq-qgc/HydroSensorReader#67
+    """
+    testfile = 'solinst_missing_location.csv'
+    solinst_file = hsr.SolinstFileReader(osp.join(test_files_dir, testfile))
+
+    assert len(solinst_file.records) == 5
+    assert solinst_file.sites.site_name == ''
+
+
 if __name__ == "__main__":
     pytest.main(['-x', __file__, '-v', '-rw'])
