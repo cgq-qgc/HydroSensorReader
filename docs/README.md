@@ -7,8 +7,6 @@
 
 [![Build status](https://ci.appveyor.com/api/projects/status/lhxr1vjup234fa62/branch/master?svg=true)](https://ci.appveyor.com/project/jnsebgosselin/hydrosensorreader/branch/master)
 [![codecov](https://codecov.io/gh/cgq-qgc/HydroSensorReader/branch/master/graph/badge.svg)](https://codecov.io/gh/cgq-qgc/HydroSensorReader)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f305b1763bf647c0b7342e4699c5f5db)](https://www.codacy.com/app/jnsebgosselin/HydroSensorReader?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=cgq-qgc/HydroSensorReader&amp;utm_campaign=Badge_Grade)
-
 
 This project aims to provide a simple way to read scientific files produced by
 any kind of probe, sensor, or anything used in hydrogeology.
