@@ -17,7 +17,6 @@ import os.path as osp
 
 # ---- Third party imports
 import numpy as np
-from matplotlib import pyplot as plt
 import pandas as pd
 
 # ---- Local imports
@@ -50,6 +49,7 @@ class SolinstFileReader(object):
             '.csv' level or baro logger data files.
 
         """
+        file_path = str(file_path)
         if not osp.isfile(file_path) or not osp.exists(file_path):
             raise ValueError("The path given doesn't point to an "
                              "existing file.")
@@ -149,9 +149,14 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         columns_map = {}
         for column in self.records.columns:
             column_split = column.split('_')
-            units = column_split[-1].replace(' ', '').lower()
+            units = column_split.pop(-1).lower()
+
+            # We need to do this in case we got the file encoding wrong.
+            # See #cgq-qgc/HydroSensorReader#66
+            units = re.sub(r'[^a-zA-Z0-9°\.]', '', units)
+
             if units in ['°c', 'degc', 'degree_celsius', 'celsius', 'degreec']:
-                columns_map[column] = '_'.join(column_split[:-1]) + '_degC'
+                columns_map[column] = '_'.join(column_split) + '_degC'
             else:
                 columns_map[column] = column
         self.records.rename(columns_map, axis='columns', inplace=True)
@@ -220,6 +225,7 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         self.sites.project_name = self._get_project_name()
         self.sites.batterie_level = self._get_battery_level()
         self.sites.model_number = self._get_model_number()
+        self.sites.instrument_type = self._get_instrument_type()
 
         # A value for the altitude is present in the header of data
         # files produced by Solinst level and baro loggers of the
@@ -247,6 +253,9 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         pass
 
     def _get_battery_level(self):
+        pass
+
+    def _get_instrument_type(self):
         pass
 
     def _get_model_number(self):
@@ -386,11 +395,14 @@ class XLESolinstFileReader(SolinstFileReaderBase):
         get a list of timestamp present in the file
         :return:
         """
-        datetime_list = [datetime.datetime.strptime(
-            "{} {}:{}".format(_data.find('Date').text,
-                              _data.find('Time').text,
-                              _data.find('ms').text),
-            '%Y/%m/%d %H:%M:%S:%f'
+        datetime_list = [
+            datetime.datetime.strptime(
+                "{} {}:{}".format(
+                    _data.find('Date').text,
+                    _data.find('Time').text,
+                    _data.find('ms').text
+                    ).replace('_', '/'),
+                '%Y/%m/%d %H:%M:%S:%f'
             ) for _data in self.file_root.iter('Log')]
         return datetime_list
 
@@ -404,9 +416,22 @@ class XLESolinstFileReader(SolinstFileReaderBase):
 
         date_str = file_info.find('Date').text
         time_str = file_info.find('Time').text
-        datetime_str = "{} {}".format(date_str, time_str)
-        datetime_obj = datetime.datetime.strptime(
-            datetime_str, self.YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT)
+
+        if date_str == time_str:
+            # Some loggers keep a (potentially tz-aware) datetime in BOTH date
+            # and time fields.
+            datetime_str = date_str
+        else:
+            # Some models delimit date fields with "_".
+            datetime_str = "{} {}".format(date_str, time_str).replace("_", "/")
+
+        if re.search(' -[0-9]{4}$', datetime_str):
+            # Timezone offset at end of datetime string on some models
+            datetime_obj = datetime.datetime.strptime(
+                datetime_str, self.YEAR_S_MONTH_S_DAY_HMS_Z_DATE_STRING_FORMAT)
+        else:
+            datetime_obj = datetime.datetime.strptime(
+                datetime_str, self.YEAR_S_MONTH_S_DAY_HMS_DATE_STRING_FORMAT)
         return datetime_obj
 
     def _get_site_name(self) -> str:
@@ -429,8 +454,18 @@ class XLESolinstFileReader(SolinstFileReaderBase):
         return self.file_root.find('Instrument_info').find('Model_number').text
 
     def _get_battery_level(self):
-        return self.file_root.find(
-            'Instrument_info').find('Battery_level').text
+        try:
+            return self.file_root.find(
+                'Instrument_info').find('Battery_level').text
+        except AttributeError:
+            return "N/A"
+
+    def _get_instrument_type(self):
+        try:
+            return self.file_root.find(
+                'Instrument_info').find('Instrument_type').text
+        except AttributeError:
+            return "N/A"
 
     # ---- Private API
     def _get_data(self) -> None:
