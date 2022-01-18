@@ -9,7 +9,6 @@
 
 # ---- Standard imports
 import datetime
-from pathlib import Path
 import re
 import warnings
 from collections import defaultdict
@@ -51,9 +50,7 @@ class SolinstFileReader(object):
             '.csv' level or baro logger data files.
 
         """
-        if isinstance(file_path, Path):
-            file_path = str(file_path)
-
+        file_path = str(file_path)
         if not osp.isfile(file_path) or not osp.exists(file_path):
             raise ValueError("The path given doesn't point to an "
                              "existing file.")
