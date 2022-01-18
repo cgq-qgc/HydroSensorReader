@@ -149,9 +149,14 @@ class SolinstFileReaderBase(TimeSeriesFileReader):
         columns_map = {}
         for column in self.records.columns:
             column_split = column.split('_')
-            units = re.sub(r'[^a-zA-Z0-9°\.]', '', column_split[-1]).lower()
+            units = column_split.pop(-1).lower()
+
+            # We need to do this in case we got the file encoding wrong.
+            # See #cgq-qgc/HydroSensorReader#66
+            units = re.sub(r'[^a-zA-Z0-9°\.]', '', units)
+
             if units in ['°c', 'degc', 'degree_celsius', 'celsius', 'degreec']:
-                columns_map[column] = '_'.join(column_split[:-1]) + '_degC'
+                columns_map[column] = '_'.join(column_split) + '_degC'
             else:
                 columns_map[column] = column
         self.records.rename(columns_map, axis='columns', inplace=True)
